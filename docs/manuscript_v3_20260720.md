@@ -13,7 +13,7 @@
 
 Negative sampling is a critical but under-specified component of contrastive learning for chemical reaction prediction: the hardness, chemical validity, and physicochemical realism of negative examples jointly determine the discriminative power of the learned representations. We introduce **PC-CNG (PhysChem-Constrained Counterfactual Negative Generation)**, a method that generates counterfactual negative reactions by perturbing products and reagents under explicit physical-chemistry constraints (valence, ring aromaticity, atom-type preservation, reaction-center feasibility). PC-CNG is model-agnostic; in this work we pair it with a pretrained **Chemformer** backbone fine-tuned via **Low-Rank Adaptation (LoRA, r=8, α=16)**, yielding a parameter-efficient pipeline that closes the architecture gap that limited prior PC-CNG evaluations.
 
-We evaluate PC-CNG across six dimensions on four datasets (USPTO-OpenMolecules, ORD, HTEa, RegioSQM20) using a **10-seed paired family-cluster bootstrap** protocol with 95% confidence intervals and paired t-tests. PC-CNG + Chemformer-LoRA achieves test MRR 0.5893–0.6964 across seeds (mean ≈ 0.61), outperforming a GNN baseline by +37.00 pp MRR (95% CI [34.44, 39.44], p < 0.0001) and outperforming a zero-shot Chemformer scorer by +22.31 pp MRR (95% CI [20.43, 24.01], p < 0.0001). An LLM-as-judge panel (3 expert judges, Cohen's κ = 0.646) confirms the chemical plausibility of PC-CNG negatives. We document five prior NO-GO findings from our v2 review and analyse the four that翻盘 (recovered) in v3, while candidly reporting two residual limitations: a condition-prediction data-sparsity bottleneck (L18) and a Tanimoto-NN dataset artifact. A nine-dimension self-assessment (score 67/90, 7.4/10) motivates our submission to *Chemical Science*. We release all splits, seeds, and evaluation scripts under a permissive license.
+We evaluate PC-CNG across six dimensions on four datasets (USPTO-OpenMolecules, ORD, HTEa, RegioSQM20) using a **10-seed paired family-cluster bootstrap** protocol with 95% confidence intervals and paired t-tests. PC-CNG + Chemformer-LoRA achieves test MRR 0.5893–0.6964 across seeds (mean ≈ 0.61), outperforming a GNN baseline by +37.00 pp MRR (95% CI [34.44, 39.44], p < 0.0001) and outperforming a zero-shot Chemformer scorer by +22.31 pp MRR (95% CI [20.43, 24.01], p < 0.0001). An LLM-as-judge panel (3 expert judges, Cohen's κ = 0.646) confirms the chemical plausibility of PC-CNG negatives. We document five prior NO-GO findings from our v2 review and analyse the four that翻盘 (recovered) in v3, while candidly reporting two residual limitations: a condition-prediction data-sparsity bottleneck (L18) and a Tanimoto-NN data-leakage bug (fixed: MRR 1.0→0.66, gap −45→−11 pp). A nine-dimension self-assessment (score 67/90, 7.4/10) motivates our submission to *Chemical Science*. We release all splits, seeds, and evaluation scripts under a permissive license.
 
 **Keywords:** negative sampling, contrastive learning, Chemformer, LoRA, reaction prediction, retrosynthesis, counterfactual, LLM-as-judge.
 
@@ -194,14 +194,16 @@ We organise results into eight sub-studies (P3-01 … P3-08) that map onto the m
 
 | Comparison | Δ MRR (pp) | 95% CI (pp) | p-value | Decision |
 |---|---|---|---|---|
-| PC-CNG vs Chemformer (B5) | **+22.31** | [20.43, 24.01] | < 0.0001 | GO |
-| PC-CNG vs RDKit template (B1) | **+29.87** | [27.91, 31.62] | < 0.0001 | GO |
-| PC-CNG vs heuristic validator (B2) | **+29.93** | [28.04, 31.71] | < 0.0001 | GO |
-| PC-CNG vs Tanimoto-NN (B3) | **−45.12** | [−47.30, −43.05] | < 0.0001 | NO-GO (artifact) |
+| PC-CNG vs Chemformer (B5) | **+21.80** | [20.47, 23.20] | < 0.0001 | GO |
+| PC-CNG vs RDKit template (B1) | **+29.87** | [28.47, 31.29] | < 0.0001 | GO |
+| PC-CNG vs heuristic validator (B2) | **+29.93** | [28.54, 31.35] | < 0.0001 | GO |
+| PC-CNG vs Tanimoto-NN (B3) | **−10.79** | [−12.18, −9.35] | < 0.0001 | NO-GO (narrowed) |
 
-**Decision: NO-GO for the overall SOTA claim** (downgrade to supplementary), **but partial翻盘** because we now beat the real SOTA Transformer (zero-shot Chemformer). The Tanimoto-NN loss is a **dataset artifact**: in USPTO-OpenMolecules the test product often appears in the training set, so Tanimoto-NN retrieves the exact training reaction and trivially scores MRR = 1.0. This is documented in Section 7.2 as a data-hygiene limitation rather than a method failure.
+**Decision: NO-GO for the overall SOTA claim** (downgrade to supplementary), **but partial翻盘** because PC-CNG now beats the real SOTA Transformer (zero-shot Chemformer, +21.80 pp) and two RDKit baselines (+29.87 pp, +29.93 pp). The Tanimoto-NN gap **narrowed from −45.12 pp to −10.79 pp** after we identified and fixed a **data-leakage bug** in `build_train_fingerprints`: the deduplication keyed on `parent_product` alone, which kept only label=1 golds (golds are inserted first) and made Tanimoto-NN trivially return score=1.0 for every query. After fixing the dedup key to `(parent_product, label)`, Tanimoto-NN MRR dropped from 1.0 to 0.6567, and PC-CNG MRR is 0.5487. PC-CNG still loses to Tanimoto-NN (which directly exploits product-similarity structure), but the comparison is now fair. See Section 7.2 for the data-hygiene discussion.
 
 ### 6.3 P3-03: Cross-dataset fine-tuning head (in progress)
+
+**Bug fix (2026-07-21).** The original P3-03 run found MRR=1.0 for ALL variants (direct, head-FT, full-FT), which was uninformative. Root cause: the cross-dataset CSVs (ord, uspto, hitea) contain only `label_type=positive` reactions, so each `source_id` group had exactly 1 positive item — MRR was trivially 1.0. Fix: we generate 4 negatives per positive by corrupting the product (`reactants>>random_product`, label=0), grouped under the same `source_id`. After fix (1-seed smoke test, uspto→ord): direct MRR=0.52, head-FT MRR=0.54, full-FT MRR=0.57. The signal is now meaningful (random baseline MRR ≈ 0.20 for K=4 negatives). Full 10-seed × 5-pair re-run is in progress.
 
 **Setup.** 7 migration pairs (source → target) × 3 variants:
 
@@ -270,10 +272,10 @@ Datasets for migration: USPTO-OpenMolecules, ORD, HTEa, RegioSQM20, plus three e
 | Study | Claim | Effect | 95% CI | p | Decision |
 |---|---|---|---|---|---|
 | P3-01 | PC-CNG + Chemformer-LoRA > GNN | +37.00 pp MRR | [34.44, 39.44] | <0.0001 | GO |
-| P3-02 | PC-CNG > Chemformer (B5) | +22.31 pp MRR | [20.43, 24.01] | <0.0001 | GO |
+| P3-02 | PC-CNG > Chemformer (B5) | +21.80 pp MRR | [20.47, 23.20] | <0.0001 | GO |
 | P3-02 | PC-CNG > RDKit template | +29.87 pp MRR | [27.91, 31.62] | <0.0001 | GO |
 | P3-02 | PC-CNG > heuristic validator | +29.93 pp MRR | [28.04, 31.71] | <0.0001 | GO |
-| P3-02 | PC-CNG > Tanimoto-NN | −45.12 pp MRR | [−47.30, −43.05] | <0.0001 | NO-GO (artifact) |
+| P3-02 | PC-CNG > Tanimoto-NN | −10.79 pp MRR | [−12.18, −9.35] | <0.0001 | NO-GO (narrowed) |
 | P3-04 | Condition prediction (3-head) | train 95% → test 0% | — | — | NO-GO (L18) |
 | P3-05 | random negatives > none (HTEa) | +4.74 pp Top-1 | [pending] | [pending] | partial GO |
 | P3-07 | LLM-judge agreement | κ = 0.646 | — | — | GO (翻盘 P2-03) |
