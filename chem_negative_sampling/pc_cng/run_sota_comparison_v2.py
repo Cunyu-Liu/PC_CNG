@@ -779,18 +779,29 @@ def filter_leaked_test_rows(
 def build_train_fingerprints(
     train_rows: Sequence[Dict[str, object]],
 ) -> List[Tuple[str, object, int]]:
-    """Build (parent_product, fingerprint, label) list from train rows."""
+    """Build (parent_product, fingerprint, label) list from train rows.
+
+    Deduplicates by (parent_product, label) rather than just parent_product.
+    This is critical: the same product can appear as both a gold (label=1)
+    and a negative (label=0) across different source_ids. If we dedup by
+    product alone, we keep only the first occurrence (always label=1 since
+    golds are added first), making Tanimoto-NN always return score=1.0.
+    """
     seen: set = set()
     out: List[Tuple[str, object, int]] = []
     for row in train_rows:
         parent = str(row.get("parent_product", "")).strip()
-        if not parent or parent in seen:
+        if not parent:
+            continue
+        label = int(row["label"])
+        key = (parent, label)
+        if key in seen:
             continue
         fp = _morgan_fingerprint(parent)
         if fp is None:
             continue
-        seen.add(parent)
-        out.append((parent, fp, int(row["label"])))
+        seen.add(key)
+        out.append((parent, fp, label))
     return out
 
 
