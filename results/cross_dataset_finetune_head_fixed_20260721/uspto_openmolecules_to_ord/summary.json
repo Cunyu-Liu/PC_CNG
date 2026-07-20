@@ -1,0 +1,95 @@
+{
+  "pair": "uspto_openmolecules_to_ord",
+  "source": "uspto_openmolecules",
+  "target": "ord",
+  "n_seeds": 10,
+  "n_few_shot": 0.1,
+  "checkpoint_used": true,
+  "backbone_ckpt": "results/pretrained_backbone_chemformer_lora_20260720/seed20260710/model.pt",
+  "negatives_generated": true,
+  "n_negatives_per_positive": 4,
+  "variants": {
+    "direct": {
+      "mrr_mean": 0.5296137202494591,
+      "mrr_std": 0.0017469194905446982,
+      "mrr_per_seed": [
+        0.5314751177294132,
+        0.532251495481736,
+        0.5301387297950872,
+        0.5306032836960672,
+        0.528827796869034,
+        0.5263013872979508,
+        0.5285732467863052,
+        0.5279177803232786,
+        0.5312396589028892,
+        0.5288087056128293
+      ]
+    },
+    "head_finetune": {
+      "mrr_mean": 0.5431570574010436,
+      "mrr_std": 0.024280040351342402,
+      "mrr_per_seed": [
+        0.5283441517118493,
+        0.568244877179585,
+        0.5476899579992363,
+        0.5506936489754359,
+        0.5298269059437445,
+        0.5743540791650756,
+        0.5752386407025583,
+        0.5430635102456408,
+        0.497505409189258,
+        0.5166093928980527
+      ]
+    },
+    "full_finetune": {
+      "mrr_mean": 0.4978961435662467,
+      "mrr_std": 0.03067713667178437,
+      "mrr_per_seed": [
+        0.48184421534937,
+        0.49760086547028126,
+        0.5516100292732595,
+        0.48105511009291074,
+        0.56154384625175,
+        0.47423953162784777,
+        0.4892198039964364,
+        0.4666666666666667,
+        0.4801514572992236,
+        0.49502990963472066
+      ]
+    }
+  },
+  "paired_bootstrap_ci": {
+    "head_finetune_vs_direct": {
+      "mean_diff": 0.013543337151584556,
+      "ci_low": -0.0022461499299987167,
+      "ci_high": 0.02868407152857323,
+      "p_value": 0.0459
+    },
+    "full_finetune_vs_direct": {
+      "mean_diff": -0.031717576683212435,
+      "ci_low": -0.04851928216876672,
+      "ci_high": -0.011229460990199844,
+      "p_value": 0.0016
+    }
+  },
+  "family_cluster_bootstrap_ci": {
+    "head_finetune_vs_direct": {
+      "mean_diff": 0.013543337151584556,
+      "ci_low": -0.0022461499299987167,
+      "ci_high": 0.02868407152857323,
+      "p_value": 0.0459,
+      "note": "family_cluster_bootstrap_ci skipped (needs per-example cluster_ids); using paired_bootstrap_ci values as proxy"
+    },
+    "full_finetune_vs_direct": {
+      "mean_diff": -0.031717576683212435,
+      "ci_low": -0.04851928216876672,
+      "ci_high": -0.011229460990199844,
+      "p_value": 0.0016,
+      "note": "family_cluster_bootstrap_ci skipped (needs per-example cluster_ids); using paired_bootstrap_ci values as proxy"
+    }
+  },
+  "go_no_go": {
+    "head_finetune_go": false,
+    "full_finetune_go": false
+  }
+}

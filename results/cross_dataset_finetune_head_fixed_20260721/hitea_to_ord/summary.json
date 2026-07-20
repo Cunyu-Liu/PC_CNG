@@ -1,0 +1,95 @@
+{
+  "pair": "hitea_to_ord",
+  "source": "hitea",
+  "target": "ord",
+  "n_seeds": 10,
+  "n_few_shot": 0.1,
+  "checkpoint_used": true,
+  "backbone_ckpt": "results/pretrained_backbone_chemformer_lora_20260720/seed20260710/model.pt",
+  "negatives_generated": true,
+  "n_negatives_per_positive": 4,
+  "variants": {
+    "direct": {
+      "mrr_mean": 0.5296137202494591,
+      "mrr_std": 0.0017469194905446982,
+      "mrr_per_seed": [
+        0.5314751177294132,
+        0.532251495481736,
+        0.5301387297950872,
+        0.5306032836960672,
+        0.528827796869034,
+        0.5263013872979508,
+        0.5285732467863052,
+        0.5279177803232786,
+        0.5312396589028892,
+        0.5288087056128293
+      ]
+    },
+    "head_finetune": {
+      "mrr_mean": 0.5431570574010436,
+      "mrr_std": 0.024280040351342402,
+      "mrr_per_seed": [
+        0.5283441517118493,
+        0.568244877179585,
+        0.5476899579992363,
+        0.5506936489754359,
+        0.5298269059437445,
+        0.5743540791650756,
+        0.5752386407025583,
+        0.5430635102456408,
+        0.497505409189258,
+        0.5166093928980527
+      ]
+    },
+    "full_finetune": {
+      "mrr_mean": 0.4930444189894362,
+      "mrr_std": 0.03399206372853834,
+      "mrr_per_seed": [
+        0.4819078528700522,
+        0.4477535955199185,
+        0.5521636757031947,
+        0.48132875143184417,
+        0.5605383734249714,
+        0.4744495354460991,
+        0.4895698103601884,
+        0.4673157693776251,
+        0.48013236604301895,
+        0.49528445971744944
+      ]
+    }
+  },
+  "paired_bootstrap_ci": {
+    "head_finetune_vs_direct": {
+      "mean_diff": 0.013543337151584556,
+      "ci_low": -0.0022461499299987167,
+      "ci_high": 0.02868407152857323,
+      "p_value": 0.0459
+    },
+    "full_finetune_vs_direct": {
+      "mean_diff": -0.036569301260022904,
+      "ci_low": -0.05589601629120529,
+      "ci_high": -0.013923841797123583,
+      "p_value": 0.0011
+    }
+  },
+  "family_cluster_bootstrap_ci": {
+    "head_finetune_vs_direct": {
+      "mean_diff": 0.013543337151584556,
+      "ci_low": -0.0022461499299987167,
+      "ci_high": 0.02868407152857323,
+      "p_value": 0.0459,
+      "note": "family_cluster_bootstrap_ci skipped (needs per-example cluster_ids); using paired_bootstrap_ci values as proxy"
+    },
+    "full_finetune_vs_direct": {
+      "mean_diff": -0.036569301260022904,
+      "ci_low": -0.05589601629120529,
+      "ci_high": -0.013923841797123583,
+      "p_value": 0.0011,
+      "note": "family_cluster_bootstrap_ci skipped (needs per-example cluster_ids); using paired_bootstrap_ci values as proxy"
+    }
+  },
+  "go_no_go": {
+    "head_finetune_go": false,
+    "full_finetune_go": false
+  }
+}
