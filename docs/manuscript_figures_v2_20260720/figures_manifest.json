@@ -1,0 +1,30 @@
+{
+  "figures": [
+    {
+      "name": "figure_1_architecture_overview",
+      "path": "/home/cunyuliu/pc_cng_research/docs/manuscript_figures_v2_20260720/figure_1_architecture_overview.png"
+    },
+    {
+      "name": "figure_2_cross_dataset_migration",
+      "path": "/home/cunyuliu/pc_cng_research/docs/manuscript_figures_v2_20260720/figure_2_cross_dataset_migration.png"
+    },
+    {
+      "name": "figure_3_route_ranking",
+      "path": "/home/cunyuliu/pc_cng_research/docs/manuscript_figures_v2_20260720/figure_3_route_ranking.png"
+    },
+    {
+      "name": "figure_4_external_bridge_calibration",
+      "path": "/home/cunyuliu/pc_cng_research/docs/manuscript_figures_v2_20260720/figure_4_external_bridge_calibration.png"
+    },
+    {
+      "name": "figure_5_dft_validation_support",
+      "path": "/home/cunyuliu/pc_cng_research/docs/manuscript_figures_v2_20260720/figure_5_dft_validation_support.png"
+    },
+    {
+      "name": "figure_6_sota_radar",
+      "path": "/home/cunyuliu/pc_cng_research/docs/manuscript_figures_v2_20260720/figure_6_sota_radar.png"
+    }
+  ],
+  "backend": "matplotlib",
+  "n_figures": 6
+}

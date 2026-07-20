@@ -1,0 +1,13 @@
+{
+  "input": "results/pc_cng_mvp_demo/positive_reactions.csv",
+  "output": "results/baseline_smoke/baselines.csv",
+  "positive_rows": 10,
+  "total": 90,
+  "counts": {
+    "random": 10,
+    "template_perturbation": 10,
+    "dora_alternate_center": 10,
+    "pu_reliable_negative": 0,
+    "pc_cng_rule_mvp": 60
+  }
+}

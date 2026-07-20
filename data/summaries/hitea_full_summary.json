@@ -1,0 +1,28 @@
+{
+  "input": "/home/cunyuliu/pc_cng_research/external/HiTEA/data/8_SEPT_APPROVED_full_dataset.csv",
+  "output": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+  "source": "hitea_full",
+  "rows": 39546,
+  "skipped": 0,
+  "labels": {
+    "positive": 15498,
+    "real_negative": 24048
+  },
+  "splits": {
+    "train": 33183,
+    "test": 3468,
+    "val": 2895
+  },
+  "reaction_classes": {
+    "Alkylation": 4412,
+    "Amide coupling": 526,
+    "Cabonylation": 2368,
+    "Cu coupling": 1898,
+    "Hydrogenation": 5503,
+    "Ni coupling": 864,
+    "Pd coupling": 12079,
+    "Rh coupling": 1987,
+    "Untagged": 9909
+  },
+  "label_rule": "positive if Product_Yield_PCT_Area_UV > 1.0 else real_negative"
+}

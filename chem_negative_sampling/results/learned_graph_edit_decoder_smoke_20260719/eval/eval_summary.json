@@ -1,0 +1,27 @@
+{
+  "checkpoint": "results/learned_graph_edit_decoder_smoke_20260719/learned_graph_edit_decoder.pt",
+  "test_data": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+  "limit": 50,
+  "top_k": 2,
+  "skip_reasons": {},
+  "gnn_metrics": {
+    "total": 100,
+    "unique": 5,
+    "diversity": 0.05,
+    "valid": 100,
+    "validity_rate": 1.0,
+    "mean_atom_balance": 0.8205128205128189
+  },
+  "rule_metrics": {
+    "total": 100,
+    "unique": 6,
+    "diversity": 0.06,
+    "valid": 100,
+    "validity_rate": 1.0,
+    "mean_atom_balance": 0.8205128205128189
+  },
+  "comparison": {
+    "diversity_diff": -0.009999999999999995,
+    "validity_diff": 0.0
+  }
+}

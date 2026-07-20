@@ -1,0 +1,24 @@
+{
+  "input": [
+    "results/hard_negative_actions_smoke/action_input.csv"
+  ],
+  "low_yield_input": [
+    "results/hard_negative_actions_smoke/action_input.csv"
+  ],
+  "known_positive_count": 2,
+  "actions": [
+    "heteroatom",
+    "low_yield_seed",
+    "regio",
+    "tautomer"
+  ],
+  "seen_positive_rows": 2,
+  "written": 10,
+  "counts": {
+    "heteroatom": 1,
+    "regio": 7,
+    "tautomer": 1,
+    "low_yield_seed": 1
+  },
+  "output": "results/hard_negative_actions_smoke/hard_negative_actions.csv"
+}

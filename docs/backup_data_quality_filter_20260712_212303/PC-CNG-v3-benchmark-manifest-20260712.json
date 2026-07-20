@@ -1,0 +1,187 @@
+{
+  "manifest_id": "pc_cng_v3_benchmark_manifest_20260712",
+  "server_root": "/home/cunyuliu/pc_cng_research",
+  "python": "/home/cunyuliu/miniconda3/envs/pc_cng_gpu/bin/python",
+  "seeds": {
+    "main_10seed": [
+      20260710,
+      20260711,
+      20260712,
+      20260713,
+      20260714,
+      20260715,
+      20260716,
+      20260717,
+      20260718,
+      20260719
+    ],
+    "smoke_3seed": [
+      20260710,
+      20260711,
+      20260712
+    ]
+  },
+  "datasets": {
+    "real": [
+      {
+        "id": "regiosqm20_normalized",
+        "role": "original_same_context",
+        "path": "data/processed/regiosqm20_normalized.csv",
+        "required_fields": [
+          "source_id",
+          "reaction_smiles",
+          "reactants",
+          "products",
+          "label_type",
+          "source",
+          "split_key",
+          "split"
+        ]
+      },
+      {
+        "id": "hitea_full_normalized",
+        "role": "original_same_context",
+        "path": "data/processed/hitea_full_normalized.csv",
+        "required_fields": [
+          "source_id",
+          "reaction_smiles",
+          "reactants",
+          "products",
+          "label_type",
+          "source",
+          "split_key",
+          "split",
+          "reaction_class"
+        ]
+      }
+    ],
+    "synthetic": [
+      {
+        "id": "diverse_anchor_reviewed",
+        "role": "boundary_negatives",
+        "path": "results/type1_diverse_anchor_full/diverse_anchor_candidates_reviewed_knownpos_filtered.csv",
+        "source_path": "results/type1_diverse_anchor_full/diverse_anchor_candidates_reviewed.csv",
+        "known_positive_filter_summary": "results/type1_diverse_anchor_full/diverse_anchor_knownpos_filter_summary.json",
+        "known_positive_removed_rows": "results/type1_diverse_anchor_full/diverse_anchor_candidates_reviewed_knownpos_removed.csv"
+      },
+      {
+        "id": "class_quota_reviewed",
+        "role": "weak_class_stress",
+        "path": "results/type1_class_quota_supplement_20260711/class_quota_candidates_reviewed.csv"
+      },
+      {
+        "id": "class_fallback_reviewed",
+        "role": "weak_class_stress",
+        "path": "results/type1_class_fallback_supplement_20260711/class_fallback_candidates_reviewed.csv"
+      },
+      {
+        "id": "partial_product_reviewed",
+        "role": "negative_ablation",
+        "path": "results/type1_partial_product_supplement_20260711/partial_product_candidates_reviewed.csv"
+      },
+      {
+        "id": "unreacted_substrate_v2_reviewed",
+        "role": "hydrogenation_rh_support",
+        "path": "results/type1_unreacted_substrate_supplement_v2_20260711/unreacted_substrate_candidates_reviewed.csv"
+      }
+    ]
+  },
+  "tasks": {
+    "task_a_same_context_reranking": {
+      "candidate_scope": "same_split",
+      "group_by": "reactants",
+      "primary_metrics": [
+        "top1",
+        "top3",
+        "mrr",
+        "ndcg"
+      ],
+      "auxiliary_metrics": [
+        "roc_auc",
+        "auprc",
+        "f1"
+      ],
+      "baseline": "v2_unreacted"
+    },
+    "task_b_external_product_selection": {
+      "artifact_root": "results/external_product_prediction_benchmark_20260711",
+      "variants": [
+        "strict_shared",
+        "validity_aware"
+      ],
+      "primary_metrics": [
+        "top1",
+        "mrr",
+        "ndcg",
+        "coverage"
+      ]
+    },
+    "task_c_weak_class_robustness": {
+      "artifact_root": "results/type1_curated_weak_class_contexts_20260711",
+      "classes": [
+        "Amide coupling",
+        "Cu coupling",
+        "Hydrogenation",
+        "Rh coupling",
+        "Ni coupling"
+      ],
+      "support_gate": 20,
+      "primary_metrics": [
+        "per_class_top1",
+        "paired_ci",
+        "permutation_p",
+        "sign_test_p"
+      ]
+    },
+    "task_d_type2_low_yield": {
+      "claim_boundary": "auxiliary",
+      "primary_metrics": [
+        "roc_auc",
+        "auprc",
+        "f1",
+        "calibration_ece"
+      ]
+    }
+  },
+  "statistics": {
+    "main_claim_seed_rule": "10 seeds 20260710-20260719",
+    "smoke_rule": "3 seeds 20260710-20260712, triage only",
+    "group_level": [
+      "10-seed ensemble scores",
+      "paired bootstrap CI",
+      "paired permutation p",
+      "sign-test p"
+    ],
+    "seed_level": [
+      "seed-index bootstrap CI"
+    ]
+  },
+  "model_selection": {
+    "default_checkpoint_metric": "val_roc_auc",
+    "metric_alignment_checkpoint_metric": "val_top1",
+    "checkpoint_group_by": "reactants",
+    "test_usage": "final reporting only"
+  },
+  "active_branches": [
+    {
+      "id": "type1_v2_coslr_warm5_20260712",
+      "role": "lr_schedule",
+      "status": "queued_gpu4"
+    },
+    {
+      "id": "type1_v2_valtop1_ckpt_smoke_20260712",
+      "role": "checkpoint_selection",
+      "status": "queued_gpu5"
+    },
+    {
+      "id": "type1_v2_representation_scale_smoke_20260712",
+      "role": "representation_scale",
+      "status": "queued_after_valtop1"
+    },
+    {
+      "id": "type1_v2_pairwise_margin_smoke_20260712",
+      "role": "objective_matrix",
+      "status": "queued_after_representation"
+    }
+  ]
+}

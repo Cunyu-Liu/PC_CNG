@@ -1,0 +1,14 @@
+{
+  "input_path": "/home/cunyuliu/pc_cng_research/data/raw/uspto_openmolecules/uspto_openmolecules_reactions_positive.csv",
+  "source_name": "uspto_openmolecules_yield25to150",
+  "rows": 530238,
+  "skipped": 0,
+  "labels": {
+    "positive": 530238
+  },
+  "splits": {
+    "val": 53030,
+    "train": 424197,
+    "test": 53011
+  }
+}

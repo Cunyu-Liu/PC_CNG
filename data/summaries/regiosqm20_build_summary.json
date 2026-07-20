@@ -1,0 +1,7 @@
+{
+  "output": "/home/cunyuliu/pc_cng_research/data/raw/regiosqm20.csv",
+  "rows": 2424,
+  "positives": 552,
+  "negatives": 1872,
+  "missing_compounds_or_halo_reactants": 12
+}

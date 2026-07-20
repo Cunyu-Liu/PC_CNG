@@ -1,0 +1,27 @@
+{
+  "input": "results/pc_cng_mvp_demo/positive_reactions.csv",
+  "output": "results/pc_cng_scale_smoke/synthetic_negatives.csv",
+  "processed_positive_reactions": 5,
+  "generated_negative_reactions": 30,
+  "avg_negatives_per_positive": 6.0,
+  "by_task": {
+    "forward_outcome": 15,
+    "retro_precursor": 15
+  },
+  "by_failure_type": {
+    "no_reaction": 5,
+    "retro_no_disconnection": 5,
+    "side_product": 5,
+    "retro_wrong_functional_group": 5,
+    "chemoselectivity_error": 5,
+    "retro_missing_reactant": 5
+  },
+  "avg_hard_score": 0.7806328774639532,
+  "avg_false_negative_risk": 0.46996393990267377,
+  "include_failed": false,
+  "limit": 5,
+  "notes": [
+    "Streaming output contains synthetic counterfactual negatives, not real failed experiments.",
+    "For publishable scale-up, run RDKit validation, atom mapping, leakage checks, and external baselines."
+  ]
+}

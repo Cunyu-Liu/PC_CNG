@@ -1,0 +1,29 @@
+{
+  "feature_names": [
+    "bias",
+    "valid",
+    "atom_balance",
+    "reactant_product_token_jaccard",
+    "reactant_product_string_similarity",
+    "one_reactant",
+    "multi_reactant",
+    "product_reused_as_reactant",
+    "has_leaving_group",
+    "normalized_atom_distance"
+  ],
+  "weights": [
+    -1.5938986242908997,
+    -1.5938986242908997,
+    3.5166957220119373,
+    7.388959377084088,
+    -0.597062080336641,
+    0.0,
+    -1.5938986242908997,
+    0.0,
+    -1.5938986242908997,
+    -5.110594346302844
+  ],
+  "learning_rate": 0.2,
+  "l2": 0.0001,
+  "epochs": 100
+}

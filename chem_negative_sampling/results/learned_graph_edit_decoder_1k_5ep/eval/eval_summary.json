@@ -1,0 +1,43 @@
+{
+  "checkpoint": "results/learned_graph_edit_decoder_1k_5ep/learned_graph_edit_decoder.pt",
+  "test_data": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+  "limit": 200,
+  "top_k": 3,
+  "skip_reasons": {},
+  "gnn_metrics": {
+    "total": 600,
+    "unique": 6,
+    "diversity": 0.01,
+    "valid": 600,
+    "validity_rate": 1.0,
+    "mean_atom_balance": 0.8205128205128179
+  },
+  "rule_metrics": {
+    "total": 600,
+    "unique": 11,
+    "diversity": 0.018333333333333333,
+    "valid": 600,
+    "validity_rate": 1.0,
+    "mean_atom_balance": 0.8205128205128179
+  },
+  "comparison": {
+    "diversity_diff": -0.008333333333333333,
+    "validity_diff": 0.0
+  },
+  "gnn_downstream": {
+    "train_rows": 1200,
+    "test_rows": 200,
+    "top1": 1.0,
+    "mrr": 1.0,
+    "ndcg": 1.0,
+    "groups": 200
+  },
+  "rule_downstream": {
+    "train_rows": 1200,
+    "test_rows": 200,
+    "top1": 0.74,
+    "mrr": 0.87,
+    "ndcg": 0.9040417359285778,
+    "groups": 200
+  }
+}

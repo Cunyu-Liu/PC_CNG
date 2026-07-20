@@ -1,0 +1,88 @@
+{
+  "output_dir": "results/learned_graph_edit_decoder_1k_5ep",
+  "args": {
+    "train_data": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+    "val_data": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+    "output_dir": "results/learned_graph_edit_decoder_1k_5ep",
+    "epochs": 5,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "hidden_dim": 128,
+    "num_message_passing_rounds": 3,
+    "dropout": 0.1,
+    "margin": 1.0,
+    "seed": 20260719,
+    "gpu": 0,
+    "limit_train": 1000,
+    "limit_val": 200,
+    "map_unmapped": false,
+    "max_anchor_distance": 6,
+    "max_candidates_per_pair": 8,
+    "cache_train": "/tmp/hitea_1k_cache.pt",
+    "cache_val": "/tmp/hitea_200_cache.pt",
+    "eval_batch_size": 32
+  },
+  "train_stats": {
+    "total": 1000,
+    "ok": 640,
+    "skipped": 360,
+    "skip_reasons": {
+      "no_candidate_anchor": 360
+    }
+  },
+  "val_stats": {
+    "total": 200,
+    "ok": 200,
+    "skipped": 0,
+    "skip_reasons": {}
+  },
+  "train_graphs": 820,
+  "val_graphs": 200,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.285824187959616,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 5.11
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.05683853677832163,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 4.02
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.05310085774041139,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 4.56
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.05595812652833187,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 4.22
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.05714725201519636,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 4.46
+    }
+  ],
+  "best_top1": 1.0,
+  "best_epoch": 1,
+  "final_top1": 1.0,
+  "device": "cuda:0"
+}

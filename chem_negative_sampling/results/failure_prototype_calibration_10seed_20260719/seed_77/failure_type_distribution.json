@@ -1,0 +1,66 @@
+{
+  "per_class": {
+    "wrong_anchor": {
+      "count": 23,
+      "accuracy": 0.782608687877655,
+      "target_hit_rate": 0.4749999940395355
+    },
+    "broken_atom_balance": {
+      "count": 17,
+      "accuracy": 0.9411764740943909,
+      "target_hit_rate": 0.550000011920929
+    },
+    "invalid_valence": {
+      "count": 0,
+      "accuracy": NaN,
+      "target_hit_rate": null
+    },
+    "fragment_misalignment": {
+      "count": 0,
+      "accuracy": NaN,
+      "target_hit_rate": null
+    },
+    "wrong_bond_type": {
+      "count": 0,
+      "accuracy": NaN,
+      "target_hit_rate": null
+    },
+    "aromaticity_violation": {
+      "count": 0,
+      "accuracy": NaN,
+      "target_hit_rate": null
+    },
+    "stereochemistry_loss": {
+      "count": 0,
+      "accuracy": NaN,
+      "target_hit_rate": null
+    },
+    "over_reaction": {
+      "count": 0,
+      "accuracy": NaN,
+      "target_hit_rate": null
+    },
+    "under_reaction": {
+      "count": 0,
+      "accuracy": NaN,
+      "target_hit_rate": null
+    },
+    "side_product": {
+      "count": 0,
+      "accuracy": NaN,
+      "target_hit_rate": null
+    }
+  },
+  "total_counts": {
+    "wrong_anchor": 100,
+    "broken_atom_balance": 100,
+    "invalid_valence": 0,
+    "fragment_misalignment": 0,
+    "wrong_bond_type": 0,
+    "aromaticity_violation": 0,
+    "stereochemistry_loss": 0,
+    "over_reaction": 0,
+    "under_reaction": 0,
+    "side_product": 0
+  }
+}

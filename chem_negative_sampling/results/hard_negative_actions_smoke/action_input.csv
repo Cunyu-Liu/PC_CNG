@@ -1,0 +1,4 @@
+source_id,reaction_smiles,label_type,yield,source,split
+alkyl_001,COS(=O)(=O)O[CH3:12].[F:1][c:2]1[cH:3][c:4]([Br:5])[cH:6][c:7]2[cH:8][n:9][nH:10][c:11]12>>[F:1][c:2]1[cH:3][c:4]([Br:5])[cH:6][c:7]2[cH:8][n:9][n:10]([CH3:12])[c:11]12,positive,20,smoke,train
+taut_001,CC(=O)C>>CC(=O)C,positive,70,smoke,train
+low_yield_001,CCBr.N>>CCN,real_negative,0,smoke,train

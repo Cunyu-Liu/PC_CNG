@@ -1,0 +1,351 @@
+{
+  "protocol_id": "pc_cng_v3_external_heldout_calibration_5k_20260715",
+  "date": "2026-07-15",
+  "task": "external_product_selection_heldout_calibration",
+  "status": "base_only_diagnostic_complete_full_beam_generation_running",
+  "purpose": "Freeze a new held-out 5k external product-selection evaluation set for future Chemformer-reference calibration or scorer architecture validation. This set must not be used to tune calibration weights or routing rules.",
+  "source": {
+    "existing_excluded_context_csv": "/home/cunyuliu/pc_cng_research/results/external_product_prediction_benchmark_25k_repaired_20260713/product_prediction_contexts.csv",
+    "source_csv": "/home/cunyuliu/pc_cng_research/data/processed/uspto_openmolecules_normalized.csv",
+    "selection_script": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/select_external_product_prediction_contexts.py",
+    "selection_command": "PYTHONPATH=chem_negative_sampling /home/cunyuliu/miniconda3/envs/pc_cng_gpu/bin/python -m pc_cng.select_external_product_prediction_contexts --existing-context-csv results/external_product_prediction_benchmark_25k_repaired_20260713/product_prediction_contexts.csv --source-csv data/processed/uspto_openmolecules_normalized.csv --output-dir results/external_calibration_heldout_contexts_5k_20260715 --target-total-contexts 30000 --max-selected 5000"
+  },
+  "selection": {
+    "output_dir": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_contexts_5k_20260715",
+    "summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_contexts_5k_20260715/external_product_prediction_context_expansion_summary.json",
+    "contexts_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_contexts_5k_20260715/external_product_prediction_context_expansion.csv",
+    "chemformer_input_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_contexts_5k_20260715/external_product_prediction_context_expansion_chemformer_input.csv",
+    "existing_context_groups": 25000,
+    "target_total_contexts": 30000,
+    "needed_additional_contexts": 5000,
+    "eligible_unique_source_contexts": 508617,
+    "selected_contexts": 5000,
+    "merged_contexts": 30000,
+    "selected_can_cover_target": true,
+    "selected_split_counts": {
+      "test": 5000
+    },
+    "selected_dataset_counts": {
+      "uspto_openmolecules_yield25to150": 5000
+    },
+    "reject_reason_counts": {
+      "source_id_seen_in_existing_external": 9027,
+      "source_context_cross_split": 2869,
+      "canonical_context_failed": 236,
+      "context_seen_in_existing_external": 292
+    }
+  },
+  "base_candidates": {
+    "result_dir": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715",
+    "targeted_pc_cng_dir": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_pc_cng_targeted_5k_20260715",
+    "summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715/base_observed_pc_cng_candidates_summary.json",
+    "candidate_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715/base_observed_pc_cng_candidates.csv",
+    "contexts": 5000,
+    "candidate_rows": 16873,
+    "observed_positive_rows": 5000,
+    "pc_cng_negative_rows": 11873,
+    "pc_cng_negative_groups": 4995,
+    "pc_cng_negative_group_coverage": 0.999
+  },
+  "quality_audit": {
+    "audit_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_base_quality_5k_20260715/external_25k_base_candidate_quality_audit.json",
+    "audit_md": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_base_quality_5k_20260715/external_25k_base_candidate_quality_audit.md",
+    "decision": "pass",
+    "hard_failures": [],
+    "warnings": [],
+    "missing_observed_positive_groups": 0,
+    "bad_observed_positive_multiplicity_groups": 0,
+    "duplicate_candidate_product_groups": 0,
+    "same_product_pc_cng_negative_rows": 0,
+    "invalid_candidate_reaction_rows": 0,
+    "invalid_pc_cng_negative_rows": 0
+  },
+  "chemformer_input_chunks": {
+    "manifest_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715/chemformer_input_chunks/chemformer_forward_input_heldout5k_chunk_chunks_manifest.json",
+    "manifest_md": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715/chemformer_input_chunks/chemformer_forward_input_heldout5k_chunk_chunks_manifest.md",
+    "chunk_size": 5000,
+    "total_rows": 5000,
+    "chunk_count": 1
+  },
+  "heldout_base_only_diagnostic_20260716": {
+    "pc_cng_scoring_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_pc_cng_scored_base_5k_20260716/benchmark_summary.json",
+    "chemformer_likelihood_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_chemformer_ll_base_5k_20260716/lm_scores_chemformer_log_likelihood_summary.json",
+    "base_scored_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_base_scored_5k_20260716/benchmark_summary.json",
+    "mlp_apply_summary_json": "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_uspto12k_apply_heldout_base5k_20260716/external_score_mlp_calibrator_apply_summary.json",
+    "candidate_rows_requested": 16873,
+    "candidate_rows_evaluated": 16868,
+    "groups": 4995,
+    "chemformer_top1": 0.91991991991992,
+    "pc_cng_top1": 0.17437437437437436,
+    "mlp_top1": 0.9451451451451451,
+    "decision": "diagnostic_only_base_candidates_not_full_beam_heldout_result"
+  },
+  "heldout_full_beam_status_20260716": {
+    "beam_script": "/home/cunyuliu/pc_cng_research/results/logs/external_calibration_heldout5k_beams_20260716.sh",
+    "beam_log": "/home/cunyuliu/pc_cng_research/results/logs/external_calibration_heldout5k_beams_20260716.log",
+    "beam_pid_file": "/home/cunyuliu/pc_cng_research/results/logs/external_calibration_heldout5k_beams_20260716.pid",
+    "status": "gpu7_run_active_after_gpu6_timeout_no_completed_beam_tsv_yet"
+  },
+  "allowed_calibration_inputs": [
+    "Existing repaired 25k train/val rows and existing score artifacts",
+    "Existing repaired 25k strict/shared calibration audit for diagnostic model design",
+    "Training-set metadata that does not include the new 5k held-out scores"
+  ],
+  "forbidden_before_recipe_freeze": [
+    "Use the new 5k held-out Chemformer or PC-CNG scores to choose weights, features, thresholds, reaction-class routing, or checkpoints",
+    "Select among multiple calibration recipes by the new 5k held-out Top-1",
+    "Report subgroup-selected gains from this 5k as SOTA unless the subgroup rule was fixed before scoring"
+  ],
+  "promotion_gate": {
+    "strict_top1_delta_vs_chemformer": "must be positive",
+    "paired_group_ci95": "entirely positive for Top-1 delta",
+    "coverage": "must not reduce candidate denominator relative to strict shared evaluation",
+    "recipe_freeze": "branch must be frozen before held-out scoring",
+    "sota_boundary": "external bridge evidence only unless the project-level external target and task-alignment gates are also satisfied"
+  },
+  "frozen_preheldout_recipe_audit": {
+    "training_input": "/home/cunyuliu/pc_cng_research/results/external_product_prediction_benchmark_25k_repaired_20260713/benchmark/candidate_scores.csv",
+    "training_script": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/train_external_score_calibrator.py",
+    "feature_family": [
+      "bias",
+      "chemformer_group_z",
+      "pc_cng_group_z",
+      "pc_minus_chem_group_z",
+      "chem_times_pc_group_z",
+      "pc_cng_group_z_squared"
+    ],
+    "baseline_validation": {
+      "score": "chemformer_likelihood",
+      "val_top1": 0.8342412451361868,
+      "val_top3": 0.9673151750972763,
+      "val_mrr": 0.8978302760793034,
+      "val_ndcg": 0.9233855153840617
+    },
+    "recipes": {
+      "pc_cng_lr_calibrator_v1": {
+        "objective": "pointwise_balanced_logistic",
+        "model_json": "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_lr_v1_repaired25k_train_20260715/external_score_calibrator_model.json",
+        "summary_json": "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_lr_v1_repaired25k_train_20260715/external_score_calibrator_summary.json",
+        "training_rows": 39753,
+        "val_top1": 0.8062256809338522,
+        "val_top3": 0.9875486381322958,
+        "val_mrr": 0.8899805447470828,
+        "val_ndcg": 0.9180742307934827,
+        "decision": "frozen_negative_preheldout_evidence_not_primary"
+      },
+      "pc_cng_pairwise_calibrator_v1": {
+        "objective": "pairwise_logistic_preference",
+        "model_json": "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_pairwise_v1_repaired25k_train_20260715/external_score_calibrator_model.json",
+        "summary_json": "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_pairwise_v1_repaired25k_train_20260715/external_score_calibrator_summary.json",
+        "training_rows": 39753,
+        "training_pairs": 26601,
+        "val_top1": 0.8062256809338522,
+        "val_top3": 0.9883268482490273,
+        "val_mrr": 0.890785621641654,
+        "val_ndcg": 0.9187197468775363,
+        "decision": "frozen_negative_preheldout_evidence_not_primary"
+      },
+      "pc_cng_mlp_calibrator_v1": {
+        "objective": "fixed_feature_pairwise_mlp_hidden16",
+        "model_json": "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_repaired25k_train_20260715/external_score_mlp_calibrator_model.json",
+        "summary_json": "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_repaired25k_train_20260715/external_score_mlp_calibrator_summary.json",
+        "training_rows": 39753,
+        "training_pairs": 26601,
+        "val_top1": 0.8926070038910506,
+        "val_top3": 0.9883268482490273,
+        "val_mrr": 0.9411067020221227,
+        "val_ndcg": 0.9560309778276228,
+        "repaired25k_test_top1": 0.3645744580138218,
+        "repaired25k_test_top3": 0.6351415317618101,
+        "repaired25k_test_mrr": 0.5425791402786483,
+        "repaired25k_test_ndcg": 0.6498923415101725,
+        "decision": "validation_positive_but_cross_domain_test_negative_not_primary_for_uspto_heldout"
+      }
+    },
+    "preheldout_decision": "linear recipes do not improve validation Top-1; the MLP recipe improves validation Top-1 but fails on repaired 25k test, so held-out 5k scoring is deferred for these recipes"
+  },
+  "same_domain_trainval_calibration_pool": {
+    "purpose": "Prepare a USPTO/OpenMolecules train/val calibration source outside both the repaired 25k external benchmark and the frozen held-out 5k. This pool is for future scorer training only after its base quality audit passes.",
+    "status": "repaired_base_candidate_quality_pass_ready_for_frozen_scorer_training_candidate",
+    "selection": {
+      "source_csv": "/home/cunyuliu/pc_cng_research/data/processed/uspto_openmolecules_normalized.csv",
+      "selection_script": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/select_external_product_prediction_contexts.py",
+      "repair_script": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/repair_external_trainval_context_pool.py",
+      "train_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_train_contexts_10k_20260715/external_product_prediction_context_expansion_summary.json",
+      "train_contexts_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_train_contexts_10k_20260715/external_product_prediction_context_expansion.csv",
+      "val_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_val_contexts_2k_20260715/external_product_prediction_context_expansion_summary.json",
+      "val_contexts_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_val_contexts_2k_20260715/external_product_prediction_context_expansion.csv",
+      "trainval_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_20260716/external_calibration_trainval_contexts_12k_summary.json",
+      "trainval_contexts_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_20260716/external_calibration_trainval_contexts_12k.csv",
+      "replacement_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_train_context_repair_2ctx_20260716/external_product_prediction_context_expansion_summary.json",
+      "replacement_contexts_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_train_context_repair_2ctx_20260716/external_product_prediction_context_expansion.csv",
+      "trainval_repaired_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_repaired_20260716/external_calibration_trainval_contexts_12k_repaired_summary.json",
+      "trainval_repaired_contexts_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_repaired_20260716/external_calibration_trainval_contexts_12k_repaired.csv",
+      "split_counts": {
+        "train": 10000,
+        "val": 2000
+      },
+      "context_rows": 12000,
+      "removed_invalid_observed_source_ids": [
+        "uspto_openmol_000019302",
+        "uspto_openmol_000022432"
+      ],
+      "added_replacement_source_ids": [
+        "uspto_openmol_000301515",
+        "uspto_openmol_000301516"
+      ],
+      "selected_dataset_counts": {
+        "uspto_openmolecules_yield25to150": 12000
+      }
+    },
+    "pre_repair_quality_audit": {
+      "audit_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_base_quality_12k_20260716/external_25k_base_candidate_quality_audit.json",
+      "decision": "pass_with_warnings",
+      "invalid_candidate_reaction_rows": 2,
+      "invalid_pc_cng_negative_rows": 0,
+      "invalid_observed_positive_source_ids": [
+        "uspto_openmol_000019302",
+        "uspto_openmol_000022432"
+      ]
+    },
+    "base_candidates": {
+      "result_dir": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_repaired_20260716",
+      "targeted_pc_cng_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_targeted_12k_repaired_20260716/pc_cng_candidates_summary.json",
+      "targeted_pc_cng_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_targeted_12k_repaired_20260716/pc_cng_candidates.csv",
+      "summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_repaired_20260716/base_observed_pc_cng_candidates_summary.json",
+      "candidate_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_repaired_20260716/base_observed_pc_cng_candidates.csv",
+      "contexts": 12000,
+      "candidate_rows": 40244,
+      "observed_positive_rows": 12000,
+      "pc_cng_negative_rows": 28244,
+      "pc_cng_negative_group_coverage": 0.9981666666666666
+    },
+    "quality_audit": {
+      "audit_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_base_quality_12k_repaired_20260716/external_25k_base_candidate_quality_audit.json",
+      "audit_md": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_base_quality_12k_repaired_20260716/external_25k_base_candidate_quality_audit.md",
+      "decision": "pass",
+      "hard_failures": [],
+      "warnings": [],
+      "missing_observed_positive_groups": 0,
+      "bad_observed_positive_multiplicity_groups": 0,
+      "duplicate_candidate_product_groups": 0,
+      "same_product_pc_cng_negative_rows": 0,
+      "invalid_candidate_reaction_rows": 0,
+      "invalid_pc_cng_negative_rows": 0
+    },
+    "pc_cng_scoring": {
+      "summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_scored_12k_repaired_20260716/benchmark_summary.json",
+      "candidate_scores_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_scored_12k_repaired_20260716/candidate_scores.csv",
+      "candidate_rows_requested": 40244,
+      "candidate_rows_evaluated": 40244,
+      "attached_pc_cng_scores": 40244,
+      "missing_pc_cng_scores": 0,
+      "invalid_negative_penalty_filled_rows": 0,
+      "groups_with_ranking_decision": 11978,
+      "train_top1": 0.14939879759519037,
+      "val_top1": 0.16416416416416416,
+      "overall_top1": 0.15186174653531476,
+      "status": "pc_cng_only_scored"
+    },
+    "chemformer_reference_scoring": {
+      "summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_chemformer_ll_12k_repaired_20260716/lm_scores_chemformer_log_likelihood_summary.json",
+      "candidate_scores_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_chemformer_ll_12k_repaired_20260716/lm_scores_chemformer_log_likelihood.csv",
+      "merged_benchmark_summary_json": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_scored_12k_repaired_20260716/benchmark_summary.json",
+      "merged_candidate_scores_csv": "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_scored_12k_repaired_20260716/candidate_scores.csv",
+      "candidate_rows_requested": 40244,
+      "candidate_rows_evaluated": 40222,
+      "chemformer_train_top1": 0.899498997995992,
+      "chemformer_val_top1": 0.8988988988988988,
+      "pc_cng_val_top1": 0.16416416416416416,
+      "selected_hybrid": "hybrid_pc_cng_w0p00"
+    },
+    "frozen_trainval_recipe_audit": {
+      "pc_cng_lr_calibrator_v1_uspto12k": {
+        "summary_json": "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_lr_v1_uspto_trainval12k_repaired_20260716/external_score_calibrator_summary.json",
+        "val_top1": 0.8738738738738738,
+        "decision": "negative_vs_chemformer_val"
+      },
+      "pc_cng_pairwise_calibrator_v1_uspto12k": {
+        "summary_json": "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_pairwise_v1_uspto_trainval12k_repaired_20260716/external_score_calibrator_summary.json",
+        "val_top1": 0.8468468468468469,
+        "decision": "negative_vs_chemformer_val"
+      },
+      "pc_cng_mlp_calibrator_v1_uspto12k": {
+        "summary_json": "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_uspto_trainval12k_repaired_20260716/external_score_mlp_calibrator_summary.json",
+        "val_top1": 0.9314314314314315,
+        "decision": "validation_positive_freeze_before_heldout_scoring"
+      }
+    },
+    "training_gate": {
+      "may_train_next_scorer": true,
+      "required_before_chemformer_reference_calibration": "Completed for repaired train/val 12k. MLP recipe is validation-positive and may be frozen as the next held-out candidate.",
+      "required_before_heldout_scoring": "Freeze the scorer recipe before scoring the held-out 5k. Do not use held-out 5k scores or labels for recipe selection.",
+      "heldout_boundary": "Do not use the frozen held-out 5k scores or labels for recipe selection."
+    },
+    "sha256": {
+      "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/select_external_product_prediction_contexts.py": "92c2695f6fbba710e5d4d9027255c3f72a62584872d44605fee0377b95f34cfc",
+      "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/repair_external_trainval_context_pool.py": "1c605d3eca778db3a3213f602338b1911c8bb72d281144006181f8e3945fd79a",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_train_contexts_10k_20260715/external_product_prediction_context_expansion_summary.json": "3f6486ddd0793020d2a22acae519133d512192517daaf1a0052dd03862ac02ee",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_train_contexts_10k_20260715/external_product_prediction_context_expansion.csv": "049a6a25d7d44dbbdbda5d17ddf82a4f5484c6825530c12361a4312d63f07f77",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_val_contexts_2k_20260715/external_product_prediction_context_expansion_summary.json": "d4191a49681a42aea53ba958cfdc7b80bcff62f05b5b156224f3715033af392e",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_val_contexts_2k_20260715/external_product_prediction_context_expansion.csv": "3717a148448a50c837289dac5aefe131fb10ee1f6daac8ee14d4b480997cb221",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_20260716/external_calibration_trainval_contexts_12k_summary.json": "ffe39b065330bdf7b55edc86d1960f6610511ba6354693da201beff891da256f",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_20260716/external_calibration_trainval_contexts_12k.csv": "cf5618c383b91b178f0117c5fbbf3938b338deb1bc62d66b5164feaec3bd6981",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_20260716/base_observed_pc_cng_candidates_summary.json": "edf60698047363fb38a6af4e0c8a78424de62b98b14fa5f60be247507cac25d9",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_20260716/base_observed_pc_cng_candidates.csv": "e65bc6897946231a0c488089760baee9a0cdbbb2e3ed8cb0688e636cf146f55b",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_base_quality_12k_20260716/external_25k_base_candidate_quality_audit.json": "46350db362c7c2aa63451a5617329aa220d6cfe53d641308b700a9c0cdac6654",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_base_quality_12k_20260716/external_25k_base_candidate_quality_audit.md": "970e7b48c2aad7a5d2b65cb9485ca44facd82119080e5290a8d54c4cf8ee1c74",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_train_context_repair_2ctx_20260716/external_product_prediction_context_expansion_summary.json": "b7f72ad7d30b06bf2710de21d7377a4ec2cd6cd49ce322729b040f86c1cfc62c",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_train_context_repair_2ctx_20260716/external_product_prediction_context_expansion.csv": "b76cf83dfb0e00a28a5b17aa764cccb7fb0346488bd5c9567144a92c6f2a5c4e",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_repaired_20260716/external_calibration_trainval_contexts_12k_repaired_summary.json": "3aa1cb5e7e07b661a5ce4377dfaa363f221402aaa65a325e70bb9f79faa0397b",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_repaired_20260716/external_calibration_trainval_contexts_12k_repaired_summary.md": "b93604e4fd1b15d57627905891cec6132921847fcb4f3265f5990600ebab0052",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_repaired_20260716/external_calibration_trainval_contexts_12k_repaired.csv": "47553df09911a4a06f2690173ecc6dde602dc708886c0c15e1a44f1d4c36e0b6",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_repaired_20260716/removed_invalid_observed_contexts.csv": "9e17cb8767c3d89f0b1c07181ddb0fbe7193d7dbdb80911e85807c3938e00855",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_contexts_12k_repaired_20260716/added_replacement_contexts.csv": "b76cf83dfb0e00a28a5b17aa764cccb7fb0346488bd5c9567144a92c6f2a5c4e",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_targeted_12k_repaired_20260716/pc_cng_candidates_summary.json": "32f34a1e56ffc83152df7aeec13f57c7ab6838064a230b4432b07961971f5e9c",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_targeted_12k_repaired_20260716/pc_cng_candidates.csv": "f22d877a6dbb8dc064c0eeea560afda67fe5010f0c9ee8fa472f2a3db69adcde",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_repaired_20260716/base_observed_pc_cng_candidates_summary.json": "07c726357fb6d44c8744f2bd1a5fee26a1ec1efbdd44fc0505b4101f05609e75",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_repaired_20260716/base_observed_pc_cng_candidates.csv": "61f4534bbb41573e05c97e9bf6d0296af50858203bce6ee204c4054073f0b270",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_repaired_20260716/product_prediction_contexts.csv": "47553df09911a4a06f2690173ecc6dde602dc708886c0c15e1a44f1d4c36e0b6",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_benchmark_12k_repaired_20260716/chemformer_forward_input.csv": "79f4d6f907c6c092b3c7738de6349fd3723fc9c730ed02f7f26805caa668f39c",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_base_quality_12k_repaired_20260716/external_25k_base_candidate_quality_audit.json": "d14ca002ec9a1006838aea81340cb1452d0572d96a19bf3d0390c07e2cf32ec2",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_base_quality_12k_repaired_20260716/external_25k_base_candidate_quality_audit.md": "f27c8f380f59d13b23825761cd644c92844a698863c5f3479089869a273e3d42",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_scored_12k_repaired_20260716/benchmark_summary.json": "57e57150892387da37883b76202c4a0819a5e787244fc05b4541945bb333d06b",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_scored_12k_repaired_20260716/candidate_scores.csv": "e14f117a0eb2eb59eb27cfae551d1eced7183c972d48dc4ea09087450fa2fb5e",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_scored_12k_repaired_20260716/paper_table.csv": "47d0850e59e2082445713393bf9cb1d4b1004496a2aeb68bca34f27a374da4b1",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_pc_cng_scored_12k_repaired_20260716/paper_table.md": "6e1e4ea958bc289819c58bae0c1d2da353368624d3086519da762ae1387a4544",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_chemformer_ll_12k_repaired_20260716/lm_scores_chemformer_log_likelihood_summary.json": "6119b1f6d92fdb12c4d13d75cf1d24df81c54499c07035f48ef001dc791527af",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_chemformer_ll_12k_repaired_20260716/lm_scores_chemformer_log_likelihood.csv": "f84d33dd80b944b81147031a153c13b8efe1184d1aab12469d1fa50cd28ace85",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_scored_12k_repaired_20260716/benchmark_summary.json": "013ffd82881b1edbfa99541f47e64f41c452e65c233c3e793a010c370c0a01b2",
+      "/home/cunyuliu/pc_cng_research/results/external_calibration_trainval_scored_12k_repaired_20260716/candidate_scores.csv": "7c899400fd087da8fda3577be7d364ae86884d6054f2ca6a3ca3b2e6c1b6cb04",
+      "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_lr_v1_uspto_trainval12k_repaired_20260716/external_score_calibrator_summary.json": "621c77fde0de038463a81b864bf462c2b60a8c3fe226882f2faefbd6773df06b",
+      "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_pairwise_v1_uspto_trainval12k_repaired_20260716/external_score_calibrator_summary.json": "500337cfc2484c4f0d8f2c60235942ad3d6036871955bd0a7201a0b86784383e",
+      "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_uspto_trainval12k_repaired_20260716/external_score_mlp_calibrator_summary.json": "de5dedd41fda81afb447f419230ef8cc854606b6f94fbee826935ba96dbe65ad"
+    }
+  },
+  "sha256": {
+    "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/train_external_score_calibrator.py": "6a86267f63429f7d7d05132cd9a6d8f074c257368b54dbc1252a7b9d00e3d703",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_contexts_5k_20260715/external_product_prediction_context_expansion_summary.json": "0f6e43d4b9cab5274d612e6adc0af250f4bc41c2130b95e6b5771c8d6aeb5525",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_contexts_5k_20260715/external_product_prediction_context_expansion.csv": "1d4e3fa8617acdbef02fb5e6d0a5191352d199c5505b4c8c05b99b12d7b2a19f",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_contexts_5k_20260715/external_product_prediction_context_expansion_chemformer_input.csv": "d099b66bd7d923b1166ad50d8e19675a41eb7886e14642f38f7826a0e9e34518",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715/base_observed_pc_cng_candidates_summary.json": "68626c2384451bd17c4d9501099184d4a1874b733ab8e98adf8e9bc139d35d9a",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715/base_observed_pc_cng_candidates.csv": "f544ef44ad67a30182d944b056b86f41af294ebb108185e84a9b35467666986e",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_base_quality_5k_20260715/external_25k_base_candidate_quality_audit.json": "e0406b8daca4802354e37195ed1b1e17eed26336595bd84723879956c3a0dada",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_base_quality_5k_20260715/external_25k_base_candidate_quality_audit.md": "aaef8e937f91a3f0485ea1bf1e4856067465bf862d0895bbb169ff631077bd36",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715/chemformer_input_chunks/chemformer_forward_input_heldout5k_chunk_chunks_manifest.json": "5d7e85f48f5f2214e684f83db8ea3da0e6d3f0ec85e8a48be716a0726ed3c45a",
+    "/home/cunyuliu/pc_cng_research/results/external_calibration_heldout_benchmark_5k_20260715/chemformer_input_chunks/chemformer_forward_input_heldout5k_chunk_chunks_manifest.md": "f99d943892125bfccde603e39e5c4a91340ca63119592ef5b6c08031c03dfc08",
+    "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_lr_v1_repaired25k_train_20260715/external_score_calibrator_model.json": "e76fd3085ddfb2f474ed4c19b8f311007cd63de8d91df0ee5359b5a112f1b65a",
+    "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_lr_v1_repaired25k_train_20260715/external_score_calibrator_summary.json": "a37fe44bc88daa13b2906b99f1c40093c4d5c16025feea0af2c538a45e49af9c",
+    "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_lr_v1_repaired25k_train_20260715/external_score_calibrator_summary.md": "d26e84c8d8166677232737ac0de2c0942cc74855f68c266c1168cf668013b5fe",
+    "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_lr_v1_repaired25k_train_20260715/candidate_scores_with_calibrator.csv": "d2e7f2a67c1874db34840d848f2fad947d9f1323fdbd438ba937335ce1c5ec63",
+    "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_pairwise_v1_repaired25k_train_20260715/external_score_calibrator_model.json": "041dd006c5823a5c380db147f61f7a617b8e9bfb456c61fda8c2f033c93fd2c8",
+    "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_pairwise_v1_repaired25k_train_20260715/external_score_calibrator_summary.json": "0b3941de2ea94cc0620b6209b2412b42c18f8ab27049cf417f72f927bc56d347",
+    "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_pairwise_v1_repaired25k_train_20260715/external_score_calibrator_summary.md": "43eaa43e9d68267990fd73ead2fbb391a342eee12df1eb157cafae57e055467c",
+    "/home/cunyuliu/pc_cng_research/results/external_score_calibrator_pairwise_v1_repaired25k_train_20260715/candidate_scores_with_calibrator.csv": "f7ed98227e9e13ad3a52d28a8e073edaae519d137e38b78892275d7721d6e19f",
+    "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/train_external_score_mlp_calibrator.py": "104777af886fd1b93ae038e19eeee9a23034f6fd20f3aaba60939e121da0f8a1",
+    "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_repaired25k_train_20260715/external_score_mlp_calibrator_model.json": "5086058b9532d4d53db156c1041a4108ab5afae1d3771198a7a39302f5b25922",
+    "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_repaired25k_train_20260715/external_score_mlp_calibrator_summary.json": "a853b9d34976bd148079c114a969bff62641effa20cf80ae9ea7544853d4ef07",
+    "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_repaired25k_train_20260715/external_score_mlp_calibrator_summary.md": "0bd6ae8855c7f10858b5d7d4fe820d1721fda2b0d3490eb2fffa06a476a3adaf",
+    "/home/cunyuliu/pc_cng_research/results/external_score_mlp_calibrator_v1_repaired25k_train_20260715/candidate_scores_with_mlp_calibrator.csv": "f6662f17d17e90f654cc91f26269da303e8fe0acc1a7df5465df2ad28d1917ec"
+  }
+}

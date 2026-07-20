@@ -1,0 +1,66 @@
+{
+  "input": "results/pc_cng_mvp_demo/positive_reactions.csv",
+  "positive_rows": 10,
+  "baselines": {
+    "random": {
+      "negative_rows": 10,
+      "train_rows": 14,
+      "test_rows": 6,
+      "metrics": {
+        "accuracy": 0.8333333333333334,
+        "top1": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0,
+        "groups": 3
+      }
+    },
+    "template_perturbation": {
+      "negative_rows": 10,
+      "train_rows": 14,
+      "test_rows": 6,
+      "metrics": {
+        "accuracy": 0.6666666666666666,
+        "top1": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0,
+        "groups": 3
+      }
+    },
+    "dora_alternate_center": {
+      "negative_rows": 10,
+      "train_rows": 14,
+      "test_rows": 6,
+      "metrics": {
+        "accuracy": 0.5,
+        "top1": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0,
+        "groups": 3
+      }
+    },
+    "pu_reliable_negative": {
+      "negative_rows": 0,
+      "train_rows": 7,
+      "test_rows": 3,
+      "metrics": {
+        "accuracy": 1.0,
+        "top1": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0,
+        "groups": 3
+      }
+    },
+    "pc_cng_rule_mvp": {
+      "negative_rows": 60,
+      "train_rows": 49,
+      "test_rows": 21,
+      "metrics": {
+        "accuracy": 0.8571428571428571,
+        "top1": 0.3333333333333333,
+        "mrr": 0.6666666666666666,
+        "ndcg": 0.7539531690476383,
+        "groups": 3
+      }
+    }
+  }
+}

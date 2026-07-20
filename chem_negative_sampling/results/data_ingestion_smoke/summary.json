@@ -1,0 +1,14 @@
+{
+  "input_path": "results/pc_cng_mvp_demo/positive_reactions.csv",
+  "source_name": "demo",
+  "rows": 10,
+  "skipped": 0,
+  "labels": {
+    "positive": 10
+  },
+  "splits": {
+    "val": 1,
+    "train": 8,
+    "test": 1
+  }
+}

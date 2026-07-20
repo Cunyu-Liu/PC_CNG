@@ -1,0 +1,7 @@
+{
+  "accuracy": 0.5,
+  "top1": 1.0,
+  "mrr": 1.0,
+  "ndcg": 1.0,
+  "groups": 3
+}

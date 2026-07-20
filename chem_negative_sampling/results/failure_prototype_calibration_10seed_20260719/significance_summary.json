@@ -1,0 +1,95 @@
+{
+  "n_seeds": 10,
+  "seeds": [
+    11,
+    20260719,
+    22,
+    33,
+    44,
+    55,
+    66,
+    77,
+    88,
+    99
+  ],
+  "mean_accuracy": 0.8600000083446503,
+  "std_accuracy": 0.06368323361964008,
+  "mean_baseline": 0.09999999999999999,
+  "mean_entropy": 0.6697653412818909,
+  "mean_diff_vs_baseline": 0.7600000083446504,
+  "std_diff_vs_baseline": 0.06368323361964008,
+  "t_statistic": 37.73883503577112,
+  "p_value": 3.195821385304498e-11,
+  "per_seed": [
+    {
+      "seed": 11,
+      "classification_accuracy": 0.8500000238418579,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.7259902954101562,
+      "best_val_acc": 0.7916666865348816
+    },
+    {
+      "seed": 20260719,
+      "classification_accuracy": 0.949999988079071,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.6159677505493164,
+      "best_val_acc": 0.9583333134651184
+    },
+    {
+      "seed": 22,
+      "classification_accuracy": 0.8500000238418579,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.6503809690475464,
+      "best_val_acc": 1.0
+    },
+    {
+      "seed": 33,
+      "classification_accuracy": 0.8500000238418579,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.7881524562835693,
+      "best_val_acc": 0.8333333134651184
+    },
+    {
+      "seed": 44,
+      "classification_accuracy": 0.875,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.5856848955154419,
+      "best_val_acc": 1.0
+    },
+    {
+      "seed": 55,
+      "classification_accuracy": 0.7250000238418579,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.6714956164360046,
+      "best_val_acc": 0.9166666865348816
+    },
+    {
+      "seed": 66,
+      "classification_accuracy": 0.949999988079071,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.5963009595870972,
+      "best_val_acc": 0.875
+    },
+    {
+      "seed": 77,
+      "classification_accuracy": 0.8500000238418579,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.6634764671325684,
+      "best_val_acc": 0.9583333134651184
+    },
+    {
+      "seed": 88,
+      "classification_accuracy": 0.875,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.7135659456253052,
+      "best_val_acc": 1.0
+    },
+    {
+      "seed": 99,
+      "classification_accuracy": 0.824999988079071,
+      "random_baseline_accuracy": 0.1,
+      "mean_entropy": 0.6866380572319031,
+      "best_val_acc": 0.875
+    }
+  ]
+}

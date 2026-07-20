@@ -1,0 +1,11 @@
+source_id,reaction_smiles,label,task,failure_type
+demo_001,CC(=O)Cl.CN>>CC(=O)NC,1,positive,positive
+demo_002,CC(=O)Cl.OCC>>CC(=O)OCC,1,positive,positive
+demo_003,O=C(Cl)c1ccccc1.CN>>CNC(=O)c1ccccc1,1,positive,positive
+demo_004,CCBr.N>>CCN,1,positive,positive
+demo_005,CCBr.O>>CCO,1,positive,positive
+demo_006,c1ccccc1Br.O>>c1ccccc1O,1,positive,positive
+demo_007,C=CCBr.N>>C=CCN,1,positive,positive
+demo_008,CC(=O)O.CN>>CC(=O)NC,1,positive,positive
+demo_009,COC(=O)C.N>>NC(=O)C,1,positive,positive
+demo_010,CCCl.N>>CCN,1,positive,positive

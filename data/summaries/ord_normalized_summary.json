@@ -1,0 +1,42 @@
+{
+  "atom_mapping_coverage_rate": 0.0,
+  "datasets_attempted": 3,
+  "datasets_parsed": 1,
+  "fallback_used": false,
+  "field_non_empty_counts": {
+    "agents": 2228,
+    "label_type": 2910,
+    "products": 2910,
+    "reactants": 2910,
+    "reaction_smiles": 2910,
+    "source": 2910,
+    "source_id": 2910,
+    "split": 2910,
+    "split_key": 2910,
+    "yield": 0
+  },
+  "field_non_empty_rates": {
+    "agents": 0.7656357388316152,
+    "label_type": 1.0,
+    "products": 1.0,
+    "reactants": 1.0,
+    "reaction_smiles": 1.0,
+    "source": 1.0,
+    "source_id": 1.0,
+    "split": 1.0,
+    "split_key": 1.0,
+    "yield": 0.0
+  },
+  "label_type_distribution": {
+    "positive": 2910
+  },
+  "smiles_validity_rate": 0.4738831615120275,
+  "source": "ord_open_reaction_database",
+  "source_distribution": {
+    "ord_open_reaction_database": 2910
+  },
+  "split_distribution": {
+    "train": 2910
+  },
+  "total_records": 2910
+}

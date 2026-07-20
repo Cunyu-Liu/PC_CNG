@@ -1,0 +1,1255 @@
+{
+  "manifest_id": "PC-CNG-v3-local-to-server-sync-manifest-20260713",
+  "generated_at_local": "2026-07-13T19:39:47+08:00",
+  "sync_policy": {
+    "method": "rsync -az --itemize-changes",
+    "delete_remote_files": false,
+    "remote_results_preservation": "No rsync --delete was used; remote-only runtime artifacts under /home/cunyuliu/pc_cng_research/results were not targeted.",
+    "scopes": [
+      "local code root to remote chem_negative_sampling root",
+      "local active docs root to remote docs root"
+    ]
+  },
+  "remote": {
+    "host": "36.137.135.49",
+    "port": 22,
+    "user": "cunyuliu",
+    "project_root": "/home/cunyuliu/pc_cng_research"
+  },
+  "scopes": [
+    {
+      "scope": "code",
+      "local_root": "/Users/bytedance/Documents/research/未知化学反应推理/code/chem_negative_sampling",
+      "remote_root": "/home/cunyuliu/pc_cng_research/chem_negative_sampling",
+      "file_count": 175,
+      "total_size_bytes": 1087989,
+      "files": [
+        {
+          "scope": "code",
+          "relative_path": ".DS_Store",
+          "size_bytes": 8196,
+          "sha256": "4e0ad84a49dde5ffc98375d5a958483b2d757d372e52fb33b01ce14e787d47c0"
+        },
+        {
+          "scope": "code",
+          "relative_path": ".pytest_cache/.gitignore",
+          "size_bytes": 37,
+          "sha256": "3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd"
+        },
+        {
+          "scope": "code",
+          "relative_path": ".pytest_cache/CACHEDIR.TAG",
+          "size_bytes": 191,
+          "sha256": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4"
+        },
+        {
+          "scope": "code",
+          "relative_path": ".pytest_cache/README.md",
+          "size_bytes": 302,
+          "sha256": "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad"
+        },
+        {
+          "scope": "code",
+          "relative_path": ".pytest_cache/v/cache/lastfailed",
+          "size_bytes": 2,
+          "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+        },
+        {
+          "scope": "code",
+          "relative_path": ".pytest_cache/v/cache/nodeids",
+          "size_bytes": 792,
+          "sha256": "5f430eec6cddaf8fd1d99874cc531c5e6605298963a67771651e256e532a3273"
+        },
+        {
+          "scope": "code",
+          "relative_path": "EXPERIMENT_ANALYSIS_20260710.md",
+          "size_bytes": 4639,
+          "sha256": "d43c295347330f5fc93b2eef32a8e005f60ceaecd694eac9248973c5a47221ce"
+        },
+        {
+          "scope": "code",
+          "relative_path": "README.md",
+          "size_bytes": 3887,
+          "sha256": "2eda7040d70878d016008156601a91fabcd6d84c1e5b740d91ab394dc112dccd"
+        },
+        {
+          "scope": "code",
+          "relative_path": "REMOTE_A100_RUNBOOK.md",
+          "size_bytes": 2284,
+          "sha256": "dbe238b3c6f92c66a92a8f7ddfbb31eed81b9f1a8931ed8737076f12894e3a68"
+        },
+        {
+          "scope": "code",
+          "relative_path": "SCIADV_NEGATIVE_DATA_REASSESSMENT_20260710.md",
+          "size_bytes": 6154,
+          "sha256": "b07f5458475ed8ed35ea03ebbb21dc077c71db673f90af09603269631abeb34f"
+        },
+        {
+          "scope": "code",
+          "relative_path": "data/.gitkeep",
+          "size_bytes": 51,
+          "sha256": "5ce3e7ed5e0ed6b9a5ca6e20ad2eadcb0fb3e937d5e8519d77678a48f5e7f3bc"
+        },
+        {
+          "scope": "code",
+          "relative_path": "evaluation/evaluate.py",
+          "size_bytes": 2621,
+          "sha256": "9fc922a3cee6ef71310fb27ff93b7b38b244a2b181e835ba5e1ae2e6bf8a2d3f"
+        },
+        {
+          "scope": "code",
+          "relative_path": "evaluation/metrics.py",
+          "size_bytes": 4372,
+          "sha256": "6bca4fb476413f1b0c58d41334c6d604216eb805c2f72ab7fc4e480c0eab718f"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/README.md",
+          "size_bytes": 4770,
+          "sha256": "1dbdb73388cc7a5121f1fe852cce95ea5ef498260f1ca32d19c3e87ca61e363b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/__init__.py",
+          "size_bytes": 251,
+          "sha256": "80ca48278f10ca031cf3581c3d60943067cda0077d2fd1d8bd1154350ab663d9"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/analyze_action_family_contribution.py",
+          "size_bytes": 18120,
+          "sha256": "6d90c734d6553850b0ff69681a2e504d5ca7c4c66de8e0f2eaa5f7022dd863d5"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/analyze_reaction_class_benchmark.py",
+          "size_bytes": 13582,
+          "sha256": "3fea957e2d260f630a6542a826af8599d724a779fd0fda95485fe6d55a94e8d9"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/analyze_reranking_errors.py",
+          "size_bytes": 5253,
+          "sha256": "e3741ce079eeadc9149f506dc5438fce50aaf4d3d07594598f107dc67025fc49"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/atom_mapped_graph_edit.py",
+          "size_bytes": 4593,
+          "sha256": "dc2f08fdf560585a14ee09532deb55389120081f81f304e24c6c15f5364bc2e1"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/audit_active_execution_status.py",
+          "size_bytes": 8181,
+          "sha256": "47c0427e2bc4384785ce64897517925a1b2776006c9edc9fa197e0eaa1b183e1"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/audit_benchmark_data_quality.py",
+          "size_bytes": 19626,
+          "sha256": "da1811d4abaf7a1bb6347a35b1035c7007d638b9550da202133cdb32ca9ef5f7"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/audit_external_25k_base_candidate_quality.py",
+          "size_bytes": 13127,
+          "sha256": "08a500e49421da96b40a3c42b1de768c01ee91ddd7463ffc03b801d0baf1e340"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/audit_external_product_prediction_support.py",
+          "size_bytes": 11364,
+          "sha256": "b6f78b5f3d6a6b415889cb4feacc76e99d78aa171ce93f867f15cc4bd54b294a"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/audit_ni_atomic_support.py",
+          "size_bytes": 9107,
+          "sha256": "41e8dcc9d60da1bbb758a8685a4a7a92875c521ba6c1e790d73ea25e272f5384"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/audit_original_benchmark_support.py",
+          "size_bytes": 12860,
+          "sha256": "fe3bd598e410331a956ee81e231270ad078cbce4ace95bb16190546172c0324e"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/audit_reaction_class_source_support.py",
+          "size_bytes": 15167,
+          "sha256": "239ad0cf3a0c37e9de11ca079125c495d58f7e8a7efc8613f7735f806d7c2ee9"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/baselines.py",
+          "size_bytes": 8628,
+          "sha256": "b768b1cae3d6b82076666b8d9545e2feb9bf308245e08bcdae41af77f0cb8d17"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_curated_weak_class_contexts.py",
+          "size_bytes": 10482,
+          "sha256": "91623141466f6ee1cc135046456a55fadfdb061257a5d94879f3ddb41e345bd1"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_edit_decoder_dataset.py",
+          "size_bytes": 7281,
+          "sha256": "a680a6393a8b28696fcba6cefe0c9f2757ba614605b124b0e069dd92f6c61b40"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_external_product_prediction_candidate_set.py",
+          "size_bytes": 16808,
+          "sha256": "389223d485e896cc81740f28c1020496fd5085e36bdac4858f69c244a11c886f"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_hitea.py",
+          "size_bytes": 4115,
+          "sha256": "31982854db49e9eb302e99786bc78cd11bec04014cc841ee4335faf1c36216a0"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_known_positive_cache.py",
+          "size_bytes": 961,
+          "sha256": "fc35a903eed0f6b9aef2d18ac4d5dd6e2d2a46287c05859331b8ae026ad06c8c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_manuscript_tables.py",
+          "size_bytes": 51943,
+          "sha256": "f22b012f6ede1f46c915f87ae665d09dd7d55998c874efeb378f913efa268774"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_reaction_lm_candidate_set.py",
+          "size_bytes": 3538,
+          "sha256": "c34e92c1d18e0881f798dfcf4a387c5418cd5044e7db0ce23f0927d233abd18b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_regiosqm20.py",
+          "size_bytes": 4182,
+          "sha256": "2c746aa8cfd253686912c17de64e6c8a59b61cff8d4ac0591c42cae401c5ce08"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_science_advances_regiosqm_splits.py",
+          "size_bytes": 6853,
+          "sha256": "c7eeb6228391c334da9e5595216e206307c2a8a54476ffeca72322d534333a44"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/build_uspto_openmolecules.py",
+          "size_bytes": 4994,
+          "sha256": "4414471fd3e0947ab3a9b8e7924bc2c5b63c55bfb4c198a352725e71b272407b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/chem_utils.py",
+          "size_bytes": 5697,
+          "sha256": "e7a56d556b8bb661d09a7ae95ddef6040b5888ec79ce2bb0046b2006efd0f562"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/counterfactual.py",
+          "size_bytes": 5763,
+          "sha256": "0ae9a85712824010e745265b20b3434fb03a7587d3090f4b92e15e90e4193922"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/data_ingestion.py",
+          "size_bytes": 6577,
+          "sha256": "77315bdb3ead55cdf7b31487de3db0027a516c42c8bdc6346558b7c647370d67"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/evaluate_candidate_reranking.py",
+          "size_bytes": 15151,
+          "sha256": "b50363e7135e7177d577e741ca02a5166b2b7603c461c6daf5176ecbcf7e2e39"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/evaluate_external_product_prediction_benchmark.py",
+          "size_bytes": 23717,
+          "sha256": "3d30e169af92fd055b6735e22d03240607136d1833e1d534c88994ddad539564"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/evaluate_reaction_lm_scores.py",
+          "size_bytes": 1941,
+          "sha256": "0719b6964b1f35039ec3313a0c6b89cfe6d8a2a93ee20b1ee9543bd076aa84d9"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/export_rule_hard_negatives.py",
+          "size_bytes": 4498,
+          "sha256": "1adb06209414075fdff32b176952e6a87887efc373099005bad2620844824bd9"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/false_negative_review.py",
+          "size_bytes": 4146,
+          "sha256": "632a2b2dd59e1938dd2bbbc51168e1d52d13b5f6749cb4e5598e1a54eb9ac1e3"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/filter_paper_aligned_negatives.py",
+          "size_bytes": 5410,
+          "sha256": "ee847774a824603bb61f70eee954b73c52d63a5dc91dea63a2c04f947036f24f"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/filter_synthetic_known_positives.py",
+          "size_bytes": 3850,
+          "sha256": "563450867d98ac7cbdaec61a11f441ecd27f64f7c8be2d1cbeddd3fd9372467b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/generate_external_context_pc_cng_candidates.py",
+          "size_bytes": 9824,
+          "sha256": "914b8718c84ddcd8b5d81872f92e6070ca1bdc82828dc71c02e0650a3e14e430"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/hard_negative_actions.py",
+          "size_bytes": 37472,
+          "sha256": "3c81bbfe46dbc0683a4e5d7804e09465c8c9e48dcee2a7b96c9e0ec822a5ccf0"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/known_positive_cache.py",
+          "size_bytes": 4913,
+          "sha256": "fcfaa8d1649e5d869f9aeae016399e18f8873d8e5ba44e454319657821c08a28"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/multiseed_paired_significance.py",
+          "size_bytes": 12400,
+          "sha256": "19d2b0b699bd2ff86786a54231030a316fa2c927293352acd1425956cd36fd9b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/multiseed_summary.py",
+          "size_bytes": 3314,
+          "sha256": "1242cce2b64058274fd9ab82bd683fa72a618f16aa9914ba1f6a5c965a4fc9d4"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/paired_reranking_significance.py",
+          "size_bytes": 9357,
+          "sha256": "ce735c0dbccee774c4088f9acf30f88f1a006394cb3319e57cf273d8920aac52"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/ranking_metrics.py",
+          "size_bytes": 3346,
+          "sha256": "bc1c055b6c249a44f2ab3d2000a2f727b3f53f82dfa6b237403cd3f61534bbc3"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/reaction_boundary_generator.py",
+          "size_bytes": 15413,
+          "sha256": "4ad13f65c32609c7925a642092070c4f22bebd3c8aa552372348650fb025bae6"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/reaction_center_edit_decoder.py",
+          "size_bytes": 15291,
+          "sha256": "41eb3c22fb7ebc6dae1f884430a511042cf16f0f0240ef6a0174a2d08671b90f"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/reaction_lm_scorer.py",
+          "size_bytes": 27993,
+          "sha256": "ad97fccfec1a0b0e09c64408f9b0ce57466982f40361b75bb306cab0a4bb5b8c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/reranker.py",
+          "size_bytes": 6299,
+          "sha256": "29704f7cf267b3f1e73e838d7e2485e290eadda3fd3d8a2d6b46941dc35e2382"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/run_boundary_generation.py",
+          "size_bytes": 4591,
+          "sha256": "605c0141d13f69ec1603a0ff9638c02c6490137b681e58ce998076f6aaa5e0d2"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/run_experiment_matrix.py",
+          "size_bytes": 3836,
+          "sha256": "1710f9e0f19d5951cbf88409666a11b7d6b96a80e53dcdb3828e7f774dc5f9c6"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/run_hard_negative_actions.py",
+          "size_bytes": 14720,
+          "sha256": "f4d9435f80d96d81ef50becd82b5d9f69ecb6525087b8e4b154921452aba7cee"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/run_learned_boundary_generation.py",
+          "size_bytes": 7301,
+          "sha256": "de19a2c4dcf2de0becef310b287386d5202509e8f77b617a0507afd03375cda9"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/run_mvp.py",
+          "size_bytes": 7474,
+          "sha256": "d5988eadbd255872d0a41554c93ae414cba27245bc00ad05d4fe62343e965e48"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/run_scale_generation.py",
+          "size_bytes": 4825,
+          "sha256": "04236eec60d5bbc4304957625180e618da5b754ccf1c7b7829d829ca60ac6877"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/scan_original_test_expansion_candidates.py",
+          "size_bytes": 21644,
+          "sha256": "4dadc0378cc493be89183ab3f2900a75a4100f887bbd7300a6535d4496bc490e"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/select_external_product_prediction_contexts.py",
+          "size_bytes": 16431,
+          "sha256": "76c3d0f42df47ca0caea495dddeef4847268d0228895612f02cdb467f2e50650"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/split_chemformer_input.py",
+          "size_bytes": 4442,
+          "sha256": "2aabfcb070a76d40ca3f0eb2183af49f446bf3b74cd285010f5258e2afc418a5"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/summarize_reaction_lm_benchmark.py",
+          "size_bytes": 7611,
+          "sha256": "00058e0d2631a8060b44d7645fe53a36382a1fd75f88fd5e02fafde7a544decd"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/summarize_science_advances_benchmark.py",
+          "size_bytes": 8278,
+          "sha256": "980c3619f32f4c3b5da932563a943d7aa536360b4c566f7e160149818cf9d174"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/train_dpo_reward_mlp.py",
+          "size_bytes": 15592,
+          "sha256": "0820d2691c3be91962de663d0017984226f916f57edc8cd1830f34e3c60f466d"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/train_feasibility_mlp.py",
+          "size_bytes": 30968,
+          "sha256": "fa7398c426ee836ca1615364866d1558b056f72748976b003dcb7452016bdfde"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/train_graph_edit_decoder.py",
+          "size_bytes": 4778,
+          "sha256": "c4b4c8e0ac4b59bfad3ffa5e3e12a8126e7d3d3c6890f8cf06c40db594d1df6b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/train_pairwise_reward_mlp.py",
+          "size_bytes": 16858,
+          "sha256": "58c604f29d77fc8fda3575028e426b9350316fe8fb159a904e2cab78cf06ccfc"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/train_reaction_center_edit_decoder.py",
+          "size_bytes": 20182,
+          "sha256": "db863671fa4e822feaa901b3ede7d7d1ad643df46e3776c5c786482cc987eb28"
+        },
+        {
+          "scope": "code",
+          "relative_path": "pc_cng/validator.py",
+          "size_bytes": 3709,
+          "sha256": "9c016e1ab0ff0585eb2f8933d1a61560ddf39bd6327b273311e8e92dde95fd06"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase1_bootstrap/heuristic_combinations.py",
+          "size_bytes": 2157,
+          "sha256": "38f70a7769227097523b843b53f76fbaad83a732f62d52aa4beb32aedb2a71ea"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase1_bootstrap/low_yield_processor.py",
+          "size_bytes": 1502,
+          "sha256": "b92be1fd9561d9c4a0c472325f0e8b4aee93713decef791ed29e9d6f79a586b2"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase1_bootstrap/phase1_main.py",
+          "size_bytes": 2879,
+          "sha256": "3683de92666a4d0e4a2630b6289fb4278271730024f157c7b53b2a1365206dc1"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase1_bootstrap/rule_based_generation.py",
+          "size_bytes": 1568,
+          "sha256": "1516f4abd502a5e692f4599b6af5ea098a9869f814df605d58f80cd5d5cc4d7e"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase2_pretrain/data.py",
+          "size_bytes": 3518,
+          "sha256": "ddd017c778752fb56cf8c55e7c108255a890b628553cb117c143681bb8ff3b32"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase2_pretrain/gnn.py",
+          "size_bytes": 2494,
+          "sha256": "4dedc5c95aaaa91898aa935db308a79195b0a5df3f6ecab1c7f5f197de9fdd88"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase2_pretrain/model.py",
+          "size_bytes": 2730,
+          "sha256": "bf9aec31668ca7fee2b81f90573c9c5b122c8d76d77bd34e9596716bb4f2231b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase2_pretrain/train.py",
+          "size_bytes": 4980,
+          "sha256": "a5025ac9103f508cacab6b841fc0dceb538e9e75c05c5a52a9820ad50efbcc27"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase2_pretrain/transformer.py",
+          "size_bytes": 2698,
+          "sha256": "250921023d94d08b933e6027408156084875936d76e70fd3ca5fde0d966783b3"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase3_refinement/generate.py",
+          "size_bytes": 3036,
+          "sha256": "7de1f80d926fc79cef271c07928339db5c80f0d94df1e1247a4564be443684a9"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase3_refinement/train.py",
+          "size_bytes": 5331,
+          "sha256": "d4e0928cad7bb519d5409e6a10dfefd4b66c422e283e29ff612bb8bd0db7954b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "phase4_expansion/generate.py",
+          "size_bytes": 3251,
+          "sha256": "3ce7fbe4069e62ccf3c2d7dd5413d29512e9a78ba8e5218378705e483a4a2086"
+        },
+        {
+          "scope": "code",
+          "relative_path": "requirements.txt",
+          "size_bytes": 345,
+          "sha256": "8efc03346be29c8453e3e017a784feeaafd2f37c514fabe2239c7b94500caca7"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/baseline_smoke/baselines.csv",
+          "size_bytes": 25980,
+          "sha256": "10321c88b08e1ce75bf3ceed5a75506b625104752be230b8887ed66fd9711503"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/baseline_smoke/summary.json",
+          "size_bytes": 313,
+          "sha256": "78613c3b64de6b55a3c05490092501bb2ed7c71ee7ef1e42e02861650bfaa8c0"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/data_ingestion_smoke/normalized.csv",
+          "size_bytes": 908,
+          "sha256": "3d977a6f0358c1fdce216f273e9c37c327ab034ab51ce2e192d1e002cd82eff1"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/data_ingestion_smoke/summary.json",
+          "size_bytes": 224,
+          "sha256": "57226786b867826566cb784ae1f2452d176597ecea16e455ffb0c810867f0147"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/dora_alternate_center/lightweight_ranker.json",
+          "size_bytes": 583,
+          "sha256": "fc700656f715838c5b6f10176768457e7c0dccc1a4f8ab194f11e13dfebed077"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/dora_alternate_center/metrics.json",
+          "size_bytes": 80,
+          "sha256": "2c78b6414b64d80a1e7312cc34ef4ca3bfe369c4b74806af85ecc72e001d0011"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/dora_alternate_center/ranker_dataset.csv",
+          "size_bytes": 1240,
+          "sha256": "a7f091977ea44b46f7127b299247c417279b11421ab1b530979edc30aa69dd54"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/experiment_matrix_summary.json",
+          "size_bytes": 1399,
+          "sha256": "7894f95f30fd67a31cd5674bc5fc799ff6c6f2c72fcbf8ca6659bce22859b108"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/pc_cng_rule_mvp/lightweight_ranker.json",
+          "size_bytes": 601,
+          "sha256": "e3be6c8fe9519db95d251b13196375ca4829e4cae9fee7a114791a85d3257c74"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/pc_cng_rule_mvp/metrics.json",
+          "size_bytes": 140,
+          "sha256": "b72f7bd33f3eee20e262ede726dfb0beaa11b6dcce34487de1394c2cf480d896"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/pc_cng_rule_mvp/ranker_dataset.csv",
+          "size_bytes": 4650,
+          "sha256": "7ad283fed01a749b587443475616eff022272fd650aeec24ee2db5cd24af1611"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/pu_reliable_negative/lightweight_ranker.json",
+          "size_bytes": 570,
+          "sha256": "50f5421c219b994f65698e25ae3ded79e235d37ac353df9df8937e7112a7e3ec"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/pu_reliable_negative/metrics.json",
+          "size_bytes": 80,
+          "sha256": "e46015121538e8eec3205822da8b7b14324d9c2e7b2041a6d7cad170cf86f7ac"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/pu_reliable_negative/ranker_dataset.csv",
+          "size_bytes": 550,
+          "sha256": "5db03e7c5e66b18619b27b3337623558222069eff8d3891bfee4e8032212d508"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/random/lightweight_ranker.json",
+          "size_bytes": 573,
+          "sha256": "7b4980dcc3c0b7661477dc2bcd54fed31b66b6e6a5d377914f6f1fdf03088322"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/random/metrics.json",
+          "size_bytes": 95,
+          "sha256": "434c659d7dc55626f5db9b194a1314a794018a18f8abe49f1bd8e5d9f29e36da"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/random/ranker_dataset.csv",
+          "size_bytes": 1199,
+          "sha256": "84da5359c35e71e644f9e4ecb42cae9eea44e4e2e19843ecc3629c1d72ae6d17"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/template_perturbation/lightweight_ranker.json",
+          "size_bytes": 574,
+          "sha256": "d21a9a934d458004b193d8dff3f21a9034e2d17e6579877de347a5d3badb02bd"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/template_perturbation/metrics.json",
+          "size_bytes": 95,
+          "sha256": "215dd9c82b86f3e8d87f24215371fa396df837382203376ab98ff005380e5f8c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/experiment_matrix_smoke/template_perturbation/ranker_dataset.csv",
+          "size_bytes": 1259,
+          "sha256": "227ebae1002dfd8565c3b0ff69cdf70663c21bc0c9b65e53b79c2a90b4d3cc4b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/fn_review_smoke/reviewed.csv",
+          "size_bytes": 19225,
+          "sha256": "8f88ebfd7b914f52cdb453b25f07e19da011cdab86596420b8600e2ae5d16924"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/fn_review_smoke/summary.json",
+          "size_bytes": 513,
+          "sha256": "12187efbd672f334e6a2bfd4a382c1720464db25588c0b275e80ee76d4f21fbf"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/pc_cng_mvp_demo/lightweight_ranker.json",
+          "size_bytes": 610,
+          "sha256": "cf36dfa14c0a4cf72be686f382604cb9c6c916a503c088bf7959170b8ae2516c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/pc_cng_mvp_demo/mvp_metrics.json",
+          "size_bytes": 1306,
+          "sha256": "68e8daea8b20d0ae7cf326d01c3a3aabfbfd305c9be19bef0302aadd74ddc280"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/pc_cng_mvp_demo/positive_reactions.csv",
+          "size_bytes": 326,
+          "sha256": "19312863fb6991d95fa9a359e53ec5de36ff4f6272489413a4c30e78c8d54fff"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/pc_cng_mvp_demo/ranker_dataset.csv",
+          "size_bytes": 4650,
+          "sha256": "7ad283fed01a749b587443475616eff022272fd650aeec24ee2db5cd24af1611"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/pc_cng_mvp_demo/synthetic_counterfactual_negatives.csv",
+          "size_bytes": 16446,
+          "sha256": "f282bf507e2d3adc981f92ce0442c93b68cf9221f91052786202d7e515d93cff"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/pc_cng_scale_smoke/summary.json",
+          "size_bytes": 879,
+          "sha256": "828b9156a5d11a10a5832b062a45382d5fdf0691b5344a7f7c0776900b404b9d"
+        },
+        {
+          "scope": "code",
+          "relative_path": "results/pc_cng_scale_smoke/synthetic_negatives.csv",
+          "size_bytes": 8614,
+          "sha256": "8173600474bd19c068ffec6bf3d17806dc4e2e3fcb01a9f0aa74af1a086756cd"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_check_reaction_lm_env.sh",
+          "size_bytes": 1560,
+          "sha256": "5f7d093089f4beef682837b29fd3f4ad178979c3b02a89e9267f8f391e14f837"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_download_reaction_lm_checkpoints.sh",
+          "size_bytes": 5883,
+          "sha256": "ad30c68b17083b9e65fb68063db4412ff5b6e7724ef884fb65b365e44812782f"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_fetch_negative_learning_repo.sh",
+          "size_bytes": 1156,
+          "sha256": "15e382fedebe4143b3a332d1842e8a121fb45a10acc75bde8b58396b00257020"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_prepare_public_data.sh",
+          "size_bytes": 1648,
+          "sha256": "c69307524524868d083ebd9b899f56589a9831f2f0ea8db0a8b831cf82228c75"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_candidate_reranking_eval.sh",
+          "size_bytes": 2739,
+          "sha256": "7107962ccecfc6a9006ef367a06e502776ac4aa271a8d0916b16068de9838fad"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_chemformer_dpo_reward_ablation.sh",
+          "size_bytes": 4581,
+          "sha256": "e5d8171feca0d85355d008ce40c8cee6ae38d977626dadeee314abe5c113e1ff"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_chemformer_dpo_reward_full.sh",
+          "size_bytes": 1806,
+          "sha256": "f431f7609adc7d021b64851dbb9430a1bfadfa7c6c1eb062aee33a97c88acdea"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_edit_decoder_v3_pipeline.sh",
+          "size_bytes": 5743,
+          "sha256": "cade4ad9c1fab314e0d0d4e17d61c5cbc0e5b636e9c795c582a5dc1d45db9180"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_expanded_actions_weighted_ablation.sh",
+          "size_bytes": 4947,
+          "sha256": "f3e62bda6e9f1593719b87f848615340f70d9954905e69f1c6878397876ff226"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_expanded_hard_negative_actions_pipeline.sh",
+          "size_bytes": 5677,
+          "sha256": "92cc3beda85b9b68164515159eda7b3398fdb7c3ff7e1c0bb79a45787bf426ef"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_external_product_prediction_25k_chunked_beams.sh",
+          "size_bytes": 7287,
+          "sha256": "2f8ed330add6e03ed9b815163a41f58eb0f9b5a718bfb53841b1350ecd01c47e"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_external_product_prediction_benchmark.sh",
+          "size_bytes": 6253,
+          "sha256": "fb15a9d2867b8debbc2a420cc3094d19ee0753ff5b6c88538b2bab64a8be8b00"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_external_product_prediction_benchmark_25k.sh",
+          "size_bytes": 10067,
+          "sha256": "035d05bb38e2d5fb5653de68a2363ec9ebd2e70490c9dbb83e7e0a8b39b4a678"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_full_pipeline.sh",
+          "size_bytes": 2056,
+          "sha256": "78b02a3a3f74e208bc088f81fe313734889c6e76151d98ea687fb8b4e3009a17"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_masked_hard_decoder_pipeline.sh",
+          "size_bytes": 4330,
+          "sha256": "a2d4e36310887fd111308b70b6258364f13c5d261b0684c034bc2cf76452f240"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_reaction_lm_scorer_smoke.sh",
+          "size_bytes": 2328,
+          "sha256": "84fb562f248481cce1b9a5af9b20ac22818385ca15390d6efdd29a2c730bf0a5"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_science_advances_chemformer_lm_benchmark.sh",
+          "size_bytes": 5760,
+          "sha256": "8741d22cf8bae52d435541a4266391912763071d231d35ab2d57127ca0745bcc"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_science_advances_dpo_reward_benchmark.sh",
+          "size_bytes": 5355,
+          "sha256": "d15bb8e6b8767d346dfe03afa0e3c218560c7334f822e7ee4209f902f436dc32"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_science_advances_regiosqm_benchmark.sh",
+          "size_bytes": 7098,
+          "sha256": "548602924b9ba0f1b89b98339edc187d1ea9fa4ff1892c024e68747c8319eabf"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_class_fallback_supplement.sh",
+          "size_bytes": 4573,
+          "sha256": "68c64c2b3fb5a6edc064c7a207a6c10b037bc2ae99afb6417c4554c4bf237cda"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_class_quota_supplement.sh",
+          "size_bytes": 2886,
+          "sha256": "f053247307dd90b1e1b3243d248c2dda279e6e7de5d254abe57bc89b0453e73f"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_curated_class_weight_multiseed.sh",
+          "size_bytes": 5484,
+          "sha256": "52e0074885b5592a2f6a4e84a25c8ecc4944ce17fde16a810f799fd95029484b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_curated_class_weight_selection.sh",
+          "size_bytes": 5397,
+          "sha256": "2dbe1321e94894fc337a8dd7af6d7b7ef1fcaa2ff85a6c15c93bb222a6b32c78"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_curated_weak_class_supplement.sh",
+          "size_bytes": 8306,
+          "sha256": "f30e12c3e5f7cdbab64b6bca98ae42722226368f96c22436dadcc2deeb2ba54e"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_diverse_anchor_ablation.sh",
+          "size_bytes": 7363,
+          "sha256": "c5edfdf5c048b3686b3b9b8481fe947e1ce71c12a9b5b473c1a8a9a4ec0ab33e"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_diverse_anchor_dpo_beta_sweep.sh",
+          "size_bytes": 4800,
+          "sha256": "2a514c785aa081567dda666f8a06927b7c77c5f699d912ea5aacd7acb0dad487"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_diverse_anchor_dpo_reference.sh",
+          "size_bytes": 6983,
+          "sha256": "84471a6bfc8266feaf940953b641cf42c9e55ad54c6bfb55fcd3bfea9e5599de"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_diverse_anchor_pipeline.sh",
+          "size_bytes": 4609,
+          "sha256": "55c09801798fd97cd820368ee6439fb54b4f7ba35569630ca3254cd9104b3c5b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_graph_stats_pairwise.sh",
+          "size_bytes": 6054,
+          "sha256": "0e1d0b54569bdc9d4ddf580e512cf803b092eabd795fc8b8e9946d8fb57e1e5b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_partial_product_supplement.sh",
+          "size_bytes": 4995,
+          "sha256": "dc135f09ced7680d50eee4e65c16c039b5105147007258e2e1a72eb9ab56119b"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_unreacted_substrate_supplement.sh",
+          "size_bytes": 6278,
+          "sha256": "140d675f02c92ef050a46512197d6fc7415f0fef6916415727112bfc663d72f7"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type1_unreacted_v2_multiseed.sh",
+          "size_bytes": 7387,
+          "sha256": "b87ad9fb7c726578df7ade263554a71600e26282ce16bb1682abcd47b26f0d6c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_run_type2_low_yield_branch.sh",
+          "size_bytes": 6697,
+          "sha256": "884b2bfc7b6710b7d9efda6755b7f0e0ca08c513f403cfc8aa4d1de4e3a88d9c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_setup_conda_env.sh",
+          "size_bytes": 1479,
+          "sha256": "4cef62e23c173c0bf8ad82f38395426449aefe1eaac41a2a2a3d2c34134c7b82"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_setup_conda_gpu_env.sh",
+          "size_bytes": 1592,
+          "sha256": "68d3772f6d1f522df92fe5d9c36914ba65b949722014ec8eccfdf38673eb3d1a"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_setup_remote_env.sh",
+          "size_bytes": 1383,
+          "sha256": "b51d0685c67219ad126cd19d807bc75138b05b9651ee25407d8ae53d3037302a"
+        },
+        {
+          "scope": "code",
+          "relative_path": "scripts_test_hard_negative_actions.sh",
+          "size_bytes": 2017,
+          "sha256": "805507d8cc5a126d35cbef2253647850063fbba3ef3c351bc1234c5039ee5a48"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_active_execution_status.py",
+          "size_bytes": 2943,
+          "sha256": "b25bb1dac5fd61be3119c4cfdb1722277d32ab65a3300bd166a2c5b352f80141"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_benchmark_data_quality_audit.py",
+          "size_bytes": 9991,
+          "sha256": "01d656aa0d1d1dd9bf1cfbf817f559771cc59ff17ff0a96feb9d946426ab146c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_class_fallback_actions.py",
+          "size_bytes": 2367,
+          "sha256": "b2d9b3f1ff52090f7a4554e5f4e5b658ded3ecd8eff5f4880ea5c1eb2e1e1367"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_curated_weak_class_contexts.py",
+          "size_bytes": 2236,
+          "sha256": "40c48a32ef8c3ca3901b55f87b97c882c4cfbb293f59f3e99aa0c15fb1e0bf2a"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_external_25k_base_candidate_quality_audit.py",
+          "size_bytes": 3534,
+          "sha256": "ecb538e9a347b568e878e153b16808fc8731e72a2ae94cc6d0c178eaede80b63"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_external_context_expansion.py",
+          "size_bytes": 4702,
+          "sha256": "2b51cb1562d1fe1e989e388ed9ecb79c4ed5cd3d2848bde8a524feab832b6cc9"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_external_context_pc_cng_candidates.py",
+          "size_bytes": 3606,
+          "sha256": "67866bff034362705f88d93ec7f259fa9dd3b83580d95ad9d7a50b5996c889bf"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_external_product_prediction_benchmark.py",
+          "size_bytes": 5845,
+          "sha256": "424edadbb25603a748fd770e33ce6ff6c8766f25ca90f69669ede9f0616fcb02"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_external_product_prediction_support_audit.py",
+          "size_bytes": 5204,
+          "sha256": "13af847e705206188fc08b62e9de0a13d8f0f4991fefe6ecad58d92f8f0e4a32"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_graph_stats_featurizer.py",
+          "size_bytes": 2106,
+          "sha256": "ae24caac38807fc8ea9ac3b12d8f91572703a3019f531672e5b5990f917aebaa"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_known_positive_cache.py",
+          "size_bytes": 3909,
+          "sha256": "ec09db1f7c366d4d0698d2cd2348bada2d7abee55927225805bba8fa2e635fb0"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_multiseed_paired_significance.py",
+          "size_bytes": 8103,
+          "sha256": "0c0c4410c63c2c46643f094fcff1fe6bc2dfe23d0311936e3e434a57e9d52750"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_ni_atomic_support_audit.py",
+          "size_bytes": 2644,
+          "sha256": "76bb80366e0ecf977e8d7e096a5d26999cb339cde65593183c635e782aa2c7fb"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_original_test_expansion_scan.py",
+          "size_bytes": 4477,
+          "sha256": "69fda3c4a2a3fc65b7018f4823717524f7593386e7514fd9bda1b337f318d2dd"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_paired_reranking_significance.py",
+          "size_bytes": 2297,
+          "sha256": "b2d84f5f1bc49c7f3c01d3c0a043615b741e2eebd960acd28eb4fdf6450bdf38"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_reaction_class_benchmark.py",
+          "size_bytes": 2252,
+          "sha256": "94fe3118e3ff13b8ad2b84d5dae1dcba60aa6739146b356c93c70fd2eef904a8"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_source_support_audit.py",
+          "size_bytes": 3545,
+          "sha256": "945fd2c51dae9e0ced634614b278b03796d4d10757e669c66cb5ca310e120228"
+        },
+        {
+          "scope": "code",
+          "relative_path": "tests/test_split_chemformer_input.py",
+          "size_bytes": 2036,
+          "sha256": "355f2fdd28b69c7aec88e67ae4610694f8af3b402c8bd41798b090be2e96181c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "utils/__init__.py",
+          "size_bytes": 679,
+          "sha256": "5efac765d6a898b9d2a2c7b04a14255ff94030f330051666fd91160ab5c4548a"
+        },
+        {
+          "scope": "code",
+          "relative_path": "utils/data_utils.py",
+          "size_bytes": 2678,
+          "sha256": "855ed21a076c678649e50a0de0a97c45254257d360bad55dbdce44bc89dc6c6c"
+        },
+        {
+          "scope": "code",
+          "relative_path": "utils/smiles_utils.py",
+          "size_bytes": 3181,
+          "sha256": "44404f99736d0ec52d76b2c8bec6e4ff03abdfcc5fe88d533edad027e70847ea"
+        }
+      ]
+    },
+    {
+      "scope": "docs",
+      "local_root": "/Users/bytedance/Documents/research/未知化学反应推理/负样本生成模型/00_当前有效文档",
+      "remote_root": "/home/cunyuliu/pc_cng_research/docs",
+      "file_count": 27,
+      "total_size_bytes": 520488,
+      "files": [
+        {
+          "scope": "docs",
+          "relative_path": "EXPERIMENT_ANALYSIS_20260710.md",
+          "size_bytes": 4639,
+          "sha256": "d43c295347330f5fc93b2eef32a8e005f60ceaecd694eac9248973c5a47221ce"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v2-反应中心边界生成器方案.md",
+          "size_bytes": 4379,
+          "sha256": "6cd77c2af745fbb7d6e41745d8e8b400d4c1e6288cdb101188eac39a4844b550"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v2-边界负样本训练结果-20260710.md",
+          "size_bytes": 3318,
+          "sha256": "c08ecce93d3be476cd836224369dfc9097b371a2a20a3849ff9f7214d5297c68"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-OptimizationA外部ProductPrediction实验记录-20260711.md",
+          "size_bytes": 10425,
+          "sha256": "9a3012c6abb1254b3b45fbf494812a90fec2f9dbb185a051a4b4919cef5282b5"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-OptimizationC-reaction-class弱类诊断-20260711.md",
+          "size_bytes": 39198,
+          "sha256": "189d72676011acdf4683745319883e9eea78e1d99bc3d38a308c9941fb9d77b3"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-OptimizationD-graph-aware-scorer结果-20260711.md",
+          "size_bytes": 6459,
+          "sha256": "91b21512af001b20be14d57d301fa5c5e891dc017e750252f0871d972e0961af"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-ReactionLM环境安装记录-20260710.md",
+          "size_bytes": 5656,
+          "sha256": "c706ff91d3e6ed2b5f0841516a13293767af83a310459fb555072391d40ef372"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-SOTA追赶目标与Scale-up执行计划-20260712.md",
+          "size_bytes": 57080,
+          "sha256": "55b8d3a290cd50681bf4a68a66ef1aea949d11b28b22c22cc252634317be17de"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-ScienceAdvances对齐下游Reranking测评-20260710.md",
+          "size_bytes": 7340,
+          "sha256": "711f90a9e2e49386105bc39e5463fd2f065d584b22cbaa4d8cba37f04c86bd85"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-benchmark-manifest-20260712.json",
+          "size_bytes": 24740,
+          "sha256": "7c922f1c2b4fd2e6f306d7be4e8845e6666eafcdc1d6d0488f3341e34b496e66"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-benchmark-manifest-20260712.md",
+          "size_bytes": 21776,
+          "sha256": "d6b781db0dda60c396d45c339e759d3cc48913e6035472ec1a4c4bcc4560b68d"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-expanded-actions全量训练结果-20260710.md",
+          "size_bytes": 12157,
+          "sha256": "acde78792ff74064e4d704145ecc532c6c35c3783bb5c8e1a7531f1e200ab961"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-known-positive-masked-hard-negative设计与结果-20260710.md",
+          "size_bytes": 4908,
+          "sha256": "82f10bbc7d840aebd8d27b9786fc59f16583f779deabe22434e6b69f16da6d78"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-reproducibility-manifest-20260712.json",
+          "size_bytes": 56273,
+          "sha256": "87c72643e3743f11dc1fe9de0541e6803f247a8eda377a879e678252b7193f09"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-reproducibility-manifest-20260712.md",
+          "size_bytes": 42338,
+          "sha256": "75df220bda0748139995f36b8898a9a405bfe05faec49afebc55a37ce9e4190e"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-下一阶段项目完善计划-20260710.md",
+          "size_bytes": 27232,
+          "sha256": "c482a95098a72d8c08991074813e6267f96ccd04e27408330789ca096df6b1dc"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-下游任务评估协议与OptimizationA落地-20260711.md",
+          "size_bytes": 9377,
+          "sha256": "0d0fd08496dd88b5382d984e6d9a95aa38eca022e9b63bbafd32cf649433e068"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-候选生成空间扩展策略-20260710.md",
+          "size_bytes": 2982,
+          "sha256": "80cf9bd3010e8e5a5f2903f05eff12f835a5b956a0d7c176230ac0c7e542c55b"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-可训练EditDecoder首轮结果-20260710.md",
+          "size_bytes": 4892,
+          "sha256": "09771253da511ff7467b9e311e0eff80a4318c014e4c087ade64019583c19446"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-学术发表水平与SOTA差距分析-20260710.md",
+          "size_bytes": 44271,
+          "sha256": "eaa0314b6396ac1d2d87a9e772343db8c8a96b9db3868c904fc6855194dd5658"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-当前效果与SOTA差距-20260710.md",
+          "size_bytes": 6316,
+          "sha256": "c3afb740f5c497327959f4e892457c5fac3f1c1af7aeab654390c92c171e9e62"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-论文可写初步有效性结论-20260710.md",
+          "size_bytes": 26524,
+          "sha256": "c6c0fa09d799442bbd704b60ce85db25c029dee44bf524142c129ede94b91e2b"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-阶段完成审计-20260710.md",
+          "size_bytes": 5521,
+          "sha256": "cd2bec4bb47032e53b35988aa8d8515c6abf005e0a66c23872d47fdce1de94a6"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "PC-CNG-v3-项目进展汇报-20260712.md",
+          "size_bytes": 43202,
+          "sha256": "8fde49450f36241eecc85453b26a9ae333fe064ecb9154f7ee310fa552219416"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "SCIADV_NEGATIVE_DATA_REASSESSMENT_20260710.md",
+          "size_bytes": 6154,
+          "sha256": "b07f5458475ed8ed35ea03ebbb21dc077c71db673f90af09603269631abeb34f"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "模型架构设计-物理约束反事实负反应生成器.md",
+          "size_bytes": 12484,
+          "sha256": "a1ee242ebf8e68252ccaeb104bbcb915ad30b64ea4c706b5c820802dda1c9ee5"
+        },
+        {
+          "scope": "docs",
+          "relative_path": "顶刊论文核心思想与从0到1落地方案.md",
+          "size_bytes": 30847,
+          "sha256": "460bfc5d562ddb80bf763ea7ed3fe373b41164b7d56781119982af0fd0604fa8"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "file_count": 202,
+    "total_size_bytes": 1608477
+  }
+}

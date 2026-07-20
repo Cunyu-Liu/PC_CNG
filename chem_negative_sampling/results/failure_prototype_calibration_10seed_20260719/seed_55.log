@@ -1,0 +1,9 @@
+[load] real_negatives=/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv
+[load] alt_negatives=/home/cunyuliu/pc_cng_research/data/processed/regiosqm20_normalized.csv
+[load] total negatives=200 feature_dim=10
+[load] failure-type distribution: {"wrong_anchor": 100, "broken_atom_balance": 100, "invalid_valence": 0, "fragment_misalignment": 0, "wrong_bond_type": 0, "aromaticity_violation": 0, "stereochemistry_loss": 0, "over_reaction": 0, "under_reaction": 0, "side_product": 0}
+[split] train=136 val=24 test=40
+epoch   1/10 train_loss=0.8001 train_acc=0.6838 val_acc=0.7916666865348816
+epoch  10/10 train_loss=0.7051 train_acc=0.6471 val_acc=0.7083333134651184
+[save] checkpoint -> /home/cunyuliu/pc_cng_research/chem_negative_sampling/results/failure_prototype_calibration_10seed_20260719/seed_55/failure_prototype_calibrator.pt
+[done] acc=0.7250 mean_entropy=0.6715 uniform=2.3026

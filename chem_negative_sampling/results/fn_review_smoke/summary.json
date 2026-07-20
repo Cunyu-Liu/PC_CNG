@@ -1,0 +1,15 @@
+{
+  "input": "results/pc_cng_mvp_demo/synthetic_counterfactual_negatives.csv",
+  "output": "results/fn_review_smoke/reviewed.csv",
+  "known_positive_count": 10,
+  "reviewed_rows": 60,
+  "status_counts": {
+    "keep_synthetic_negative": 45,
+    "needs_review_or_downweight": 12,
+    "discard_known_positive": 3
+  },
+  "notes": [
+    "Rows marked needs_review_or_downweight should not be treated as strong negatives.",
+    "Rows marked discard_known_positive must be removed from synthetic-negative training."
+  ]
+}

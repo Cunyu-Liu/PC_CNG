@@ -1,0 +1,11 @@
+source_id,reaction_smiles,reactants,agents,products,label_type,yield,source,split_key,split
+demo_001,CC(=O)Cl.CN>>CC(=O)NC,CC(=O)Cl.CN,,CC(=O)NC,positive,,demo,edb34db4c5,val
+demo_002,CC(=O)Cl.OCC>>CC(=O)OCC,CC(=O)Cl.OCC,,CC(=O)OCC,positive,,demo,3ee8394bd9,train
+demo_003,O=C(Cl)c1ccccc1.CN>>CNC(=O)c1ccccc1,O=C(Cl)c1ccccc1.CN,,CNC(=O)c1ccccc1,positive,,demo,673a9843eb,train
+demo_004,CCBr.N>>CCN,CCBr.N,,CCN,positive,,demo,d166291715,train
+demo_005,CCBr.O>>CCO,CCBr.O,,CCO,positive,,demo,f32652ada9,test
+demo_006,c1ccccc1Br.O>>c1ccccc1O,c1ccccc1Br.O,,c1ccccc1O,positive,,demo,03300c4bd3,train
+demo_007,C=CCBr.N>>C=CCN,C=CCBr.N,,C=CCN,positive,,demo,977c4cae1e,train
+demo_008,CC(=O)O.CN>>CC(=O)NC,CC(=O)O.CN,,CC(=O)NC,positive,,demo,24f8626d3a,train
+demo_009,COC(=O)C.N>>NC(=O)C,COC(=O)C.N,,NC(=O)C,positive,,demo,a3bd73a84f,train
+demo_010,CCCl.N>>CCN,CCCl.N,,CCN,positive,,demo,5c03e3bcda,train

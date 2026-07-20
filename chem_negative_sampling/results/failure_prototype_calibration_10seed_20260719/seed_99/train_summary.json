@@ -1,0 +1,122 @@
+{
+  "args": {
+    "real_negatives": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+    "alt_negatives": "/home/cunyuliu/pc_cng_research/data/processed/regiosqm20_normalized.csv",
+    "output_dir": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/results/failure_prototype_calibration_10seed_20260719/seed_99",
+    "epochs": 10,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "hidden_dim": 128,
+    "embedding_dim": 64,
+    "temperature": 0.5,
+    "triplet_weight": 0.3,
+    "triplet_margin": 0.2,
+    "val_ratio": 0.15,
+    "limit": 200,
+    "seed": 99,
+    "device": null,
+    "quiet": false
+  },
+  "feature_names": [
+    "bias",
+    "valid",
+    "atom_balance",
+    "reactant_product_token_jaccard",
+    "reactant_product_string_similarity",
+    "one_reactant",
+    "multi_reactant",
+    "product_reused_as_reactant",
+    "has_leaving_group",
+    "normalized_atom_distance"
+  ],
+  "failure_types": [
+    "wrong_anchor",
+    "broken_atom_balance",
+    "invalid_valence",
+    "fragment_misalignment",
+    "wrong_bond_type",
+    "aromaticity_violation",
+    "stereochemistry_loss",
+    "over_reaction",
+    "under_reaction",
+    "side_product"
+  ],
+  "total_negatives": 200,
+  "train_size": 136,
+  "val_size": 24,
+  "test_size": 40,
+  "failure_type_distribution": {
+    "wrong_anchor": 100,
+    "broken_atom_balance": 100,
+    "invalid_valence": 0,
+    "fragment_misalignment": 0,
+    "wrong_bond_type": 0,
+    "aromaticity_violation": 0,
+    "stereochemistry_loss": 0,
+    "over_reaction": 0,
+    "under_reaction": 0,
+    "side_product": 0
+  },
+  "history": {
+    "train_loss": [
+      0.8360777462230009,
+      0.8104711560642018,
+      0.7844429892652175,
+      0.7360636767219094,
+      0.6349865128012264,
+      0.5602980676819297,
+      0.50666142912472,
+      0.44647960101856904,
+      0.49553637118900523,
+      0.4221387821085313
+    ],
+    "train_acc": [
+      0.6911764705882353,
+      0.5955882352941176,
+      0.5661764705882353,
+      0.8308823529411765,
+      0.875,
+      0.9044117647058824,
+      0.8970588235294118,
+      0.9117647058823529,
+      0.8088235294117647,
+      0.8676470588235294
+    ],
+    "val_loss": [
+      0.7585411667823792,
+      0.7329270839691162,
+      0.7062458395957947,
+      0.6456852555274963,
+      0.5692632794380188,
+      0.5208435654640198,
+      0.48068687319755554,
+      0.4955902397632599,
+      0.4175048768520355,
+      0.474438339471817
+    ],
+    "val_acc": [
+      0.6666666865348816,
+      0.875,
+      0.875,
+      0.7916666865348816,
+      0.875,
+      0.7916666865348816,
+      0.875,
+      0.8333333134651184,
+      0.875,
+      0.875
+    ],
+    "best_val_acc": 0.875,
+    "best_epoch": 1
+  },
+  "final_metrics": {
+    "classification_accuracy": 0.824999988079071,
+    "mean_entropy": 0.6866380572319031,
+    "normalized_entropy": 0.2982031193205847,
+    "aggregate_entropy": 0.6931471824645996,
+    "uniform_entropy": 2.302585092994046,
+    "best_val_acc": 0.875,
+    "best_epoch": 1
+  }
+}

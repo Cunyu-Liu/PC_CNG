@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT=/home/cunyuliu/pc_cng_research
+PY=/home/cunyuliu/miniconda3/envs/pc_cng_gpu/bin/python
+cd "$ROOT/chem_negative_sampling"
+mkdir -p "$ROOT/results/logs"
+REAL="--real-csv $ROOT/data/processed/regiosqm20_normalized.csv --real-csv $ROOT/data/processed/hitea_full_normalized.csv"
+SYN="--synthetic-csv $ROOT/results/edit_decoder_v3_full/hitea_learned_boundary_negatives_relaxed_reviewed.csv"
+PAIRWISE_DIR="$ROOT/results/v3_learned_relaxed_pairwise_reward_h2048_n4096_e80"
+BCE_DIR="$ROOT/results/v3_learned_relaxed_direct_bce_h2048_n4096_e80"
+if [ ! -f "$PAIRWISE_DIR/metrics.json" ]; then
+  mkdir -p "$PAIRWISE_DIR"
+  CUDA_VISIBLE_DEVICES=1 PYTHONPATH=. nohup "$PY" -m pc_cng.train_pairwise_reward_mlp \
+    $REAL $SYN \
+    --output-dir "$PAIRWISE_DIR" \
+    --epochs 80 \
+    --batch-size 4096 \
+    --lr 0.001 \
+    --hidden-dim 2048 \
+    --n-bits 4096 \
+    --dropout 0.20 \
+    --pairwise-weight 1.0 \
+    --bce-weight 1.0 \
+    --seed 20260710 \
+    > "$ROOT/results/logs/v3_learned_relaxed_pairwise_reward.log" 2>&1 &
+  echo "$!" > "$PAIRWISE_DIR/pid.txt"
+fi
+if [ ! -f "$BCE_DIR/metrics.json" ]; then
+  mkdir -p "$BCE_DIR"
+  CUDA_VISIBLE_DEVICES=4 PYTHONPATH=. nohup "$PY" -m pc_cng.train_feasibility_mlp \
+    $REAL $SYN \
+    --output-dir "$BCE_DIR" \
+    --epochs 80 \
+    --batch-size 4096 \
+    --lr 0.001 \
+    --hidden-dim 2048 \
+    --n-bits 4096 \
+    --dropout 0.20 \
+    --seed 20260710 \
+    > "$ROOT/results/logs/v3_learned_relaxed_direct_bce.log" 2>&1 &
+  echo "$!" > "$BCE_DIR/pid.txt"
+fi

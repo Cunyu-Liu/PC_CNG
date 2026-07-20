@@ -1,0 +1,12 @@
+- data_path=/home/cunyuliu/pc_cng_research/results/external_product_prediction_benchmark_25k_repaired_20260713/chemformer_input_chunks/chemformer_forward_input_25k_chunk_0000.tsv
+- output_sampled_smiles=/home/cunyuliu/pc_cng_research/results/external_product_prediction_benchmark_25k_repaired_20260713/chemformer_beam_chunks/chemformer_forward_beams_25k_chunk_0000.tsv
+- model_path=/home/cunyuliu/pc_cng_research/models/reaction_lm/chemformer_forward_uspto50k/model_sanitized.ckpt
+- vocabulary_path=/home/cunyuliu/pc_cng_research/external/reaction_lm/Chemformer/bart_vocab.json
+- batch_size=128
+- n_beams=10
+- n_gpus=1
+- data_device=cuda
+- dataset_part=full
+- task=forward_prediction
+- model_type=bart
+- train_mode=eval

@@ -1,0 +1,42 @@
+{
+  "supplement_csv": "data/processed/ni_coupling_supplement.csv",
+  "summary_json": "data/summaries/ni_coupling_supplement_summary.json",
+  "total_rows": 1688,
+  "valid_smiles_rows": 1682,
+  "reaction_type_counts": {
+    "Murahashi": 46,
+    "Negishi": 60,
+    "Kumada": 314,
+    "Suzuki": 483,
+    "Other Ni-catalyzed": 674,
+    "Hiyama": 62,
+    "Buchwald-Hartwig": 26,
+    "Unknown": 23
+  },
+  "source_counts": {
+    "nicolit_literature": 1665,
+    "uspto_openmolecules": 6,
+    "ord_open_reaction_database": 17
+  },
+  "split_counts": {
+    "train": 1684,
+    "val": 2,
+    "test": 2
+  },
+  "schema": [
+    "source_id",
+    "reaction_smiles",
+    "reactants",
+    "agents",
+    "products",
+    "label_type",
+    "yield",
+    "source",
+    "split_key",
+    "split"
+  ],
+  "sources": {
+    "nicolit_rows": 1665,
+    "existing_ni_rows": 23
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "classification_accuracy": 0.8500000238418579,
+  "per_class_accuracy": {
+    "wrong_anchor": 0.5714285969734192,
+    "broken_atom_balance": 1.0,
+    "invalid_valence": NaN,
+    "fragment_misalignment": NaN,
+    "wrong_bond_type": NaN,
+    "aromaticity_violation": NaN,
+    "stereochemistry_loss": NaN,
+    "over_reaction": NaN,
+    "under_reaction": NaN,
+    "side_product": NaN
+  },
+  "confusion": {
+    "wrong_anchor,broken_atom_balance": 6,
+    "broken_atom_balance,broken_atom_balance": 26,
+    "wrong_anchor,wrong_anchor": 8
+  },
+  "mean_entropy": 0.7259902954101562,
+  "normalized_entropy": 0.3152935792119425,
+  "aggregate_entropy": 0.5004023909568787,
+  "uniform_entropy": 2.302585092994046,
+  "target_hit_rate": {
+    "wrong_anchor": 0.20000000298023224,
+    "broken_atom_balance": 0.8999999761581421,
+    "invalid_valence": null,
+    "fragment_misalignment": null,
+    "wrong_bond_type": null,
+    "aromaticity_violation": null,
+    "stereochemistry_loss": null,
+    "over_reaction": null,
+    "under_reaction": null,
+    "side_product": null
+  }
+}

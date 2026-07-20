@@ -1,0 +1,66 @@
+# ===== Large binaries & data =====
+data/raw/
+data/processed/*.pkl
+data/processed/*.pt
+data/processed/*.npz
+data/processed/*.parquet
+data/processed/*.h5
+data/processed/*.csv
+data/processed/*.tsv
+data/processed/*.zip
+data/processed/*.tar
+data/processed/*.tar.gz
+models/
+envs/
+external/
+
+# ===== Tools binaries (can be re-downloaded) =====
+tools/git-lfs/
+tools/openchemlib/*.jar
+tools/**/*.jar
+tools/**/*.tar.gz
+tools/**/git-lfs
+
+# ===== Results: keep only small text summaries =====
+results/**/*
+!results/**/summary.json
+!results/**/summary.md
+!results/**/metrics.json
+!results/**/report.md
+!results/**/manifest.json
+!results/**/go_nogo.md
+!results/**/*.log
+!results/**/*.yaml
+!results/**/README.md
+results/**/*.pkl
+results/**/*.pt
+results/**/*.npz
+results/**/*.parquet
+results/**/*.h5
+results/**/*.sdf
+results/**/*.csv
+results/**/*.png
+results/**/*.pdf
+
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# ===== OS & editors =====
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== Logs & temp =====
+logs/*.log
+*.bak
+*.tmp

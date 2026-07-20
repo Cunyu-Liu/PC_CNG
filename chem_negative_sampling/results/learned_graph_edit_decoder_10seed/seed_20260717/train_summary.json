@@ -1,0 +1,88 @@
+{
+  "output_dir": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/results/learned_graph_edit_decoder_10seed/seed_20260717",
+  "args": {
+    "train_data": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+    "val_data": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+    "output_dir": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/results/learned_graph_edit_decoder_10seed/seed_20260717",
+    "epochs": 5,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "hidden_dim": 128,
+    "num_message_passing_rounds": 3,
+    "dropout": 0.1,
+    "margin": 1.0,
+    "seed": 20260717,
+    "gpu": 0,
+    "limit_train": 1000,
+    "limit_val": 200,
+    "map_unmapped": false,
+    "max_anchor_distance": 6,
+    "max_candidates_per_pair": 8,
+    "cache_train": "/tmp/hitea_1k_cache.pt",
+    "cache_val": "/tmp/hitea_200_cache.pt",
+    "eval_batch_size": 32
+  },
+  "train_stats": {
+    "total": 1000,
+    "ok": 640,
+    "skipped": 360,
+    "skip_reasons": {
+      "no_candidate_anchor": 360
+    }
+  },
+  "val_stats": {
+    "total": 200,
+    "ok": 200,
+    "skipped": 0,
+    "skip_reasons": {}
+  },
+  "train_graphs": 820,
+  "val_graphs": 200,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.3144071741172901,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 5.98
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.05471776912991817,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 5.22
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.055199818399090037,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 3.92
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.05160256912215398,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 4.68
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.056156144119226016,
+      "train_pairs": 6560,
+      "val_top1": 1.0,
+      "val_num_graphs": 200,
+      "elapsed_sec": 4.32
+    }
+  ],
+  "best_top1": 1.0,
+  "best_epoch": 1,
+  "final_top1": 1.0,
+  "device": "cuda:0"
+}

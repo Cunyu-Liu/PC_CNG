@@ -1,0 +1,14 @@
+{
+  "input": "results/hard_negative_actions_smoke/hard_negative_actions.csv",
+  "output": "results/hard_negative_actions_smoke/hard_negative_actions_reviewed.csv",
+  "known_positive_count": 2,
+  "reviewed_rows": 10,
+  "status_counts": {
+    "needs_review_or_downweight": 2,
+    "keep_synthetic_negative": 8
+  },
+  "notes": [
+    "Rows marked needs_review_or_downweight should not be treated as strong negatives.",
+    "Rows marked discard_known_positive must be removed from synthetic-negative training."
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "positive_count": 10,
+  "negative_summary": {
+    "total": 60,
+    "by_task": {
+      "forward_outcome": 30,
+      "retro_precursor": 30
+    },
+    "by_failure_type": {
+      "no_reaction": 10,
+      "retro_no_disconnection": 10,
+      "side_product": 10,
+      "retro_wrong_functional_group": 10,
+      "chemoselectivity_error": 10,
+      "retro_missing_reactant": 10
+    },
+    "avg_hard_score": 0.7863921211514092,
+    "avg_false_negative_risk": 0.48028153805298834
+  },
+  "retro_train_rows": 28,
+  "retro_test_rows": 12,
+  "retro_ranking_metrics": {
+    "accuracy": 0.75,
+    "top1": 0.6666666666666666,
+    "mrr": 0.8333333333333334,
+    "ndcg": 0.8769765845238192,
+    "groups": 3
+  },
+  "outputs": {
+    "positive_reactions": "results/pc_cng_mvp_demo/positive_reactions.csv",
+    "synthetic_counterfactual_negatives": "results/pc_cng_mvp_demo/synthetic_counterfactual_negatives.csv",
+    "ranker_dataset": "results/pc_cng_mvp_demo/ranker_dataset.csv",
+    "lightweight_ranker": "results/pc_cng_mvp_demo/lightweight_ranker.json"
+  },
+  "notes": [
+    "MVP metrics are smoke-test evidence only, not publishable claims.",
+    "Synthetic rows must not be represented as real failed experiments.",
+    "Scale-up requires RDKit atom mapping, real HTE/RegioSQM negatives, and stronger baselines."
+  ]
+}

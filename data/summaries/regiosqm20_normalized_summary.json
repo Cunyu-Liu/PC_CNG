@@ -1,0 +1,15 @@
+{
+  "input_path": "/home/cunyuliu/pc_cng_research/data/raw/regiosqm20.csv",
+  "source_name": "regiosqm20",
+  "rows": 2424,
+  "skipped": 0,
+  "labels": {
+    "positive": 552,
+    "real_negative": 1872
+  },
+  "splits": {
+    "train": 1936,
+    "val": 246,
+    "test": 242
+  }
+}

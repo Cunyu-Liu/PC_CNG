@@ -1,0 +1,17 @@
+batch_size: 128
+n_beams: 10
+n_unique_beams: null
+n_gpus: 1
+data_path: /home/cunyuliu/pc_cng_research/results/external_product_prediction_benchmark_25k_repaired_20260713/chemformer_beam_chunks/chemformer_forward_beams_25k_chunk_1_input_no_header.tsv
+output_sampled_smiles: /home/cunyuliu/pc_cng_research/results/external_product_prediction_benchmark_25k_repaired_20260713/chemformer_beam_chunks/chemformer_forward_beams_25k_chunk_0001.tsv
+vocabulary_path: /home/cunyuliu/pc_cng_research/external/reaction_lm/Chemformer/bart_vocab.json
+task: forward_prediction
+i_chunk: 0
+n_chunks: 1
+data_device: cuda
+model_path: /home/cunyuliu/pc_cng_research/models/reaction_lm/chemformer_forward_uspto50k/model_sanitized.ckpt
+model_type: bart
+dataset_part: full
+train_mode: eval
+datamodule:
+- SynthesisDataModule

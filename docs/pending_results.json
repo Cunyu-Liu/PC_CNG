@@ -1,0 +1,21 @@
+{
+  "pending_tasks": [
+    {
+      "task": "P2-03",
+      "path": "N/A",
+      "reason": "Expert review protocol specified but not executed; deferred to revision"
+    },
+    {
+      "task": "P2-05",
+      "path": "/home/cunyuliu/pc_cng_research/results/cross_dataset_transfer_v2_20260720/uspto_to_ord",
+      "reason": "paired_significance.json missing for uspto_to_ord"
+    },
+    {
+      "task": "P2-07",
+      "path": "/home/cunyuliu/pc_cng_research/results/transformer_negative_generator_20260720_smoke",
+      "reason": "full run not complete; using smoke results"
+    }
+  ],
+  "n_pending": 3,
+  "note": "Tasks listed here are incomplete (smoke-only or deferred). The manuscript v2 annotates each pending task in-line."
+}
