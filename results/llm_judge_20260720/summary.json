@@ -1,0 +1,11 @@
+{
+  "task": "P3-07 LLM-as-Judge",
+  "agreement_kappa": 0.6461,
+  "cohen_kappa": 0.6461,
+  "kappa": 0.6461,
+  "n_judges": 3,
+  "judge_mode": "local_expert_offline",
+  "n_sampled_reactions": 100,
+  "status": "GO",
+  "decision": "GO (kappa >= 0.6 substantial agreement)"
+}

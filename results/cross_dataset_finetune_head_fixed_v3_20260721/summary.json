@@ -1,0 +1,261 @@
+{
+  "task": "P3-03 cross-dataset fine-tuning head (combined v1+v3)",
+  "n_pairs": 7,
+  "pairs": [
+    {
+      "pair": "hitea_to_ord",
+      "source": "hitea",
+      "target": "ord",
+      "n_seeds": 10,
+      "direct_mrr": 0.5296137202494591,
+      "head_finetune_mrr": 0.5431570574010436,
+      "full_finetune_mrr": 0.4930444189894362,
+      "variants": {
+        "direct": {
+          "mrr_mean": 0.5296137202494591
+        },
+        "head_finetune": {
+          "mrr_mean": 0.5431570574010436
+        },
+        "full_finetune": {
+          "mrr_mean": 0.4930444189894362
+        }
+      },
+      "paired_bootstrap_ci": {
+        "head_finetune_vs_direct": {
+          "mean_diff": 0.013543337151584556,
+          "ci_low": -0.0022461499299987167,
+          "ci_high": 0.02868407152857323,
+          "p_value": 0.0459
+        },
+        "full_finetune_vs_direct": {
+          "mean_diff": -0.036569301260022904,
+          "ci_low": -0.05589601629120529,
+          "ci_high": -0.013923841797123583,
+          "p_value": 0.0011
+        }
+      },
+      "negatives_generated": true,
+      "go_no_go": "NO-GO"
+    },
+    {
+      "pair": "ord_to_hitea",
+      "source": "ord",
+      "target": "hitea",
+      "n_seeds": 10,
+      "direct_mrr": 1.0,
+      "head_finetune_mrr": 1.0,
+      "full_finetune_mrr": 1.0,
+      "variants": {
+        "direct": {
+          "mrr_mean": 1.0
+        },
+        "head_finetune": {
+          "mrr_mean": 1.0
+        },
+        "full_finetune": {
+          "mrr_mean": 1.0
+        }
+      },
+      "paired_bootstrap_ci": {
+        "head_finetune_vs_direct": {
+          "mean_diff": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "p_value": 1.0
+        },
+        "full_finetune_vs_direct": {
+          "mean_diff": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "p_value": 1.0
+        }
+      },
+      "negatives_generated": false,
+      "go_no_go": "NO-GO"
+    },
+    {
+      "pair": "uspto_openmolecules_to_ord",
+      "source": "uspto_openmolecules",
+      "target": "ord",
+      "n_seeds": 10,
+      "direct_mrr": 0.5296137202494591,
+      "head_finetune_mrr": 0.5431570574010436,
+      "full_finetune_mrr": 0.4978961435662467,
+      "variants": {
+        "direct": {
+          "mrr_mean": 0.5296137202494591
+        },
+        "head_finetune": {
+          "mrr_mean": 0.5431570574010436
+        },
+        "full_finetune": {
+          "mrr_mean": 0.4978961435662467
+        }
+      },
+      "paired_bootstrap_ci": {
+        "head_finetune_vs_direct": {
+          "mean_diff": 0.013543337151584556,
+          "ci_low": -0.0022461499299987167,
+          "ci_high": 0.02868407152857323,
+          "p_value": 0.0459
+        },
+        "full_finetune_vs_direct": {
+          "mean_diff": -0.031717576683212435,
+          "ci_low": -0.04851928216876672,
+          "ci_high": -0.011229460990199844,
+          "p_value": 0.0016
+        }
+      },
+      "negatives_generated": true,
+      "go_no_go": "NO-GO"
+    },
+    {
+      "pair": "uspto_to_hitea",
+      "source": "uspto",
+      "target": "hitea",
+      "n_seeds": 10,
+      "direct_mrr": 1.0,
+      "head_finetune_mrr": 1.0,
+      "full_finetune_mrr": 1.0,
+      "variants": {
+        "direct": {
+          "mrr_mean": 1.0
+        },
+        "head_finetune": {
+          "mrr_mean": 1.0
+        },
+        "full_finetune": {
+          "mrr_mean": 1.0
+        }
+      },
+      "paired_bootstrap_ci": {
+        "head_finetune_vs_direct": {
+          "mean_diff": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "p_value": 1.0
+        },
+        "full_finetune_vs_direct": {
+          "mean_diff": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "p_value": 1.0
+        }
+      },
+      "negatives_generated": false,
+      "go_no_go": "NO-GO"
+    },
+    {
+      "pair": "uspto_to_ord",
+      "source": "uspto",
+      "target": "ord",
+      "n_seeds": 10,
+      "direct_mrr": 0.5450992745322643,
+      "head_finetune_mrr": 0.5550260913834797,
+      "full_finetune_mrr": 0.4954989181621484,
+      "variants": {
+        "direct": {
+          "mrr_mean": 0.5450992745322643
+        },
+        "head_finetune": {
+          "mrr_mean": 0.5550260913834797
+        },
+        "full_finetune": {
+          "mrr_mean": 0.4954989181621484
+        }
+      },
+      "paired_bootstrap_ci": {
+        "head_finetune_vs_direct": {
+          "mean_diff": 0.009926816851215447,
+          "ci_low": -0.0035188844342624323,
+          "ci_high": 0.02149998409061972,
+          "p_value": 0.0639
+        },
+        "full_finetune_vs_direct": {
+          "mean_diff": -0.049600356370115825,
+          "ci_low": -0.06441423253150061,
+          "ci_high": -0.035283775614102064,
+          "p_value": 9.999000099990002e-05
+        }
+      },
+      "negatives_generated": true,
+      "go_no_go": "NO-GO"
+    },
+    {
+      "pair": "ord_to_hitea",
+      "source": "ord",
+      "target": "hitea",
+      "n_seeds": 10,
+      "direct_mrr": 0.3920888888888889,
+      "head_finetune_mrr": 0.6057067901234567,
+      "full_finetune_mrr": 0.4792913580246914,
+      "variants": {
+        "direct": {
+          "mrr_mean": 0.3920888888888889
+        },
+        "head_finetune": {
+          "mrr_mean": 0.6057067901234567
+        },
+        "full_finetune": {
+          "mrr_mean": 0.4792913580246914
+        }
+      },
+      "paired_bootstrap_ci": {
+        "head_finetune_vs_direct": {
+          "mean_diff": 0.2136179012345679,
+          "ci_low": 0.18844824074074068,
+          "ci_high": 0.2338435648148148,
+          "p_value": 9.999000099990002e-05
+        },
+        "full_finetune_vs_direct": {
+          "mean_diff": 0.08720246913580247,
+          "ci_low": 0.035461435185185186,
+          "ci_high": 0.1400049537037037,
+          "p_value": 0.0003
+        }
+      },
+      "negatives_generated": true,
+      "go_no_go": "GO"
+    },
+    {
+      "pair": "uspto_to_hitea",
+      "source": "uspto",
+      "target": "hitea",
+      "n_seeds": 10,
+      "direct_mrr": 0.4531438271604939,
+      "head_finetune_mrr": 0.6068456790123455,
+      "full_finetune_mrr": 0.4505969135802469,
+      "variants": {
+        "direct": {
+          "mrr_mean": 0.4531438271604939
+        },
+        "head_finetune": {
+          "mrr_mean": 0.6068456790123455
+        },
+        "full_finetune": {
+          "mrr_mean": 0.4505969135802469
+        }
+      },
+      "paired_bootstrap_ci": {
+        "head_finetune_vs_direct": {
+          "mean_diff": 0.1537018518518518,
+          "ci_low": 0.12624398148148142,
+          "ci_high": 0.17674794753086415,
+          "p_value": 9.999000099990002e-05
+        },
+        "full_finetune_vs_direct": {
+          "mean_diff": -0.0025469135802469235,
+          "ci_low": -0.0496025925925926,
+          "ci_high": 0.049659629629629595,
+          "p_value": 0.4469
+        }
+      },
+      "negatives_generated": true,
+      "go_no_go": "GO"
+    }
+  ],
+  "n_go": 2,
+  "n_no_go": 5,
+  "status": "partial GO"
+}

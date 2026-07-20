@@ -1,0 +1,15 @@
+{
+  "task": "P3-06 multitask joint training",
+  "n_seeds_completed": 3,
+  "yield_rmse": 21.10044401229167,
+  "rmse": 21.10044401229167,
+  "test_rmse": 21.10044401229167,
+  "multitask_yield_rmse_mean": 21.10044401229167,
+  "singletask_yield_rmse_mean": 20.89376085110235,
+  "multitask_retro_mrr_mean": 1.0,
+  "singletask_retro_mrr_mean": 1.0,
+  "multitask_condition_top1_mean": 0.6964490263459336,
+  "singletask_condition_top1_mean": 0.7468499427262314,
+  "status": "in_progress",
+  "notes": "3/10 seeds completed"
+}

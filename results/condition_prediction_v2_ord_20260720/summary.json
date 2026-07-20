@@ -1,0 +1,8 @@
+{
+  "task": "P3-04 condition prediction",
+  "test_top1_accuracy": 0.0,
+  "top1_accuracy": 0.0,
+  "status": "NO-GO",
+  "decision": "NO-GO (L18 data sparsity - test split has 0% overlap with train conditions)",
+  "n_test_examples": 0
+}

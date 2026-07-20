@@ -1,0 +1,353 @@
+{
+  "dimension_1_negative_quality": {
+    "diversity": 0.8970737301657656,
+    "n_negatives": 5000,
+    "notes": "",
+    "source": "/home/cunyuliu/pc_cng_research/results/uspto_openmolecules_full_generation/pc_cng_negatives_for_benchmark.csv",
+    "status": "ok",
+    "uniqueness": 0.611,
+    "validity": 1.0
+  },
+  "dimension_2_downstream": {
+    "condition": {
+      "status_note": "NO-GO",
+      "top1_accuracy": 0.0
+    },
+    "notes": [],
+    "retrosynthesis": {
+      "delta": 0.36950000000000005,
+      "gnn_baseline_mrr": 0.243,
+      "mrr": 0.6125
+    },
+    "status": "ok",
+    "yield": {
+      "available": true,
+      "rmse": 21.10044401229167
+    }
+  },
+  "dimension_3_cross_dataset": {
+    "mean_mrr_delta_vs_direct": {
+      "full_finetune": -0.004747382679685085,
+      "head_finetune": 0.05776189203440057
+    },
+    "n_pairs": 7,
+    "notes": "",
+    "per_pair": [
+      {
+        "direct_mrr": 0.5296137202494591,
+        "full_finetune_mrr": 0.4930444189894362,
+        "go_no_go": "NO-GO",
+        "head_finetune_mrr": 0.5431570574010436,
+        "n_seeds": 10,
+        "negatives_generated": true,
+        "pair": "hitea_to_ord",
+        "paired_bootstrap_ci": {
+          "full_finetune_vs_direct": {
+            "ci_high": -0.013923841797123583,
+            "ci_low": -0.05589601629120529,
+            "mean_diff": -0.036569301260022904,
+            "p_value": 0.0011
+          },
+          "head_finetune_vs_direct": {
+            "ci_high": 0.02868407152857323,
+            "ci_low": -0.0022461499299987167,
+            "mean_diff": 0.013543337151584556,
+            "p_value": 0.0459
+          }
+        },
+        "source": "hitea",
+        "target": "ord",
+        "variants": {
+          "direct": {
+            "mrr_mean": 0.5296137202494591
+          },
+          "full_finetune": {
+            "mrr_mean": 0.4930444189894362
+          },
+          "head_finetune": {
+            "mrr_mean": 0.5431570574010436
+          }
+        }
+      },
+      {
+        "direct_mrr": 1.0,
+        "full_finetune_mrr": 1.0,
+        "go_no_go": "NO-GO",
+        "head_finetune_mrr": 1.0,
+        "n_seeds": 10,
+        "negatives_generated": false,
+        "pair": "ord_to_hitea",
+        "paired_bootstrap_ci": {
+          "full_finetune_vs_direct": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean_diff": 0.0,
+            "p_value": 1.0
+          },
+          "head_finetune_vs_direct": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean_diff": 0.0,
+            "p_value": 1.0
+          }
+        },
+        "source": "ord",
+        "target": "hitea",
+        "variants": {
+          "direct": {
+            "mrr_mean": 1.0
+          },
+          "full_finetune": {
+            "mrr_mean": 1.0
+          },
+          "head_finetune": {
+            "mrr_mean": 1.0
+          }
+        }
+      },
+      {
+        "direct_mrr": 0.5296137202494591,
+        "full_finetune_mrr": 0.4978961435662467,
+        "go_no_go": "NO-GO",
+        "head_finetune_mrr": 0.5431570574010436,
+        "n_seeds": 10,
+        "negatives_generated": true,
+        "pair": "uspto_openmolecules_to_ord",
+        "paired_bootstrap_ci": {
+          "full_finetune_vs_direct": {
+            "ci_high": -0.011229460990199844,
+            "ci_low": -0.04851928216876672,
+            "mean_diff": -0.031717576683212435,
+            "p_value": 0.0016
+          },
+          "head_finetune_vs_direct": {
+            "ci_high": 0.02868407152857323,
+            "ci_low": -0.0022461499299987167,
+            "mean_diff": 0.013543337151584556,
+            "p_value": 0.0459
+          }
+        },
+        "source": "uspto_openmolecules",
+        "target": "ord",
+        "variants": {
+          "direct": {
+            "mrr_mean": 0.5296137202494591
+          },
+          "full_finetune": {
+            "mrr_mean": 0.4978961435662467
+          },
+          "head_finetune": {
+            "mrr_mean": 0.5431570574010436
+          }
+        }
+      },
+      {
+        "direct_mrr": 1.0,
+        "full_finetune_mrr": 1.0,
+        "go_no_go": "NO-GO",
+        "head_finetune_mrr": 1.0,
+        "n_seeds": 10,
+        "negatives_generated": false,
+        "pair": "uspto_to_hitea",
+        "paired_bootstrap_ci": {
+          "full_finetune_vs_direct": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean_diff": 0.0,
+            "p_value": 1.0
+          },
+          "head_finetune_vs_direct": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean_diff": 0.0,
+            "p_value": 1.0
+          }
+        },
+        "source": "uspto",
+        "target": "hitea",
+        "variants": {
+          "direct": {
+            "mrr_mean": 1.0
+          },
+          "full_finetune": {
+            "mrr_mean": 1.0
+          },
+          "head_finetune": {
+            "mrr_mean": 1.0
+          }
+        }
+      },
+      {
+        "direct_mrr": 0.5450992745322643,
+        "full_finetune_mrr": 0.4954989181621484,
+        "go_no_go": "NO-GO",
+        "head_finetune_mrr": 0.5550260913834797,
+        "n_seeds": 10,
+        "negatives_generated": true,
+        "pair": "uspto_to_ord",
+        "paired_bootstrap_ci": {
+          "full_finetune_vs_direct": {
+            "ci_high": -0.035283775614102064,
+            "ci_low": -0.06441423253150061,
+            "mean_diff": -0.049600356370115825,
+            "p_value": 9.999000099990002e-05
+          },
+          "head_finetune_vs_direct": {
+            "ci_high": 0.02149998409061972,
+            "ci_low": -0.0035188844342624323,
+            "mean_diff": 0.009926816851215447,
+            "p_value": 0.0639
+          }
+        },
+        "source": "uspto",
+        "target": "ord",
+        "variants": {
+          "direct": {
+            "mrr_mean": 0.5450992745322643
+          },
+          "full_finetune": {
+            "mrr_mean": 0.4954989181621484
+          },
+          "head_finetune": {
+            "mrr_mean": 0.5550260913834797
+          }
+        }
+      },
+      {
+        "direct_mrr": 0.3920888888888889,
+        "full_finetune_mrr": 0.4792913580246914,
+        "go_no_go": "GO",
+        "head_finetune_mrr": 0.6057067901234567,
+        "n_seeds": 10,
+        "negatives_generated": true,
+        "pair": "ord_to_hitea",
+        "paired_bootstrap_ci": {
+          "full_finetune_vs_direct": {
+            "ci_high": 0.1400049537037037,
+            "ci_low": 0.035461435185185186,
+            "mean_diff": 0.08720246913580247,
+            "p_value": 0.0003
+          },
+          "head_finetune_vs_direct": {
+            "ci_high": 0.2338435648148148,
+            "ci_low": 0.18844824074074068,
+            "mean_diff": 0.2136179012345679,
+            "p_value": 9.999000099990002e-05
+          }
+        },
+        "source": "ord",
+        "target": "hitea",
+        "variants": {
+          "direct": {
+            "mrr_mean": 0.3920888888888889
+          },
+          "full_finetune": {
+            "mrr_mean": 0.4792913580246914
+          },
+          "head_finetune": {
+            "mrr_mean": 0.6057067901234567
+          }
+        }
+      },
+      {
+        "direct_mrr": 0.4531438271604939,
+        "full_finetune_mrr": 0.4505969135802469,
+        "go_no_go": "GO",
+        "head_finetune_mrr": 0.6068456790123455,
+        "n_seeds": 10,
+        "negatives_generated": true,
+        "pair": "uspto_to_hitea",
+        "paired_bootstrap_ci": {
+          "full_finetune_vs_direct": {
+            "ci_high": 0.049659629629629595,
+            "ci_low": -0.0496025925925926,
+            "mean_diff": -0.0025469135802469235,
+            "p_value": 0.4469
+          },
+          "head_finetune_vs_direct": {
+            "ci_high": 0.17674794753086415,
+            "ci_low": 0.12624398148148142,
+            "mean_diff": 0.1537018518518518,
+            "p_value": 9.999000099990002e-05
+          }
+        },
+        "source": "uspto",
+        "target": "hitea",
+        "variants": {
+          "direct": {
+            "mrr_mean": 0.4531438271604939
+          },
+          "full_finetune": {
+            "mrr_mean": 0.4505969135802469
+          },
+          "head_finetune": {
+            "mrr_mean": 0.6068456790123455
+          }
+        }
+      }
+    ],
+    "source": "/home/cunyuliu/pc_cng_research/results/cross_dataset_finetune_head_fixed_v3_20260721",
+    "status": "ok",
+    "variants": [
+      "direct",
+      "head_finetune",
+      "full_finetune"
+    ]
+  },
+  "dimension_4_efficiency": {
+    "backbone_ckpt": "/home/cunyuliu/pc_cng_research/results/pretrained_backbone_chemformer_lora_20260720/seed20260710/model.pt",
+    "checkpoint": "/home/cunyuliu/pc_cng_research/results/pretrained_backbone_chemformer_lora_20260720/seed20260710/model.pt",
+    "latency_ms_per_reaction": 0.0017796549946069717,
+    "memory_mb": 7.62939453125e-05,
+    "mode": "torch_backbone_probe",
+    "n_samples": 100,
+    "notes": "",
+    "probe_shape": [
+      2048,
+      512
+    ],
+    "status": "ok",
+    "throughput_reactions_per_sec": 561906.6633872174,
+    "vocab_path": "/home/cunyuliu/pc_cng_research/external/reaction_lm/Chemformer/bart_vocab.json"
+  },
+  "dimension_5_plausibility": {
+    "dft": {
+      "notes": "summary.json missing validation_rate key",
+      "source": "/home/cunyuliu/pc_cng_research/results/dft_validation_chemoselectivity_20260720",
+      "validation_rate": null
+    },
+    "llm_judge": {
+      "agreement_kappa": 0.6461,
+      "notes": "",
+      "source": "/home/cunyuliu/pc_cng_research/results/llm_judge_20260720"
+    },
+    "notes": [],
+    "status": "ok"
+  },
+  "dimension_6_ablation": {
+    "ablations": [],
+    "components": [
+      "physicochemical_constraints",
+      "counterfactual_generation",
+      "negative_sampling"
+    ],
+    "notes": "No existing ablation results located; deferred to future work.",
+    "source": null,
+    "status": "deferred_to_future_work"
+  },
+  "p3_08_metadata": {
+    "date": "20260721",
+    "dimensions_covered": [
+      "dimension_1_negative_quality",
+      "dimension_2_downstream",
+      "dimension_3_cross_dataset",
+      "dimension_4_efficiency",
+      "dimension_5_plausibility",
+      "dimension_6_ablation"
+    ],
+    "rdkit_available": true,
+    "task_id": "P3-08",
+    "torch_available": true,
+    "version": "v3"
+  }
+}
