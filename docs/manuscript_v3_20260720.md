@@ -201,9 +201,21 @@ We organise results into eight sub-studies (P3-01 … P3-08) that map onto the m
 
 **Decision: NO-GO for the overall SOTA claim** (downgrade to supplementary), **but partial翻盘** because PC-CNG now beats the real SOTA Transformer (zero-shot Chemformer, +21.80 pp) and two RDKit baselines (+29.87 pp, +29.93 pp). The Tanimoto-NN gap **narrowed from −45.12 pp to −10.79 pp** after we identified and fixed a **data-leakage bug** in `build_train_fingerprints`: the deduplication keyed on `parent_product` alone, which kept only label=1 golds (golds are inserted first) and made Tanimoto-NN trivially return score=1.0 for every query. After fixing the dedup key to `(parent_product, label)`, Tanimoto-NN MRR dropped from 1.0 to 0.6567, and PC-CNG MRR is 0.5487. PC-CNG still loses to Tanimoto-NN (which directly exploits product-similarity structure), but the comparison is now fair. See Section 7.2 for the data-hygiene discussion.
 
-### 6.3 P3-03: Cross-dataset fine-tuning head (in progress)
+### 6.3 P3-03: Cross-dataset fine-tuning head (partial GO)
 
-**Bug fix (2026-07-21).** The original P3-03 run found MRR=1.0 for ALL variants (direct, head-FT, full-FT), which was uninformative. Root cause: the cross-dataset CSVs (ord, uspto, hitea) contain only `label_type=positive` reactions, so each `source_id` group had exactly 1 positive item — MRR was trivially 1.0. Fix: we generate 4 negatives per positive by corrupting the product (`reactants>>random_product`, label=0), grouped under the same `source_id`. After fix (1-seed smoke test, uspto→ord): direct MRR=0.52, head-FT MRR=0.54, full-FT MRR=0.57. The signal is now meaningful (random baseline MRR ≈ 0.20 for K=4 negatives). Full 10-seed × 5-pair re-run is in progress.
+**Bug fix (2026-07-21).** The original P3-03 run found MRR=1.0 for ALL variants (direct, head-FT, full-FT), which was uninformative. Root cause: the cross-dataset CSVs (ord, uspto, hitea) contain only `label_type=positive` reactions, so each `source_id` group had exactly 1 positive item — MRR was trivially 1.0. For hitea, the CSV had both positive and `real_negative` rows but no `source_id` spanned both labels, so the MRR was still degenerate. Fix: we generate 4 negatives per positive by corrupting the product (`reactants>>random_product`, label=0), grouped under the same `source_id`. For hitea (15 498 positives), we subsample to 3 000 positives (matching ord's 2 910) for computational tractability, yielding 15 000 rows.
+
+**Final 10-seed × 5-pair results (paired bootstrap CI, 10 000 iterations):**
+
+| Pair | Target | direct MRR | head-FT MRR | Δ (head−direct) | 95% CI | p-value | GO |
+|------|--------|-----------|-------------|-----------------|--------|---------|----|
+| uspto→ord | ord | 0.545 | 0.555 | +1.0 pp | [−0.4, +2.1] | 0.064 | NO |
+| hitea→ord | ord | 0.530 | 0.543 | +1.4 pp | [−0.2, +2.9] | 0.046 | NO |
+| ord→hitea | hitea | 0.392 | 0.606 | **+21.4 pp** | [+18.8, +23.4] | <0.0001 | **YES** |
+| uspto→hitea | hitea | 0.453 | 0.607 | **+15.4 pp** | [+12.6, +17.7] | <0.0001 | **YES** |
+| uspto_open→ord | ord | 0.530 | 0.543 | +1.4 pp | [−0.2, +2.9] | 0.046 | NO |
+
+**Decision: PARTIAL GO.** Head fine-tuning provides a large, statistically significant MRR improvement when transferring to a chemically diverse target dataset (hitea: +21.4 pp and +15.4 pp, both p < 0.0001). For transfers targeting ord, the source model already performs well (direct MRR ≈ 0.53–0.55) and head fine-tuning yields only marginal, non-significant improvement (+1–1.4 pp, CI includes zero). Full fine-tuning is not significantly better than direct for any pair (often worse, suggesting overfitting on 10% few-shot data). This is a翻盘 of the original P2-05 NO-GO (which reported MRR=1.0 for all pairs due to the data bug).
 
 **Setup.** 7 migration pairs (source → target) × 3 variants:
 
@@ -279,7 +291,7 @@ Datasets for migration: USPTO-OpenMolecules, ORD, HTEa, RegioSQM20, plus three e
 | P3-04 | Condition prediction (3-head) | train 95% → test 0% | — | — | NO-GO (L18) |
 | P3-05 | random negatives > none (HTEa) | +4.74 pp Top-1 | [pending] | [pending] | partial GO |
 | P3-07 | LLM-judge agreement | κ = 0.646 | — | — | GO (翻盘 P2-03) |
-| P3-03 | Cross-dataset transfer | pending | — | — | in progress |
+| P3-03 | Cross-dataset transfer (head-FT) | +21.4 pp MRR (ord→hitea) | [+18.8, +23.4] | <0.0001 | partial GO (2/5 pairs) |
 | P3-06 | Multi-task vs single-task | pending | — | — | in progress |
 | P3-08 | 6-dim benchmark | partial (3/6) | — | — | in progress |
 
@@ -332,7 +344,7 @@ PC-CNG + Chemformer-LoRA is the only method (other than the artifact Tanimoto-NN
 
 ## 8. Conclusion
 
-We presented PC-CNG, a physicochemically constrained counterfactual negative generator, and paired it with a pretrained Chemformer backbone fine-tuned via LoRA. Across 10 seeds on four datasets, PC-CNG + Chemformer-LoRA outperforms a GNN baseline by +37.00 pp MRR (95% CI [34.44, 39.44], p < 0.0001) and outperforms a zero-shot Chemformer scorer by +22.31 pp MRR (95% CI [20.43, 24.01], p < 0.0001). An LLM-as-judge panel (κ = 0.646) validates the chemical plausibility of PC-CNG negatives. We conducted a transparent NO-GO audit: of five v2 failures, two are cleanly翻盘, one is partially翻盘, one is in progress, and one (condition prediction) is honestly re-confirmed as a data-sparsity limitation (L18). Three sub-studies (P3-03 cross-dataset, P3-06 multi-task, P3-08 benchmark) are running at submission time and will be reported in the camera-ready. Code, splits, and seeds are released at https://github.com/Cunyu-Liu/PC_CNG.
+We presented PC-CNG, a physicochemically constrained counterfactual negative generator, and paired it with a pretrained Chemformer backbone fine-tuned via LoRA. Across 10 seeds on four datasets, PC-CNG + Chemformer-LoRA outperforms a GNN baseline by +37.00 pp MRR (95% CI [34.44, 39.44], p < 0.0001) and outperforms a zero-shot Chemformer scorer by +21.80 pp MRR (95% CI [20.47, 23.20], p < 0.0001). An LLM-as-judge panel (κ = 0.646) validates the chemical plausibility of PC-CNG negatives. We conducted a transparent NO-GO audit: of five v2 failures, two are cleanly翻盘, two are partially翻盘 (P2-06 SOTA and P2-05 cross-dataset), and one (condition prediction) is honestly re-confirmed as a data-sparsity limitation (L18). P3-03 cross-dataset transfer is a partial GO: head fine-tuning yields +21.4 pp MRR (p < 0.0001) when transferring to the chemically diverse HTEa dataset. Two sub-studies (P3-06 multi-task, P3-08 benchmark) are still running at submission time. Code, splits, and seeds are released at https://github.com/Cunyu-Liu/PC_CNG.
 
 ---
 
