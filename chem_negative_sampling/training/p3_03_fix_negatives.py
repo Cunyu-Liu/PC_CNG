@@ -138,6 +138,7 @@ def _patched_run_pair(
     test_idx_path=None,
     bootstrap_iterations: int = 10000,
     n_negatives_per_positive: int = 4,
+    max_positives: int = 0,
 ) -> Dict[str, Any]:
     """Patched run_pair that generates negatives if target has none."""
     import os
@@ -196,6 +197,14 @@ def _patched_run_pair(
     if not has_meaningful_groups:
         # Filter to only positive rows for negative generation
         pos_rows = [r for r in target_rows if int(r.get("label", 0)) == 1]
+        # Subsample if max_positives is set
+        if max_positives > 0 and len(pos_rows) > max_positives:
+            rng_sub = random.Random(42)
+            pos_rows = rng_sub.sample(pos_rows, max_positives)
+            print(
+                f"[P3-03-FIX] Subsampled positives to {max_positives} (from {len(target_rows)} total rows)",
+                flush=True,
+            )
         print(
             f"[P3-03-FIX] WARNING: target {target_name} has no meaningful groups "
             f"(no source_id with both pos+neg); generating "
@@ -403,6 +412,7 @@ if __name__ == "__main__":
     parser.add_argument("--test-idx", default=None)
     parser.add_argument("--n-negatives", type=int, default=4, help="Negatives per positive")
     parser.add_argument("--bootstrap-iterations", type=int, default=10000)
+    parser.add_argument("--max-positives", type=int, default=0, help="Subsample positives to N (0=all)")
     args = parser.parse_args()
 
     seeds = [int(s) for s in args.seeds.split(",")]
@@ -451,6 +461,7 @@ if __name__ == "__main__":
             test_idx_path=args.test_idx,
             bootstrap_iterations=args.bootstrap_iterations,
             n_negatives_per_positive=args.n_negatives,
+            max_positives=args.max_positives,
         )
 
         print(
