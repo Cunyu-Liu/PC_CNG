@@ -1,0 +1,56 @@
+{
+  "task": "P2-06 SOTA multi-baseline comparison (L6)",
+  "decision_rule": "GO iff PC-CNG beats every evaluated baseline by > 1.0 pp MRR and the seed-level 95% CI is entirely positive.",
+  "n_baselines_evaluated": 4,
+  "n_baselines_pc_cng_beats": 3,
+  "threshold_pp": 1.0,
+  "overall_decision": "NO-GO (downgrade to supplementary)",
+  "per_baseline": {
+    "pc_cng_vs_rdkit_template": {
+      "baseline": "rdkit_template",
+      "delta_pp": 29.874603174603187,
+      "ci_low_pp": 28.470117063492083,
+      "ci_high_pp": 31.294610119047633,
+      "pc_cng_better": true,
+      "ci_all_positive": true,
+      "paired_permutation_p": 9.999000099990002e-05,
+      "sign_test_p": 4.373754558595263e-163
+    },
+    "pc_cng_vs_heuristic_validator": {
+      "baseline": "heuristic_validator",
+      "delta_pp": 29.93015873015875,
+      "ci_low_pp": 28.543755952380973,
+      "ci_high_pp": 31.348769841269863,
+      "pc_cng_better": true,
+      "ci_all_positive": true,
+      "paired_permutation_p": 9.999000099990002e-05,
+      "sign_test_p": 4.373754558595263e-163
+    },
+    "pc_cng_vs_tanimoto_nn": {
+      "baseline": "tanimoto_nn",
+      "delta_pp": -10.791666666666663,
+      "ci_low_pp": -12.17640972222222,
+      "ci_high_pp": -9.350819444444436,
+      "pc_cng_better": false,
+      "ci_all_positive": false,
+      "paired_permutation_p": 9.999000099990002e-05,
+      "sign_test_p": 4.445883450921111e-12
+    },
+    "pc_cng_vs_chemformer_scorer": {
+      "baseline": "chemformer_scorer",
+      "delta_pp": 21.795793650793666,
+      "ci_low_pp": 20.466348214285738,
+      "ci_high_pp": 23.204614087301607,
+      "pc_cng_better": true,
+      "ci_all_positive": true,
+      "paired_permutation_p": 9.999000099990002e-05,
+      "sign_test_p": 3.890694704038133e-82
+    }
+  },
+  "deferred_sota_methods": [
+    "localretro",
+    "graph2smiles",
+    "molecular_transformer"
+  ],
+  "deferred_reason": "LocalRetro / Graph2SMILES / Molecular Transformer could not be installed due to no network access on the remote server. See sota_installation_status.json for details."
+}

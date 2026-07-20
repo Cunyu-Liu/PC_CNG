@@ -1,0 +1,59 @@
+{
+  "task": "P3-02 SOTA multi-baseline comparison v2 (翻盘 P2-06 NO-GO)",
+  "network_access": "none",
+  "deferred_methods": [
+    {
+      "name": "localretro",
+      "status": "deferred",
+      "reason": "localretro not evaluated due to installation failure: no network access on remote server. PyPI install and git clone from GitHub both fail.",
+      "attempted_install": [
+        "pip install localretro",
+        "pip install git+https://github.com/<org>/localretro.git"
+      ],
+      "fallback": "RDKit-only baselines (B1/B2/B3) used instead."
+    },
+    {
+      "name": "graph2smiles",
+      "status": "deferred",
+      "reason": "graph2smiles not evaluated due to installation failure: no network access on remote server. PyPI install and git clone from GitHub both fail.",
+      "attempted_install": [
+        "pip install graph2smiles",
+        "pip install git+https://github.com/<org>/graph2smiles.git"
+      ],
+      "fallback": "RDKit-only baselines (B1/B2/B3) used instead."
+    },
+    {
+      "name": "molecular_transformer",
+      "status": "deferred",
+      "reason": "molecular_transformer not evaluated due to installation failure: no network access on remote server. PyPI install and git clone from GitHub both fail.",
+      "attempted_install": [
+        "pip install molecular_transformer",
+        "pip install git+https://github.com/<org>/molecular_transformer.git"
+      ],
+      "fallback": "RDKit-only baselines (B1/B2/B3) used instead."
+    }
+  ],
+  "evaluated_methods": [
+    {
+      "key": "rdkit_template",
+      "name": "B1_RDKit_template"
+    },
+    {
+      "key": "heuristic_validator",
+      "name": "B2_heuristic_forward_validator"
+    },
+    {
+      "key": "tanimoto_nn",
+      "name": "B3_Tanimoto_nearest_neighbor"
+    },
+    {
+      "key": "pc_cng",
+      "name": "B4_PC_CNG_augmented"
+    },
+    {
+      "key": "chemformer_scorer",
+      "name": "B5_Chemformer_zero_shot_scorer"
+    }
+  ],
+  "note": "Per Section 26.1 degradation path: '若某 SOTA 安装受阻，跳过该方法，明确标注 X method not evaluated due to installation failure'. LocalRetro / Graph2SMILES / Molecular Transformer are documented as deferred. P3-02 adds B5 Chemformer zero-shot scorer (pretrained checkpoint already downloaded for P3-01, no network access required)."
+}
