@@ -259,11 +259,21 @@ Datasets for migration: USPTO-OpenMolecules, ORD, HTEa, RegioSQM20, plus three e
 
 **Decision: partial GO.** Negatives help (+4.74 pp Top-1), confirming the value of negative sampling in HTE settings. The PC-CNG-specific evaluation is deferred pending a file-format fix (Section 7.2).
 
-### 6.6 P3-06: Multi-task joint training (in progress)
+### 6.6 P3-06: Multi-task joint training (preliminary: 3/10 seeds, ST >= MT)
 
 **Setup.** Shared Chemformer-LoRA backbone + 3 heads (retrosynthesis / condition / yield) with uncertainty weighting (Section 5.3). Compared against single-task baselines and equal-weighted linear combination.
 
-**Status at submission:** runs in progress (job IDs p3_06_*). Preliminary protocol is documented in Section 5.3; results will be reported in Supplementary §S4 when complete.
+**Preliminary results (3/10 seeds completed, job PID 2092228 on GPU 6):**
+
+| Task | Multitask | Singletask | Delta |
+|------|-----------|------------|-------|
+| Yield RMSE | 21.10 | 20.89 | +0.21 (MT worse) |
+| Retro MRR | 1.000 | 1.000 | 0.00 (tie) |
+| Condition Top-1 | 69.6% | 74.7% | -5.1 pp (MT worse) |
+
+**Decision: NO-GO (preliminary).** Singletask >= multitask on all three tasks across the 3 completed seeds, suggesting that with the current 10% few-shot data, multitask joint training does not improve over singletask. The result is consistent with the intuition that when per-task data is sparse, shared parameters can lead to negative transfer. Final 10-seed results will be reported when the job completes (~10h ETA); if the trend holds, this confirms that multitask is not beneficial under the current data regime.
+
+**Status at submission:** 3/10 seeds completed; runs in progress (PID 2092228). Preliminary protocol is documented in Section 5.3; final results will be reported in Supplementary §S4 when complete.
 
 ### 6.7 P3-07: LLM-as-judge — GO, 翻盘 P2-03 DEFERRED
 
