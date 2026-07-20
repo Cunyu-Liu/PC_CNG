@@ -715,6 +715,67 @@ def _morgan_fingerprint(smiles: str, radius: int = 2, n_bits: int = 1024):
         return None
 
 
+def _canonical_smiles(smiles: str) -> str:
+    """Return RDKit canonical SMILES, or stripped input if RDKit unavailable.
+
+    Used by the decontamination filter to compare product identities
+    robustly (e.g. ``CCO`` vs ``OCC`` should be treated as the same
+    molecule).  Falls back to the stripped input so the filter still
+    works (with exact-string matching) when RDKit is not installed.
+    """
+    if not smiles:
+        return ""
+    try:
+        from rdkit import Chem  # type: ignore
+    except Exception:
+        return smiles.strip()
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return smiles.strip()
+    try:
+        return Chem.MolToSmiles(mol, canonical=True)
+    except Exception:
+        return smiles.strip()
+
+
+def filter_leaked_test_rows(
+    train_rows: Sequence[Dict[str, object]],
+    test_rows: Sequence[Dict[str, object]],
+) -> Tuple[List[Dict[str, object]], int, List[str]]:
+    """P3-02 decontamination filter.
+
+    A test candidate is considered "leaked" when its canonical
+    ``parent_product`` SMILES matches any train-set ``parent_product``
+    SMILES.  When the nearest neighbour in ``score_rows_tanimoto_nn``
+    is the *exact same product* (Tanimoto = 1.0) the baseline trivially
+    recovers the correct label, inflating Tanimoto-NN MRR to 1.0 and
+    making PC-CNG look unfairly worse.
+
+    Returns ``(decontaminated_test_rows, n_leaked, leaked_source_ids)``
+    where ``leaked_source_ids`` is the sorted list of ``source_id``
+    values that were excluded.
+    """
+    train_products: set = set()
+    for row in train_rows:
+        prod = str(row.get("parent_product", "")).strip()
+        canon = _canonical_smiles(prod) if prod else ""
+        if canon:
+            train_products.add(canon)
+
+    decontaminated: List[Dict[str, object]] = []
+    n_leaked = 0
+    leaked_source_ids: set = set()
+    for row in test_rows:
+        prod = str(row.get("parent_product", "")).strip()
+        canon = _canonical_smiles(prod) if prod else ""
+        if canon and canon in train_products:
+            n_leaked += 1
+            leaked_source_ids.add(str(row.get("source_id", "")))
+            continue
+        decontaminated.append(row)
+    return decontaminated, n_leaked, sorted(leaked_source_ids)
+
+
 def build_train_fingerprints(
     train_rows: Sequence[Dict[str, object]],
 ) -> List[Tuple[str, object, int]]:
@@ -972,8 +1033,22 @@ def run_seed(
     tanimoto_k: int = 5,
     chemformer_cache: Optional["ChemformerEmbeddingCache"] = None,
     chemformer_epochs: int = 100,
+    decontaminate: bool = False,
 ) -> Dict[str, object]:
-    """Run one seed: score all selected baselines on the test set."""
+    """Run one seed: score all selected baselines on the test set.
+
+    When ``decontaminate=True``, the P3-02 decontamination filter is
+    applied: test candidates whose canonical ``parent_product`` SMILES
+    matches any train-set product are excluded from the *primary*
+    evaluation.  The decontaminated metrics are stored under the
+    standard keys (``{method}_metrics`` / ``{method}_per_group``) so
+    that the downstream aggregation, paired significance and Go/No-Go
+    decision automatically use the fair (decontaminated) comparison.
+    The original contaminated metrics are retained under
+    ``{method}_metrics_contam`` / ``{method}_per_group_contam`` for
+    transparency, and ``n_leaked`` / ``n_test_contam`` /
+    ``n_test_decontam`` are recorded.
+    """
     train_rows, test_rows = split_by_source(rows, train_fraction)
     if not test_rows:
         train_rows, test_rows = list(rows), list(rows)
@@ -1004,56 +1079,89 @@ def run_seed(
     if "tanimoto_nn" in methods:
         train_fps = build_train_fingerprints(train_rows)
 
+    # P3-02 decontamination: filter leaked test candidates whose product
+    # appears verbatim in the train set.  When the flag is off we simply
+    # evaluate on the full (contaminated) test set — primary == contaminated.
+    n_leaked = 0
+    leaked_source_ids: List[str] = []
+    if decontaminate:
+        primary_test_rows, n_leaked, leaked_source_ids = filter_leaked_test_rows(
+            train_rows, test_rows,
+        )
+    else:
+        primary_test_rows = list(test_rows)
+
     result: Dict[str, object] = {
         "seed": seed,
         "n_train": len(train_rows),
         "n_test": len(test_rows),
+        "n_leaked": n_leaked,
+        "n_test_contam": len(test_rows),
+        "n_test_decontam": len(primary_test_rows),
+        "leaked_source_ids": leaked_source_ids,
+        "decontaminate": bool(decontaminate),
     }
 
-    # B1: RDKit template
-    if "rdkit_template" in methods:
-        b1_scored = score_rows_rdkit_template(test_rows, cache=cache)
-        result["rdkit_template_metrics"] = evaluate(b1_scored)
-        result["rdkit_template_per_group"] = per_group_metrics(b1_scored)
+    def _score_all(test_subset: Sequence[Dict[str, object]], suffix: str) -> None:
+        """Score every selected method on ``test_subset`` and write to result.
 
-    # B2: heuristic validator
-    if "heuristic_validator" in methods:
-        b2_scored = score_rows_heuristic_validator(test_rows, cache=cache)
-        result["heuristic_validator_metrics"] = evaluate(b2_scored)
-        result["heuristic_validator_per_group"] = per_group_metrics(b2_scored)
+        ``suffix`` is appended to the result keys (``""`` for primary,
+        ``"_contam"`` for the contaminated reference when decontamination
+        is active).
+        """
+        # B1: RDKit template
+        if "rdkit_template" in methods:
+            b1_scored = score_rows_rdkit_template(test_subset, cache=cache)
+            result[f"rdkit_template_metrics{suffix}"] = evaluate(b1_scored)
+            result[f"rdkit_template_per_group{suffix}"] = per_group_metrics(b1_scored)
 
-    # B3: Tanimoto nearest-neighbor
-    if "tanimoto_nn" in methods:
-        b3_scored = score_rows_tanimoto_nn(test_rows, train_fps, k=tanimoto_k)
-        result["tanimoto_nn_metrics"] = evaluate(b3_scored)
-        result["tanimoto_nn_per_group"] = per_group_metrics(b3_scored)
+        # B2: heuristic validator
+        if "heuristic_validator" in methods:
+            b2_scored = score_rows_heuristic_validator(test_subset, cache=cache)
+            result[f"heuristic_validator_metrics{suffix}"] = evaluate(b2_scored)
+            result[f"heuristic_validator_per_group{suffix}"] = per_group_metrics(b2_scored)
 
-    # B4: PC-CNG augmented
-    if "pc_cng" in methods:
-        pc_cng_model = train_pc_cng_augmented_ranker(
-            train_rows, seed, cache=cache, epochs=epochs,
-        )
-        b4_scored = score_rows_pc_cng(pc_cng_model, test_rows)
-        result["pc_cng_metrics"] = evaluate(b4_scored)
-        result["pc_cng_per_group"] = per_group_metrics(b4_scored)
+        # B3: Tanimoto nearest-neighbor
+        if "tanimoto_nn" in methods:
+            b3_scored = score_rows_tanimoto_nn(test_subset, train_fps, k=tanimoto_k)
+            result[f"tanimoto_nn_metrics{suffix}"] = evaluate(b3_scored)
+            result[f"tanimoto_nn_per_group{suffix}"] = per_group_metrics(b3_scored)
 
-    # B5: Chemformer zero-shot embedding + logistic regression (P3-02)
-    if "chemformer_scorer" in methods:
-        if chemformer_cache is not None and chemformer_cache.available:
-            b5_model = train_chemformer_scorer_ranker(
-                train_rows, seed, cache=chemformer_cache,
-                epochs=chemformer_epochs,
+        # B4: PC-CNG augmented
+        if "pc_cng" in methods:
+            pc_cng_model = train_pc_cng_augmented_ranker(
+                train_rows, seed, cache=cache, epochs=epochs,
             )
-            b5_scored = score_rows_chemformer_scorer(b5_model, test_rows)
-        else:
-            # Backbone unavailable - score everything 0.5 so the method
-            # is still recorded but flagged as degraded.
-            b5_scored = [
-                {**row, "score": 0.5, "ranker_source": "chemformer_scorer"}
-                for row in test_rows
-            ]
-        result["chemformer_scorer_metrics"] = evaluate(b5_scored)
-        result["chemformer_scorer_per_group"] = per_group_metrics(b5_scored)
+            b4_scored = score_rows_pc_cng(pc_cng_model, test_subset)
+            result[f"pc_cng_metrics{suffix}"] = evaluate(b4_scored)
+            result[f"pc_cng_per_group{suffix}"] = per_group_metrics(b4_scored)
+
+        # B5: Chemformer zero-shot embedding + logistic regression (P3-02)
+        if "chemformer_scorer" in methods:
+            if chemformer_cache is not None and chemformer_cache.available:
+                b5_model = train_chemformer_scorer_ranker(
+                    train_rows, seed, cache=chemformer_cache,
+                    epochs=chemformer_epochs,
+                )
+                b5_scored = score_rows_chemformer_scorer(b5_model, test_subset)
+            else:
+                # Backbone unavailable - score everything 0.5 so the method
+                # is still recorded but flagged as degraded.
+                b5_scored = [
+                    {**row, "score": 0.5, "ranker_source": "chemformer_scorer"}
+                    for row in test_subset
+                ]
+            result[f"chemformer_scorer_metrics{suffix}"] = evaluate(b5_scored)
+            result[f"chemformer_scorer_per_group{suffix}"] = per_group_metrics(b5_scored)
+
+    # Primary metrics: decontaminated test set when the flag is on,
+    # otherwise the full (contaminated) test set.
+    _score_all(primary_test_rows, "")
+
+    # When decontaminating, also keep the contaminated metrics for
+    # transparency so the artifact is visible in summary.json.
+    if decontaminate:
+        _score_all(test_rows, "_contam")
 
     return result
 
@@ -1070,16 +1178,22 @@ def _paired_significance_one_pair(
     metric: str = "mrr",
     bootstrap_iterations: int = 10000,
     seed: int = 20260710,
+    suffix: str = "",
 ) -> Dict[str, object]:
     """Compute paired significance for metric delta (method_b - method_a).
 
     Both group-level (within-seed) and seed-level (across-seed) CIs are
     reported.
+
+    ``suffix`` is appended to the per-group / metrics keys so the same
+    routine can compute significance on either the primary
+    (decontaminated, suffix ``""``) or the contaminated reference
+    (suffix ``"_contam"``) per-group dicts.
     """
-    a_per_group_key = f"{method_a}_per_group"
-    b_per_group_key = f"{method_b}_per_group"
-    a_metrics_key = f"{method_a}_metrics"
-    b_metrics_key = f"{method_b}_metrics"
+    a_per_group_key = f"{method_a}_per_group{suffix}"
+    b_per_group_key = f"{method_b}_per_group{suffix}"
+    a_metrics_key = f"{method_a}_metrics{suffix}"
+    b_metrics_key = f"{method_b}_metrics{suffix}"
 
     common_groups: Optional[set] = None
     for r in seed_results:
@@ -1176,11 +1290,17 @@ def paired_significance(
     methods: Sequence[str],
     bootstrap_iterations: int = 10000,
     seed: int = 20260710,
+    suffix: str = "",
 ) -> Dict[str, object]:
     """Compute paired significance: PC-CNG vs each baseline.
 
     Returns a dict with keys ``pc_cng_vs_rdkit_template``,
     ``pc_cng_vs_heuristic_validator``, ``pc_cng_vs_tanimoto_nn``.
+
+    ``suffix`` is forwarded to ``_paired_significance_one_pair`` so the
+    same routine can operate on either the primary (decontaminated,
+    suffix ``""``) or contaminated (suffix ``"_contam"``) per-group
+    dicts.
     """
     out: Dict[str, object] = {}
     baselines = [m for m in methods if m != PROPOSED_KEY]
@@ -1194,6 +1314,7 @@ def paired_significance(
             metric="mrr",
             bootstrap_iterations=bootstrap_iterations,
             seed=seed + i,
+            suffix=suffix,
         )
     return out
 
@@ -1214,11 +1335,17 @@ def _std(values: Sequence[float]) -> float:
 def aggregate_metrics(
     seed_results: Sequence[Dict[str, object]],
     methods: Sequence[str],
+    suffix: str = "",
 ) -> Dict[str, Dict[str, object]]:
-    """Aggregate per-method metrics across seeds: mean ± std for each metric."""
+    """Aggregate per-method metrics across seeds: mean ± std for each metric.
+
+    ``suffix`` selects which per-seed metrics dict to aggregate — ``""``
+    (default, primary / decontaminated when ``--decontaminate`` is on)
+    or ``"_contam"`` (contaminated reference).
+    """
     out: Dict[str, Dict[str, object]] = {}
     for method in methods:
-        metrics_key = f"{method}_metrics"
+        metrics_key = f"{method}_metrics{suffix}"
         per_seed_metrics = [
             r[metrics_key] for r in seed_results if metrics_key in r
         ]
@@ -1273,8 +1400,18 @@ def write_summary(
     ranker_metrics_agg: Dict[str, Dict[str, object]],
     sig: Dict[str, object],
     manifest_meta: Dict[str, object],
+    ranker_metrics_agg_contam: Optional[Dict[str, Dict[str, object]]] = None,
+    sig_contam: Optional[Dict[str, object]] = None,
+    decontam_info: Optional[Dict[str, object]] = None,
 ) -> None:
-    """Write summary.json (per-baseline metrics + mean±std + sig)."""
+    """Write summary.json (per-baseline metrics + mean±std + sig).
+
+    When ``--decontaminate`` is active, the primary ``metrics`` /
+    ``paired_significance`` reflect the *decontaminated* (fair)
+    comparison, and the original contaminated reference is preserved
+    under ``metrics_contam`` / ``paired_significance_contam`` plus a
+    ``decontamination`` block recording ``n_leaked`` etc.
+    """
     payload = {
         "task": "P3-02 SOTA multi-baseline comparison v2 (翻盘 P2-06 NO-GO)",
         **manifest_meta,
@@ -1283,6 +1420,12 @@ def write_summary(
         "metrics": ranker_metrics_agg,
         "paired_significance": sig,
     }
+    if ranker_metrics_agg_contam is not None:
+        payload["metrics_contam"] = ranker_metrics_agg_contam
+    if sig_contam is not None:
+        payload["paired_significance_contam"] = sig_contam
+    if decontam_info is not None:
+        payload["decontamination"] = decontam_info
     _write_json(path, payload)
 
 
@@ -1448,10 +1591,21 @@ def write_per_seed_detail(
             "n_train": r["n_train"],
             "n_test": r["n_test"],
         }
+        # Include decontamination bookkeeping when present.
+        if "n_leaked" in r:
+            entry["n_leaked"] = r["n_leaked"]
+        if "n_test_contam" in r:
+            entry["n_test_contam"] = r["n_test_contam"]
+        if "n_test_decontam" in r:
+            entry["n_test_decontam"] = r["n_test_decontam"]
         for method in methods:
             metrics_key = f"{method}_metrics"
             if metrics_key in r:
                 entry[f"{method}_metrics"] = r[metrics_key]
+            # Also include the contaminated reference when present.
+            contam_key = f"{method}_metrics_contam"
+            if contam_key in r:
+                entry[f"{method}_metrics_contam"] = r[contam_key]
         out.append(entry)
     _write_json(path, out)
 
@@ -1519,6 +1673,15 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--chemformer-epochs", type=int, default=100,
         help="Epochs for the B5 logistic head (default 100).",
+    )
+    # P3-02 decontamination filter: fix Tanimoto-NN data-leakage artifact.
+    parser.add_argument(
+        "--decontaminate", action="store_true", default=False,
+        help="P3-02 decontamination filter: exclude test candidates whose "
+             "canonical parent_product SMILES matches any train-set product. "
+             "Primary metrics become the decontaminated (fair) comparison; "
+             "contaminated reference metrics are also reported for "
+             "transparency under metrics_contam / paired_significance_contam.",
     )
     return parser.parse_args(argv)
 
@@ -1626,6 +1789,14 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         f"Deferred SOTA (no network): {list(DEFERRED_SOTA_METHODS)}",
         flush=True,
     )
+    if args.decontaminate:
+        print(
+            "DECONTAMINATION: enabled — test candidates whose canonical "
+            "parent_product SMILES matches any train-set product will be "
+            "excluded from the primary (fair) evaluation. Contaminated "
+            "reference metrics will also be reported under metrics_contam.",
+            flush=True,
+        )
 
     # Run seeds
     print(f"\nRunning {len(seeds)} seeds...", flush=True)
@@ -1640,8 +1811,16 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             tanimoto_k=args.tanimoto_k,
             chemformer_cache=chemformer_cache,
             chemformer_epochs=args.chemformer_epochs,
+            decontaminate=args.decontaminate,
         )
         seed_results.append(result)
+        if args.decontaminate and result.get("n_leaked", 0) > 0:
+            print(
+                f"  [decontam] seed={seed}: n_leaked={result['n_leaked']} "
+                f"of n_test_contam={result['n_test_contam']} "
+                f"-> n_test_decontam={result['n_test_decontam']}",
+                flush=True,
+            )
         for method in methods:
             metrics_key = f"{method}_metrics"
             if metrics_key in result:
@@ -1652,15 +1831,31 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
                     flush=True,
                 )
 
-    # Aggregate metrics across seeds (mean ± std)
+    # Aggregate metrics across seeds (mean ± std).
+    # When --decontaminate is active, the primary (suffix "") aggregation
+    # reflects the decontaminated (fair) test set; we additionally aggregate
+    # the contaminated reference (suffix "_contam") for transparency.
     ranker_metrics_agg = aggregate_metrics(seed_results, methods)
+    ranker_metrics_agg_contam: Optional[Dict[str, Dict[str, object]]] = None
+    if args.decontaminate:
+        ranker_metrics_agg_contam = aggregate_metrics(
+            seed_results, methods, suffix="_contam",
+        )
 
-    # Paired significance
+    # Paired significance (primary = decontaminated when flag is on)
     sig = paired_significance(
         seed_results, methods,
         bootstrap_iterations=args.bootstrap_iterations,
         seed=seeds[0] if seeds else 20260710,
     )
+    sig_contam: Optional[Dict[str, object]] = None
+    if args.decontaminate:
+        sig_contam = paired_significance(
+            seed_results, methods,
+            bootstrap_iterations=args.bootstrap_iterations,
+            seed=seeds[0] if seeds else 20260710,
+            suffix="_contam",
+        )
 
     # Manifest metadata
     manifest_meta = {
@@ -1694,17 +1889,70 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             chemformer_cache.embedding_dim if chemformer_cache is not None else 0
         ),
         "chemformer_epochs": args.chemformer_epochs,
+        "decontaminate": bool(args.decontaminate),
     }
+
+    # Build the decontamination info block when the flag is active so
+    # summary.json records the leakage artifact for reproducibility.
+    decontam_info: Optional[Dict[str, object]] = None
+    if args.decontaminate:
+        total_leaked = sum(int(r.get("n_leaked", 0)) for r in seed_results)
+        total_test_contam = sum(int(r.get("n_test_contam", 0)) for r in seed_results)
+        total_test_decontam = sum(int(r.get("n_test_decontam", 0)) for r in seed_results)
+        all_leaked_source_ids = sorted({
+            sid for r in seed_results
+            for sid in r.get("leaked_source_ids", [])  # type: ignore[union-attr]
+        })
+        decontam_info = {
+            "enabled": True,
+            "rationale": (
+                "Tanimoto-NN baseline achieves MRR=1.0 on the contaminated "
+                "test set because test-set products appear verbatim in the "
+                "train set (Tanimoto=1.0 nearest neighbour trivially "
+                "recovers the label). Decontamination excludes test "
+                "candidates whose canonical parent_product SMILES matches "
+                "any train-set product, yielding a fair PC-CNG vs "
+                "Tanimoto-NN comparison."
+            ),
+            "n_leaked_total": total_leaked,
+            "n_test_contam_total": total_test_contam,
+            "n_test_decontam_total": total_test_decontam,
+            "leak_rate": (
+                total_leaked / total_test_contam if total_test_contam else 0.0
+            ),
+            "n_leaked_source_ids": len(all_leaked_source_ids),
+            "leaked_source_ids_sample": all_leaked_source_ids[:50],
+        }
+        manifest_meta["n_leaked_total"] = total_leaked
+        manifest_meta["n_test_decontam_total"] = total_test_decontam
+        manifest_meta["leak_rate"] = decontam_info["leak_rate"]
+        print(
+            f"\nDecontamination summary: n_leaked_total={total_leaked} "
+            f"of n_test_contam_total={total_test_contam} "
+            f"(leak_rate={decontam_info['leak_rate']:.4f}) "
+            f"-> n_test_decontam_total={total_test_decontam}",
+            flush=True,
+        )
 
     # Write outputs
     write_summary(
         os.path.join(args.output_dir, "summary.json"),
         methods, ranker_metrics_agg, sig, manifest_meta,
+        ranker_metrics_agg_contam=ranker_metrics_agg_contam,
+        sig_contam=sig_contam,
+        decontam_info=decontam_info,
     )
     write_paired_significance(
         os.path.join(args.output_dir, "paired_significance.json"),
         sig,
     )
+    if args.decontaminate and sig_contam is not None:
+        # Also persist the contaminated reference paired significance so the
+        # leakage artifact (Tanimoto-NN MRR=1.0) is reproducible.
+        write_paired_significance(
+            os.path.join(args.output_dir, "paired_significance_contam.json"),
+            sig_contam,
+        )
     write_per_target_metrics(
         os.path.join(args.output_dir, "per_target_metrics.csv"),
         seed_results, methods,
@@ -1729,20 +1977,39 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     print(f"Deferred SOTA:      {list(DEFERRED_SOTA_METHODS)}")
     print(f"Chemformer B5:      available={manifest_meta['chemformer_available']} "
           f"dim={manifest_meta['chemformer_embedding_dim']}")
+    print(f"Decontamination:    {manifest_meta['decontaminate']}")
+    if args.decontaminate and decontam_info is not None:
+        print(
+            f"  n_leaked_total={decontam_info['n_leaked_total']} "
+            f"of n_test_contam_total={decontam_info['n_test_contam_total']} "
+            f"(leak_rate={decontam_info['leak_rate']:.4f}) "
+            f"-> n_test_decontam_total={decontam_info['n_test_decontam_total']}"
+        )
     print()
+    label_primary = "DECONTAM (fair)" if args.decontaminate else "primary"
+    print(f"Primary metrics ({label_primary}):")
     for method in methods:
         agg = ranker_metrics_agg.get(method, {})
         name = METHOD_NAMES.get(method, method)
         mrr_mean = agg.get("mrr", {}).get("mean", 0.0) if isinstance(agg.get("mrr"), dict) else 0.0
         top1_mean = agg.get("top1", {}).get("mean", 0.0) if isinstance(agg.get("top1"), dict) else 0.0
         print(f"  {name:<35s} Top1: {top1_mean:.4f}  MRR: {mrr_mean:.4f}")
+    if args.decontaminate and ranker_metrics_agg_contam is not None:
+        print()
+        print("Contaminated reference (leakage artifact visible here):")
+        for method in methods:
+            agg = ranker_metrics_agg_contam.get(method, {})
+            name = METHOD_NAMES.get(method, method)
+            mrr_mean = agg.get("mrr", {}).get("mean", 0.0) if isinstance(agg.get("mrr"), dict) else 0.0
+            top1_mean = agg.get("top1", {}).get("mean", 0.0) if isinstance(agg.get("top1"), dict) else 0.0
+            print(f"  {name:<35s} Top1: {top1_mean:.4f}  MRR: {mrr_mean:.4f}")
     print()
     for baseline in [m for m in methods if m != PROPOSED_KEY]:
         key = f"pc_cng_vs_{baseline}"
         if key in sig:
             pair = sig[key]
             print(
-                f"  PC-CNG vs {baseline}: "
+                f"  PC-CNG vs {baseline} ({label_primary}): "
                 f"ΔMRR = {pair['delta_pp']:.2f} pp "
                 f"(seed CI [{pair['seed_level_ci95_low_pp']:.2f}, "
                 f"{pair['seed_level_ci95_high_pp']:.2f}] pp, "
@@ -1753,7 +2020,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     with open(go_no_go_path) as fh:
         go_payload = json.load(fh)
     print()
-    print(f"Go/No-Go: {go_payload['overall_decision']}")
+    print(f"Go/No-Go ({label_primary}): {go_payload['overall_decision']}")
     print("=" * 70)
 
 
