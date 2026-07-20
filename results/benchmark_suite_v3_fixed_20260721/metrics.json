@@ -1,12 +1,12 @@
 {
   "dimension_1_negative_quality": {
-    "diversity": null,
-    "n_negatives": 0,
-    "notes": "no SMILES rows found in CSV",
-    "source": "/home/cunyuliu/pc_cng_research/results/uspto_openmolecules_full_generation/pc_cng_synthetic_negatives_reviewed.csv",
-    "status": "error",
-    "uniqueness": null,
-    "validity": null
+    "diversity": 0.8970737301657656,
+    "n_negatives": 5000,
+    "notes": "",
+    "source": "results/uspto_openmolecules_full_generation/pc_cng_negatives_for_benchmark.csv",
+    "status": "ok",
+    "uniqueness": 0.611,
+    "validity": 1.0
   },
   "dimension_2_downstream": {
     "condition": {

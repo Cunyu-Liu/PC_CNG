@@ -8,17 +8,15 @@
 
 ## Dimension 1: Negative Generation Quality
 
-- **Source:** `/home/cunyuliu/pc_cng_research/results/uspto_openmolecules_full_generation/pc_cng_synthetic_negatives_reviewed.csv`
-- **Status:** error
+- **Source:** `results/uspto_openmolecules_full_generation/pc_cng_negatives_for_benchmark.csv`
+- **Status:** ok
 
 | Metric | Value |
 |---|---|
-| N negatives | 0 |
-| Validity | — |
-| Uniqueness | — |
-| Diversity (mean Tanimoto distance) | — |
-
-_Notes: no SMILES rows found in CSV_
+| N negatives | 5000 |
+| Validity | 1.0000 |
+| Uniqueness | 0.6110 |
+| Diversity (mean Tanimoto distance) | 0.8971 |
 
 ## Dimension 2: Downstream Task Improvement
 
