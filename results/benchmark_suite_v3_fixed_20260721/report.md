@@ -2,21 +2,23 @@
 
 - **Task ID:** P3-08
 - **Version:** v3
-- **Date:** 20260721
+- **Date:** 20260720
 - **RDKit available:** True
 - **PyTorch available:** True
 
 ## Dimension 1: Negative Generation Quality
 
-- **Source:** `/home/cunyuliu/pc_cng_research/results/uspto_openmolecules_full_generation/pc_cng_negatives_for_benchmark.csv`
-- **Status:** ok
+- **Source:** `/home/cunyuliu/pc_cng_research/results/uspto_openmolecules_full_generation/pc_cng_synthetic_negatives_reviewed.csv`
+- **Status:** error
 
 | Metric | Value |
 |---|---|
-| N negatives | 5000 |
-| Validity | 1.0000 |
-| Uniqueness | 0.6110 |
-| Diversity (mean Tanimoto distance) | 0.8971 |
+| N negatives | 0 |
+| Validity | — |
+| Uniqueness | — |
+| Diversity (mean Tanimoto distance) | — |
+
+_Notes: no SMILES rows found in CSV_
 
 ## Dimension 2: Downstream Task Improvement
 
@@ -49,8 +51,8 @@
 
 | Metric | Value |
 |---|---|
-| Latency (ms/reaction) | 0.5524 |
-| Throughput (reactions/sec) | 1810.3563 |
+| Latency (ms/reaction) | 0.5099 |
+| Throughput (reactions/sec) | 1961.2406 |
 | Memory footprint (MB) | 0.0001 |
 
 ## Dimension 5: Chemical Plausibility

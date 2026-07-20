@@ -1,12 +1,12 @@
 {
   "dimension_1_negative_quality": {
-    "diversity": 0.8970737301657656,
-    "n_negatives": 5000,
-    "notes": "",
-    "source": "/home/cunyuliu/pc_cng_research/results/uspto_openmolecules_full_generation/pc_cng_negatives_for_benchmark.csv",
-    "status": "ok",
-    "uniqueness": 0.611,
-    "validity": 1.0
+    "diversity": null,
+    "n_negatives": 0,
+    "notes": "no SMILES rows found in CSV",
+    "source": "/home/cunyuliu/pc_cng_research/results/uspto_openmolecules_full_generation/pc_cng_synthetic_negatives_reviewed.csv",
+    "status": "error",
+    "uniqueness": null,
+    "validity": null
   },
   "dimension_2_downstream": {
     "condition": {
@@ -297,7 +297,7 @@
   "dimension_4_efficiency": {
     "backbone_ckpt": "/home/cunyuliu/pc_cng_research/results/pretrained_backbone_chemformer_lora_20260720/seed20260710/model.pt",
     "checkpoint": "/home/cunyuliu/pc_cng_research/results/pretrained_backbone_chemformer_lora_20260720/seed20260710/model.pt",
-    "latency_ms_per_reaction": 0.5523774493485689,
+    "latency_ms_per_reaction": 0.5098813585937023,
     "memory_mb": 7.62939453125e-05,
     "mode": "torch_backbone_probe",
     "n_samples": 100,
@@ -307,7 +307,7 @@
       512
     ],
     "status": "ok",
-    "throughput_reactions_per_sec": 1810.356308316573,
+    "throughput_reactions_per_sec": 1961.2405575251623,
     "vocab_path": "/home/cunyuliu/pc_cng_research/external/reaction_lm/Chemformer/bart_vocab.json"
   },
   "dimension_5_plausibility": {
@@ -336,7 +336,7 @@
     "status": "deferred_to_future_work"
   },
   "p3_08_metadata": {
-    "date": "20260721",
+    "date": "20260720",
     "dimensions_covered": [
       "dimension_1_negative_quality",
       "dimension_2_downstream",
