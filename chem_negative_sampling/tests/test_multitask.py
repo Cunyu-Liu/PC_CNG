@@ -755,7 +755,14 @@ class TestUtilities:
             freeze=True,
             apply_lora_flag=False,
         )
-        assert isinstance(bb, _FallbackBackbone)
+        # On servers with chemformer installed, PretrainedChemformerBackbone is
+        # used; on minimal envs, _FallbackBackbone is used. Accept either.
+        try:
+            from models.pretrained_backbone import PretrainedChemformerBackbone
+            acceptable = (_FallbackBackbone, PretrainedChemformerBackbone)
+        except Exception:
+            acceptable = (_FallbackBackbone,)
+        assert isinstance(bb, acceptable)
         # Frozen backbone has no trainable params
         assert all(not p.requires_grad for p in bb.parameters())
 
@@ -766,7 +773,12 @@ class TestUtilities:
             freeze=False,
             apply_lora_flag=False,
         )
-        assert isinstance(bb, _FallbackBackbone)
+        try:
+            from models.pretrained_backbone import PretrainedChemformerBackbone
+            acceptable = (_FallbackBackbone, PretrainedChemformerBackbone)
+        except Exception:
+            acceptable = (_FallbackBackbone,)
+        assert isinstance(bb, acceptable)
 
     def test_parse_yield(self) -> None:
         assert _parse_yield("85.5") == 85.5
@@ -946,19 +958,19 @@ class TestRunExperiment:
 # ---------------------------------------------------------------------------
 class TestCLI:
     def test_parse_seeds_comma(self) -> None:
-        from multitask import _parse_seeds
+        from models.multitask import _parse_seeds
         assert _parse_seeds("20260710,20260711,20260712") == [20260710, 20260711, 20260712]
 
     def test_parse_seeds_range(self) -> None:
-        from multitask import _parse_seeds
+        from models.multitask import _parse_seeds
         assert _parse_seeds("20260710..20260712") == [20260710, 20260711, 20260712]
 
     def test_parse_seeds_single(self) -> None:
-        from multitask import _parse_seeds
+        from models.multitask import _parse_seeds
         assert _parse_seeds("20260710") == [20260710]
 
     def test_parse_seeds_empty(self) -> None:
-        from multitask import _parse_seeds
+        from models.multitask import _parse_seeds
         assert _parse_seeds("") == list(DEFAULT_SEEDS)
 
     def test_main_help(self, capsys) -> None:
