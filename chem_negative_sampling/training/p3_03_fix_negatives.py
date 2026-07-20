@@ -180,18 +180,32 @@ def _patched_run_pair(
     # 2. Load target dataset
     target_rows = load_dataset(target_csv)
 
-    # --- BUG FIX: generate negatives if target has only positives ---
-    has_negatives = any(int(r.get("label", 0)) == 0 for r in target_rows)
-    if not has_negatives:
+    # --- BUG FIX: generate negatives if target has no meaningful groups ---
+    # A "meaningful group" = a source_id with BOTH positive AND negative
+    # examples, so MRR is non-trivial. Datasets like hitea have negatives
+    # (label_type=real_negative) but each source_id has exactly 1 row, so
+    # MRR is trivially 1.0 (positive) or 0.0 (negative).
+    from collections import defaultdict as _dd
+    _group_labels = _dd(set)
+    for r in target_rows:
+        sid = str(r.get("source_id", ""))
+        _group_labels[sid].add(int(r.get("label", 0)))
+    has_meaningful_groups = any(
+        0 in labels and 1 in labels for labels in _group_labels.values()
+    )
+    if not has_meaningful_groups:
+        # Filter to only positive rows for negative generation
+        pos_rows = [r for r in target_rows if int(r.get("label", 0)) == 1]
         print(
-            f"[P3-03-FIX] WARNING: target {target_name} has no negatives; "
-            f"generating {n_negatives_per_positive} negatives per positive "
-            f"(total {len(target_rows)} -> "
-            f"{len(target_rows) * (1 + n_negatives_per_positive)})",
+            f"[P3-03-FIX] WARNING: target {target_name} has no meaningful groups "
+            f"(no source_id with both pos+neg); generating "
+            f"{n_negatives_per_positive} negatives per positive "
+            f"(total {len(pos_rows)} pos -> "
+            f"{len(pos_rows) * (1 + n_negatives_per_positive)})",
             flush=True,
         )
         target_rows = _generate_negatives(
-            target_rows, n_negatives=n_negatives_per_positive, seed=42
+            pos_rows, n_negatives=n_negatives_per_positive, seed=42
         )
         print(
             f"[P3-03-FIX] After negative generation: {len(target_rows)} rows, "
@@ -275,7 +289,7 @@ def _patched_run_pair(
                 "variants": seed_metrics["variants"],
                 "n_train": len(target_train_rows),
                 "n_test": len(target_test_rows),
-                "n_negatives_per_positive": n_negatives_per_positive if not has_negatives else 0,
+                "n_negatives_per_positive": n_negatives_per_positive if not has_meaningful_groups else 0,
             }
             import json
             json.dump(json_dump, f, indent=2)
@@ -294,8 +308,8 @@ def _patched_run_pair(
         "n_few_shot": n_few_shot,
         "checkpoint_used": checkpoint_exists,
         "backbone_ckpt": str(backbone_ckpt) if backbone_ckpt else None,
-        "negatives_generated": not has_negatives,
-        "n_negatives_per_positive": n_negatives_per_positive if not has_negatives else 0,
+        "negatives_generated": not has_meaningful_groups,
+        "n_negatives_per_positive": n_negatives_per_positive if not has_meaningful_groups else 0,
         "variants": {},
         "paired_bootstrap_ci": {},
         "family_cluster_bootstrap_ci": {},
