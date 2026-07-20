@@ -933,7 +933,7 @@ def run_evaluation(
         # Recompute per-reaction ranks for bootstrap.  We re-run the
         # evaluation but collect ranks.  To avoid duplicating logic, we
         # re-evaluate and store ranks via a thin shim.
-        ranks = _collect_per_reaction_ranks(
+        ranks, kept_indices = _collect_per_reaction_ranks(
             sampled,
             strategy=strategy,
             pc_cng_negatives=pc_cng_negatives,
@@ -945,10 +945,12 @@ def run_evaluation(
         if not ranks:
             bootstrap_ci[strategy] = {"top1": (0.0, 0.0), "mrr": (0.0, 0.0), "ndcg10": (0.0, 0.0)}
             continue
+        # Only keep classes for reactions that produced a rank (alignment fix).
+        kept_classes = [classes[i] for i in kept_indices]
         bootstrap_ci[strategy] = {
-            "top1": family_cluster_bootstrap_ci(ranks, classes, n_bootstrap=n_bootstrap, seed=last_seed, metric="top1"),
-            "mrr": family_cluster_bootstrap_ci(ranks, classes, n_bootstrap=n_bootstrap, seed=last_seed, metric="mrr"),
-            "ndcg10": family_cluster_bootstrap_ci(ranks, classes, n_bootstrap=n_bootstrap, seed=last_seed, metric="ndcg", k=10),
+            "top1": family_cluster_bootstrap_ci(ranks, kept_classes, n_bootstrap=n_bootstrap, seed=last_seed, metric="top1"),
+            "mrr": family_cluster_bootstrap_ci(ranks, kept_classes, n_bootstrap=n_bootstrap, seed=last_seed, metric="mrr"),
+            "ndcg10": family_cluster_bootstrap_ci(ranks, kept_classes, n_bootstrap=n_bootstrap, seed=last_seed, metric="ndcg", k=10),
         }
 
     result = EvaluationResult(
@@ -983,16 +985,22 @@ def _collect_per_reaction_ranks(
     seed: int,
     radius: int,
     n_bits: int,
-) -> List[int]:
-    """Helper: re-run LOO but return per-reaction ranks (for bootstrap)."""
+) -> Tuple[List[int], List[int]]:
+    """Helper: re-run LOO but return per-reaction ranks (for bootstrap).
+
+    Returns ``(ranks, kept_indices)`` where ``kept_indices[i]`` is the
+    index into ``reaction_smiles`` for ``ranks[i]``.  This alignment is
+    critical so the caller can build a matching ``classes`` list.
+    """
     rng = random.Random(seed)
     n = len(reaction_smiles)
     if n < 2:
-        return []
+        return [], []
     fps: List[Optional[np.ndarray]] = [
         reaction_fingerprint(s, radius=radius, n_bits=n_bits) for s in reaction_smiles
     ]
     ranks: List[int] = []
+    kept_indices: List[int] = []
     for i in range(n):
         held_out_fp = fps[i]
         if held_out_fp is None:
@@ -1038,7 +1046,8 @@ def _collect_per_reaction_ranks(
         else:
             rank = _no_negatives_rank(held_out_fp, train_pos_fps, cand_arr)
         ranks.append(rank)
-    return ranks
+        kept_indices.append(i)
+    return ranks, kept_indices
 
 
 def _write_results(result: EvaluationResult, output_dir: str) -> None:
