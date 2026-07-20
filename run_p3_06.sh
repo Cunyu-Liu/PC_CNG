@@ -15,7 +15,7 @@
 #   - summary.md               : human-readable summary
 set -e
 cd /home/cunyuliu/pc_cng_research
-export CUDA_VISIBLE_DEVICES=3  # GPU 3 (0=P3-04 done, 1=P3-05, 2=P3-03, 4=calibrate, 6/7=done)
+export CUDA_VISIBLE_DEVICES=6  # GPU 3 (0=P3-04 done, 1=P3-05, 2=P3-03, 4=calibrate, 6/7=done)
 export PYTHONPATH=/home/cunyuliu/pc_cng_research/chem_negative_sampling
 mkdir -p results/logs
 
