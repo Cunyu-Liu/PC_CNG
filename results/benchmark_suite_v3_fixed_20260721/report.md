@@ -27,7 +27,7 @@
 | Retrosynthesis | MRR (P3-01) | 0.6125 |
 | Retrosynthesis | GNN baseline MRR | 0.2430 |
 | Retrosynthesis | Delta vs baseline | 0.3695 |
-| Condition prediction | Top-1 accuracy (P3-04) | 0.0000 |
+| Condition prediction | Top-1 accuracy (P3-04) | 0.0347 |
 | Yield prediction | RMSE (P3-06) | 21.1004 |
 
 ## Dimension 3: Cross-Dataset Generalization
@@ -49,8 +49,8 @@
 
 | Metric | Value |
 |---|---|
-| Latency (ms/reaction) | 0.0018 |
-| Throughput (reactions/sec) | 561906.6634 |
+| Latency (ms/reaction) | 0.5524 |
+| Throughput (reactions/sec) | 1810.3563 |
 | Memory footprint (MB) | 0.0001 |
 
 ## Dimension 5: Chemical Plausibility

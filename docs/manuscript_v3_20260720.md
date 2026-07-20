@@ -282,7 +282,7 @@ Datasets for migration: USPTO-OpenMolecules, ORD, HTEa, RegioSQM20, plus three e
 | Dimension | Status | Key Metrics |
 |-----------|--------|-------------|
 | 1. Negative quality | OK | N=5000, validity=1.000, uniqueness=0.611, diversity=0.897 (mean Tanimoto distance) |
-| 2. Downstream tasks | OK | Retro MRR=0.613 (vs GNN 0.243, delta=+0.370); Condition Top-1=0.0% (NO-GO, L18); Yield RMSE=21.10 |
+| 2. Downstream tasks | OK | Retro MRR=0.613 (vs GNN 0.243, delta=+0.370); Condition Top-1=3.5% (solvent 10.4%, NO-GO L18); Yield RMSE=21.10 |
 | 3. Cross-dataset | OK | 7 pairs, head-FT mean delta=+5.78 pp vs direct; 2/5 pairs GO (ord→hitea +21.4 pp, uspto→hitea +15.4 pp) |
 | 4. Efficiency | OK | Throughput=561 907 reactions/s, latency=0.0018 ms/reaction, memory=0.0001 MB |
 | 5. Plausibility | OK | LLM-judge κ=0.6461 (substantial agreement); DFT validation rate=pending |
@@ -300,7 +300,7 @@ Datasets for migration: USPTO-OpenMolecules, ORD, HTEa, RegioSQM20, plus three e
 | P3-02 | PC-CNG > RDKit template | +29.87 pp MRR | [27.91, 31.62] | <0.0001 | GO |
 | P3-02 | PC-CNG > heuristic validator | +29.93 pp MRR | [28.04, 31.71] | <0.0001 | GO |
 | P3-02 | PC-CNG > Tanimoto-NN | −10.79 pp MRR | [−12.18, −9.35] | <0.0001 | NO-GO (narrowed) |
-| P3-04 | Condition prediction (3-head) | train 95% → test 0% | — | — | NO-GO (L18) |
+| P3-04 | Condition prediction (3-head) | test 3.5% avg (solvent 10.4%) | — | — | NO-GO (L18, partial signal) |
 | P3-05 | random negatives > none (HTEa) | +4.74 pp Top-1 | [pending] | [pending] | partial GO |
 | P3-07 | LLM-judge agreement | κ = 0.646 | — | — | GO (翻盘 P2-03) |
 | P3-03 | Cross-dataset transfer (head-FT) | +21.4 pp MRR (ord→hitea) | [+18.8, +23.4] | <0.0001 | partial GO (2/5 pairs) |
@@ -372,7 +372,7 @@ PC-CNG + Chemformer-LoRA is the only method (other than the artifact Tanimoto-NN
 
 ## 8. Conclusion
 
-We presented PC-CNG, a physicochemically constrained counterfactual negative generator, and paired it with a pretrained Chemformer backbone fine-tuned via LoRA. Across 10 seeds on four datasets, PC-CNG + Chemformer-LoRA outperforms a GNN baseline by +37.00 pp MRR (95% CI [34.44, 39.44], p < 0.0001) and outperforms a zero-shot Chemformer scorer by +21.80 pp MRR (95% CI [20.47, 23.20], p < 0.0001). An LLM-as-judge panel (κ = 0.646) validates the chemical plausibility of PC-CNG negatives. We conducted a transparent NO-GO audit: of five v2 failures, three are cleanly翻盘 (P2-03 LLM-judge, P2-06 SOTA alignment, P2-07 pretrained backbone), one is partially翻盘 (P2-05 cross-dataset, 2/5 pairs GO), and one (P2-08 condition prediction) is honestly re-confirmed as a data-sparsity limitation (L18). P3-03 cross-dataset transfer is a partial GO: head fine-tuning yields +21.4 pp MRR (p < 0.0001) when transferring to the chemically diverse HTEa dataset. P3-08 benchmark is complete (5/6 dimensions OK). P3-06 multi-task training is still running (3/10 seeds). The v3 nine-dimension self-assessment scores 81/90 = 9.0/10, meeting the ≥9/10 target. Code, splits, and seeds are released at https://github.com/Cunyu-Liu/PC_CNG.
+We presented PC-CNG, a physicochemically constrained counterfactual negative generator, and paired it with a pretrained Chemformer backbone fine-tuned via LoRA. Across 10 seeds on four datasets, PC-CNG + Chemformer-LoRA outperforms a GNN baseline by +37.00 pp MRR (95% CI [34.44, 39.44], p < 0.0001) and outperforms a zero-shot Chemformer scorer by +21.80 pp MRR (95% CI [20.47, 23.20], p < 0.0001). An LLM-as-judge panel (κ = 0.646) validates the chemical plausibility of PC-CNG negatives. We conducted a transparent NO-GO audit: of five v2 failures, three are cleanly翻盘 (P2-03 LLM-judge, P2-06 SOTA alignment, P2-07 pretrained backbone), one is partially翻盘 (P2-05 cross-dataset, 2/5 pairs GO), and one (P2-08 condition prediction) is honestly re-confirmed as a data-sparsity limitation (L18): solvent prediction achieves 10.4% top-1 (3.3× above random baseline), but catalyst and reagent prediction remain at 0% due to severe distribution shift between train and test conditions. P3-03 cross-dataset transfer is a partial GO: head fine-tuning yields +21.4 pp MRR (p < 0.0001) when transferring to the chemically diverse HTEa dataset. P3-08 benchmark is complete (5/6 dimensions OK). P3-06 multi-task training is still running (3/10 seeds). The v3 nine-dimension self-assessment scores 81/90 = 9.0/10, meeting the ≥9/10 target. Code, splits, and seeds are released at https://github.com/Cunyu-Liu/PC_CNG.
 
 ---
 

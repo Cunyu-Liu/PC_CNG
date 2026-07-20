@@ -11,7 +11,7 @@
   "dimension_2_downstream": {
     "condition": {
       "status_note": "NO-GO",
-      "top1_accuracy": 0.0
+      "top1_accuracy": 0.034722222222222224
     },
     "notes": [],
     "retrosynthesis": {
@@ -297,7 +297,7 @@
   "dimension_4_efficiency": {
     "backbone_ckpt": "/home/cunyuliu/pc_cng_research/results/pretrained_backbone_chemformer_lora_20260720/seed20260710/model.pt",
     "checkpoint": "/home/cunyuliu/pc_cng_research/results/pretrained_backbone_chemformer_lora_20260720/seed20260710/model.pt",
-    "latency_ms_per_reaction": 0.0017796549946069717,
+    "latency_ms_per_reaction": 0.5523774493485689,
     "memory_mb": 7.62939453125e-05,
     "mode": "torch_backbone_probe",
     "n_samples": 100,
@@ -307,7 +307,7 @@
       512
     ],
     "status": "ok",
-    "throughput_reactions_per_sec": 561906.6633872174,
+    "throughput_reactions_per_sec": 1810.356308316573,
     "vocab_path": "/home/cunyuliu/pc_cng_research/external/reaction_lm/Chemformer/bart_vocab.json"
   },
   "dimension_5_plausibility": {

@@ -1,8 +1,86 @@
 {
-  "task": "P3-04 condition prediction",
-  "test_top1_accuracy": 0.0,
-  "top1_accuracy": 0.0,
+  "task": "P3-04 condition prediction (3-head: catalyst/solvent/reagent)",
+  "n_seeds": 10,
+  "seeds": [
+    20260710,
+    20260711,
+    20260712,
+    20260713,
+    20260714,
+    20260715,
+    20260716,
+    20260717,
+    20260718,
+    20260719
+  ],
+  "test_top1_accuracy": 0.034722222222222224,
+  "top1_accuracy": 0.034722222222222224,
+  "accuracy": 0.034722222222222224,
+  "avg_test_top3": 0.09953703703703703,
+  "per_head": {
+    "catalyst": {
+      "test_top1_mean": 0.0,
+      "test_top1_std": 0.0,
+      "test_top3_mean": 0.010416666666666668,
+      "val_top1_mean": 0.0,
+      "train_top1_mean": 0.9471876341777585,
+      "n_classes": 31,
+      "test_top1_per_seed": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "solvent": {
+      "test_top1_mean": 0.10416666666666667,
+      "test_top1_std": 0.0,
+      "test_top3_mean": 0.2847222222222222,
+      "val_top1_mean": 0.03754266211604096,
+      "train_top1_mean": 0.763847144697295,
+      "n_classes": 31,
+      "test_top1_per_seed": [
+        0.10416666666666667,
+        0.10416666666666667,
+        0.10416666666666667,
+        0.10416666666666667,
+        0.10416666666666667,
+        0.10416666666666667,
+        0.10416666666666667,
+        0.10416666666666667,
+        0.10416666666666667,
+        0.10416666666666667
+      ]
+    },
+    "reagent": {
+      "test_top1_mean": 0.0,
+      "test_top1_std": 0.0,
+      "test_top3_mean": 0.0034722222222222225,
+      "val_top1_mean": 0.0034129692832764505,
+      "train_top1_mean": 0.6273078574495493,
+      "n_classes": 102,
+      "test_top1_per_seed": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  },
   "status": "NO-GO",
-  "decision": "NO-GO (L18 data sparsity - test split has 0% overlap with train conditions)",
-  "n_test_examples": 0
+  "decision": "NO-GO (L18 data sparsity: train conditions don't generalize to test set; solvent has 10.4% top-1 but catalyst/reagent \u2248 0%)",
+  "n_test_examples": 288,
+  "notes": "Condition prediction is fundamentally limited by data sparsity (L18): the ORD dataset has 31 catalyst classes, 31 solvent classes, 102 reagent classes, but the test split has minimal overlap with train conditions. Solvent prediction achieves 10.4% top-1 (vs 3.2% random baseline for 31 classes), suggesting the model learns some generalizable patterns. However, catalyst and reagent prediction remain at 0% test top-1, indicating severe distribution shift."
 }
