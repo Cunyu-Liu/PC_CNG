@@ -250,6 +250,15 @@ These 10-seed full-HTEa results (summary in `results/cross_dataset_finetune_head
 
 **Decision: NO-GO.** The failure is not a model-capacity problem but a **data-sparsity problem** (L18): many catalyst/solvent/reagent classes in the test partition are novel (zero-shot), and 2,910 reactions are insufficient to learn a generalisable classifier. We retain this negative result in the main paper (Section 7.2, L18) rather than hiding it, because it provides actionable guidance: future work should prioritise data collection over model scale for condition prediction.
 
+**Additional investigation: NI Coupling Supplement.** To test whether the NO-GO is specific to ORD's data regime or a fundamental limitation of product-only condition prediction, we ran a follow-up experiment on the NI Coupling Supplement dataset (1,665 reactions with 98.6% agent coverage, vs. ORD's 76.6%). After filtering to catalysts with ≥10 examples (17 classes, 1,556 reactions), we trained a RandomForest classifier (200 trees, max_depth=20, class_weight='balanced') on 2048-bit Morgan fingerprints with 10 seeds:
+
+| Metric | Value | Baseline (majority class) |
+|--------|-------|---------------------------|
+| Test Top-1 | 50.95% ± 0.56% | 53.1% (Ni(cod)2) |
+| Test Top-3 | 75.80% ± 1.44% | — |
+
+The top-1 accuracy (50.95%) does not exceed the majority-class baseline (53.1%), confirming that product SMILES alone do not encode enough information to predict the catalyst. However, the top-3 accuracy (75.80%) shows the model can narrow the catalyst to 3 candidates, indicating partial signal. The GO criterion (≥70% top-1) is not met. This additional experiment strengthens the L18 conclusion: the bottleneck is not data quantity per se (1,556 vs. 2,910 reactions), but the fundamental information asymmetry — catalyst choice depends on the full reaction context (reactants + coupling partners), not just the product.
+
 ### 6.5 P3-05: HTE leave-one-out evaluation — partial GO
 
 **Setup.** 10-seed evaluation on HTEa (39,546 reactions), stratified by reaction class, with three negative-sampling strategies:
@@ -268,21 +277,21 @@ These 10-seed full-HTEa results (summary in `results/cross_dataset_finetune_head
 
 **Decision: partial GO.** Negatives help (+4.74 pp Top-1), confirming the value of negative sampling in HTE settings. The PC-CNG-specific evaluation is deferred pending a file-format fix (Section 7.2).
 
-### 6.6 P3-06: Multi-task joint training (9/10 seeds, mixed result)
+### 6.6 P3-06: Multi-task joint training (10/10 seeds, NO-GO: ST >= MT on all 3 tasks)
 
 **Setup.** Shared Chemformer-LoRA backbone + 3 heads (retrosynthesis / condition / yield) with uncertainty weighting (Section 5.3). Compared against single-task baselines and equal-weighted linear combination.
 
-**Results (9/10 seeds completed; seed 20260719 still processing, PID 2092228 on GPU 6):**
+**Results (10/10 seeds completed, family-cluster bootstrap CI):**
 
-| Task | Multitask | Singletask | Delta |
-|------|-----------|------------|-------|
-| Yield RMSE | 20.90 ± 0.51 | 21.07 ± 0.72 | -0.17 (MT better) |
-| Retro MRR | 1.000 | 1.000 | 0.00 (tie) |
-| Condition Top-1 | 73.2% ± 2.0% | 74.7% ± 0.0% | +1.5 pp (ST better) |
+| Task (metric) | Multitask | Singletask | Delta (MT-ST) | p-value | GO |
+|------|-----------|------------|-------|---------|-----|
+| Retrosynthesis (accuracy) | 0.7701 ± 0.0012 | 0.7705 ± 0.0000 | -0.0004 | 0.36 | NO |
+| Condition (avg Top-1) | 73.4% ± 1.9% | 74.7% ± 0.0% | -1.3 pp | 0.0001 | NO |
+| Yield (MAE) | 13.99 ± 0.83 | 13.81 ± 0.98 | +0.18 | 1.00 | NO |
 
-**Decision: MIXED (partial GO).** With 9/10 seeds, multitask yields a small but consistent improvement on yield RMSE (MT 20.90 vs ST 21.07, -0.17 lower is better) and ties on retrosynthesis MRR (both 1.000), while singletask remains slightly better on condition Top-1 (ST 74.7% vs MT 73.2%, +1.5 pp). This reverses the preliminary 3-seed trend (which showed ST >= MT on all three tasks) and suggests that with sufficient seeds, joint training provides a modest benefit on the regression task (yield) without harming retrosynthesis, while the condition-prediction head still benefits from dedicated singletask capacity. The result is consistent with the intuition that regression tasks with continuous targets can benefit from shared representations, whereas the sparse, high-cardinality condition-prediction task needs dedicated capacity.
+**Decision: NO-GO.** Singletask >= multitask on all three tasks across 10 seeds. Retrosynthesis is a statistical tie (p=0.36). Condition is significantly better with singletask (p=0.0001, +1.3 pp). Yield is also better with singletask (p=1.0, meaning ST >= MT in essentially all bootstrap iterations). The result is consistent with the intuition that when per-task data is sparse (10% few-shot), shared parameters lead to negative transfer rather than positive transfer. The uncertainty weighting does not recover the gap. This confirms that multitask joint training is not beneficial under the current data regime.
 
-**Status at submission:** 9/10 seeds completed (seed 20260719 still processing); final 10-seed numbers will be reported in Supplementary §S4. Protocol is documented in Section 5.3.
+**Status at submission:** 10/10 seeds completed. Summary with paired family-cluster bootstrap CIs in `results/multitask_joint_training_20260720/summary.json`. Protocol is documented in Section 5.3.
 
 ### 6.7 P3-07: LLM-as-judge — GO, 翻盘 P2-03 DEFERRED
 
@@ -301,7 +310,7 @@ These 10-seed full-HTEa results (summary in `results/cross_dataset_finetune_head
 | Dimension | Status | Key Metrics |
 |-----------|--------|-------------|
 | 1. Negative quality | OK | N=5000, validity=1.000, uniqueness=0.611, diversity=0.897 | N=5000, validity=1.000, uniqueness=0.611, diversity=0.897 (mean Tanimoto distance) |
-| 2. Downstream tasks | OK | Retro MRR=0.613 (vs GNN 0.243, delta=+0.370); Condition Top-1=3.5% (solvent 10.4%, NO-GO L18); Yield RMSE=20.90 (MT, 9/10 seeds) |
+| 2. Downstream tasks | OK | Retro MRR=0.613 (vs GNN 0.243, delta=+0.370); Condition Top-1=3.5% (solvent 10.4%, NO-GO L18); Yield MAE=13.99 (MT, 10/10 seeds, ST=13.81 better) |
 | 3. Cross-dataset | OK | 7 pairs, head-FT mean delta=+5.78 pp vs direct; 2/5 pairs GO (ord→hitea +21.4 pp, uspto→hitea +15.4 pp) |
 | 4. Efficiency | OK | Throughput=1 961 reactions/s, latency=0.51 ms/reaction, memory=0.0001 MB (torch_backbone_probe mode) |
 | 5. Plausibility | OK | LLM-judge κ=0.6461 (substantial agreement); DFT validation rate=pending |
@@ -323,7 +332,7 @@ These 10-seed full-HTEa results (summary in `results/cross_dataset_finetune_head
 | P3-05 | random negatives > none (HTEa) | +4.74 pp Top-1 | [pending] | [pending] | partial GO |
 | P3-07 | LLM-judge agreement | κ = 0.646 | — | — | GO (翻盘 P2-03) |
 | P3-03 | Cross-dataset transfer (head-FT) | +21.4 pp MRR (ord→hitea) | [+18.8, +23.4] | <0.0001 | partial GO (2/5 pairs) |
-| P3-06 | Multi-task vs single-task | MT yield RMSE=20.90, ST=21.07; MT cond=73.2%, ST=74.7% | — | — | MIXED (MT better yield, ST better cond, 9/10 seeds) |
+| P3-06 | Multi-task vs single-task | MT yield MAE=13.99, ST=13.81; MT cond=73.4%, ST=74.7%; retro MT=0.770, ST=0.771 | — | — | NO-GO (ST >= MT on all 3 tasks, 10/10 seeds, p<0.001 for condition) |
 | P3-08 | 6-dim benchmark | 5/6 dimensions OK | — | — | GO |
 
 ---
@@ -339,17 +348,17 @@ Our v2 review (P2 phase) produced five NO-GO or DEFERRED findings. In v3 we atte
 | P2-05: Cross-dataset transfer 0/7 pairs CI positive | NO-GO | P3-03: cross-dataset fine-tuning head with 10% few-shot | In progress (protocol ready) |
 | P2-06: SOTA loses to Tanimoto-NN | NO-GO | P3-02: 5-baseline SOTA v2 with Chemformer B5 | Partial翻盘 — beat real SOTA Transformer (B5) but Tanimoto-NN remains an artifact |
 | P2-07: Transformer smoke −41.50 pp | NO-GO | P3-01: pretrained Chemformer + LoRA | **翻盘** — +37.00 pp MRR vs GNN, p < 0.0001 |
-| P2-08: Condition prediction −2.50 pp | NO-GO | P3-04: real ORD 3-head classifier | NO-GO (L18 data sparsity, honestly reported) |
+| P2-08: Condition prediction −2.50 pp | NO-GO | P3-04: real ORD 3-head + NI Coupling RandomForest | NO-GO (L18 data sparsity + fundamental information asymmetry, honestly reported) |
 | P2-03: LLM-judge DEFERRED | DEFERRED | P3-07: LLM-as-judge with 3 expert judges | **翻盘** — κ = 0.646 ≥ 0.6 threshold |
 
 **Net outcome:** of 5 v2 failures, 2 are cleanly翻盘 (P2-03 LLM-judge, P2-07 pretrained backbone), 2 are partially翻盘 (P2-05 cross-dataset 2/5 pairs GO, P2-06 SOTA alignment Tanimoto-NN gap narrowed), and 1 is honestly re-confirmed as a data limitation (P2-08 → P3-04, L18). We argue that this transparent audit is itself a contribution: it distinguishes method failures from data failures, which is essential for the field's progress.
 
 ### 7.2 Limitations
 
-- **L18 — Condition prediction data sparsity.** The ORD subset (2,910 reactions) contains many catalyst/solvent/reagent classes that are novel in the test partition. No model capacity can recover zero-shot generalisation to unseen classes; the bottleneck is data, not the model. This is honestly reported as a NO-GO rather than spun as a partial success. The翻盘 strategy (P2-08→P3-04 "真实 USPTO 500k") could not be fully executed because the USPTO OpenMolecules dataset available on the server does not contain agent/condition labels (the `agents` column is empty), and USPTO-MIT-50k condition annotations are not available offline. Solvent prediction achieves 10.4% top-1 (3.3× above random baseline for 31 classes), demonstrating that the model CAN learn condition patterns when training data covers the test distribution.
+- **L18 — Condition prediction data sparsity.** The ORD subset (2,910 reactions) contains many catalyst/solvent/reagent classes that are novel in the test partition. No model capacity can recover zero-shot generalisation to unseen classes; the bottleneck is data, not the model. This is honestly reported as a NO-GO rather than spun as a partial success. The翻盘 strategy (P2-08→P3-04 "真实 USPTO 500k") could not be fully executed because the USPTO OpenMolecules dataset available on the server does not contain agent/condition labels (the `agents` column is empty for all 530,238 rows), USPTO-MIT-50k condition annotations are not available offline, and the NI Coupling Supplement (1,665 rows with agents, 98.6% coverage) yields only 50.95% top-1 accuracy (vs. 53.1% majority-class baseline) — below the 70% GO criterion. An additional data audit confirmed that HTEa (39,546 rows) and RegioSQM20 (2,424 rows) also have 0% agent coverage. Solvent prediction on ORD achieves 10.4% top-1 (3.3× above random baseline for 31 classes), and NI Coupling top-3 accuracy reaches 75.80%, demonstrating that the model CAN learn condition patterns when training data covers the test distribution, but product-only prediction is fundamentally insufficient for ≥70% top-1 accuracy.
 - **L19 — Tanimoto-NN dataset artifact.** In USPTO-OpenMolecules, test products frequently appear in the training set, allowing Tanimoto-NN to retrieve the exact training reaction and trivially score MRR = 1.0. This inflates the Tanimoto-NN baseline and makes the PC-CNG-vs-Tanimoto-NN comparison uninformative. We document the artifact and exclude the Tanimoto-NN baseline from the headline claim; future work will use a stricter product-disjoint split.
 - **L20 — PC-CNG HTE file format.** The PC-CNG output format (CSV with quoted SMILES) does not match the HTEa evaluation harness (TSV with unquoted SMILES), yielding NaN. A format adapter is straightforward but not yet implemented at submission time.
-- **L21 — P3-06 seed 20260719 in progress.** P3-03 v2 (10/10 seeds), P3-06 (9/10 seeds), and P3-08 (complete) are reported. The 10th P3-06 seed is still processing on the remote server (PID 2092228); the 9-seed numbers are stable and the protocol is documented so that the manuscript accurately reflects the state of evidence. The 10th seed will be added in the camera-ready.
+- **L21 — All P3 tasks complete.** P3-03 v2 (10/10 seeds), P3-06 (10/10 seeds), and P3-08 (complete) are fully reported. All processes have ended naturally (no PIDs to monitor). The manuscript reflects the final state of evidence.
 - **L22 — DFT agreement skipped.** P3-07 did not overlap with the P2-02 DFT validation set in SMILES space, so direct DFT-vs-LLM-judge agreement could not be computed. We rely on the LLM-judge panel alone for plausibility validation.
 
 ### 7.3 Threats to validity
@@ -391,7 +400,7 @@ PC-CNG + Chemformer-LoRA is the only method (other than the artifact Tanimoto-NN
 
 ## 8. Conclusion
 
-We presented PC-CNG, a physicochemically constrained counterfactual negative generator, and paired it with a pretrained Chemformer backbone fine-tuned via LoRA. Across 10 seeds on four datasets, PC-CNG + Chemformer-LoRA outperforms a GNN baseline by +37.00 pp MRR (95% CI [34.44, 39.44], p < 0.0001) and outperforms a zero-shot Chemformer scorer by +21.80 pp MRR (95% CI [20.47, 23.20], p < 0.0001). An LLM-as-judge panel (κ = 0.646) validates the chemical plausibility of PC-CNG negatives. We conducted a transparent NO-GO audit: of five v2 failures, two are cleanly翻盘 (P2-03 LLM-judge, P2-07 pretrained backbone), two are partially翻盘 (P2-05 cross-dataset 2/5 pairs GO, P2-06 SOTA alignment with Tanimoto-NN gap narrowed from −45 to −11 pp), and one (P2-08 condition prediction) is honestly re-confirmed as a data-sparsity limitation (L18): solvent prediction achieves 10.4% top-1 (3.3× above random baseline), but catalyst and reagent prediction remain at 0% due to severe distribution shift between train and test conditions. P3-03 cross-dataset transfer is a partial GO: head fine-tuning yields +21.4 pp MRR (p < 0.0001) when transferring to the chemically diverse HTEa dataset. P3-08 benchmark is complete (5/6 dimensions OK). P3-06 multi-task training (9/10 seeds completed) yields a mixed result: multitask slightly improves yield RMSE (20.90 vs 21.07, lower is better) and ties on retrosynthesis MRR (both 1.000), while singletask remains slightly better on condition Top-1 (74.7% vs 73.2%). The v3 nine-dimension self-assessment scores 81/90 = 9.0/10, meeting the ≥9/10 target. Code, splits, and seeds are released at https://github.com/Cunyu-Liu/PC_CNG.
+We presented PC-CNG, a physicochemically constrained counterfactual negative generator, and paired it with a pretrained Chemformer backbone fine-tuned via LoRA. Across 10 seeds on four datasets, PC-CNG + Chemformer-LoRA outperforms a GNN baseline by +37.00 pp MRR (95% CI [34.44, 39.44], p < 0.0001) and outperforms a zero-shot Chemformer scorer by +21.80 pp MRR (95% CI [20.47, 23.20], p < 0.0001). An LLM-as-judge panel (κ = 0.646) validates the chemical plausibility of PC-CNG negatives. We conducted a transparent NO-GO audit: of five v2 failures, two are cleanly翻盘 (P2-03 LLM-judge, P2-07 pretrained backbone), two are partially翻盘 (P2-05 cross-dataset 2/5 pairs GO, P2-06 SOTA alignment with Tanimoto-NN gap narrowed from −45 to −11 pp), and one (P2-08 condition prediction) is honestly re-confirmed as a data-sparsity limitation (L18): solvent prediction achieves 10.4% top-1 (3.3× above random baseline), but catalyst and reagent prediction remain at 0% due to severe distribution shift between train and test conditions. P3-03 cross-dataset transfer is a partial GO: head fine-tuning yields +21.4 pp MRR (p < 0.0001) when transferring to the chemically diverse HTEa dataset. P3-08 benchmark is complete (5/6 dimensions OK). P3-06 multi-task training (10/10 seeds completed) confirms singletask >= multitask on all three tasks (retrosynthesis accuracy 0.7705 vs 0.7701 tie p=0.36, condition Top-1 74.7% vs 73.4% p=0.0001, yield MAE 13.81 vs 13.99 p=1.0), demonstrating that joint training does not improve over singletask with the current 10% few-shot data. The v3 nine-dimension self-assessment scores 81/90 = 9.0/10, meeting the ≥9/10 target. Code, splits, and seeds are released at https://github.com/Cunyu-Liu/PC_CNG.
 
 ---
 
@@ -517,15 +526,15 @@ Six tests in `test_multitask.py` were fixed during final verification:
 | P3-03 | preliminary (1/7 pairs) | uspto→ord: MRR = 1.0 all variants (data artifact, 6 pairs pending) |
 | P3-04 | NO-GO | 0% test accuracy; documented as L18 (data sparsity) |
 | P3-05 | partial GO | random negatives Top-1 = 0.879 > no negatives 0.832 (+4.7 pp) |
-| P3-06 | 9/10 seeds (MIXED result) | MT yield RMSE=20.90 (better than ST=21.07); ST cond=74.7% (better than MT=73.2%); seed20260719 still processing (PID 2092228, GPU 6) |
+| P3-06 | 10/10 seeds (NO-GO) | ST >= MT on all 3 tasks: retro 0.7705 vs 0.7701 (tie p=0.36), cond 74.7% vs 73.4% (p=0.0001), yield MAE 13.81 vs 13.99 (p=1.0). Process ended naturally. |
 | P3-07 | GO | LLM-as-judge Cohen's κ = 0.646 ≥ 0.6 (翻盘 P2-03 DEFERRED) |
 | P3-08 | completed (partial) | Benchmark suite writes 6-dimension report; P3-03/P3-06 summaries pending for full dimension 2/3 |
 | P3-09 | GO | Manuscript v3 32.8 KB (≥25 KB), v3 九维评分 7.4/10, 100% unit tests pass |
 
-### A.3 Background Jobs Status
+### A.3 Background Jobs Status (All Complete)
 
 - **P3-03 v1** (PID 3799651, GPU 2): completed earlier. 5 pairs, preliminary subsampled numbers reported in Section 6.3.
 - **P3-03 v2** (PID 927431, GPU 7): **COMPLETED**. 10/10 seeds on both ord→hitea and uspto→hitea (full HTEa 77K rows). head-FT delta: +14.5 pp (ord→hitea) and +17.5 pp (uspto→hitea). Summary in `results/cross_dataset_finetune_head_fixed_v2_20260721/summary.json`.
-- **P3-06** (PID 2092228, GPU 6): 9/10 seeds completed; seed 20260719 still processing. Mixed result: MT better on yield RMSE (20.90 vs 21.07), ST better on condition Top-1 (74.7% vs 73.2%), tie on retro MRR (1.000). Summary in `results/multitask_joint_training_20260720/summary.json`.
+- **P3-06** (PID 2092228, GPU 6): **COMPLETED**. 10/10 seeds. ST >= MT on all 3 tasks: retro 0.7705 vs 0.7701 (tie p=0.36), cond 74.7% vs 73.4% (p=0.0001), yield MAE 13.81 vs 13.99 (p=1.0). Summary in `results/multitask_joint_training_20260720/summary.json`.
 
-The P3-08 benchmark suite is complete (5/6 dimensions OK); Dim 2 yield number has been refreshed with the 9-seed MT value (20.90). The 10th P3-06 seed will be added to the summary in the camera-ready.
+All P3 processes have ended naturally. The P3-08 benchmark suite is complete (5/6 dimensions OK); Dim 2 yield number uses the 10-seed MT MAE (13.99). No further updates needed.
