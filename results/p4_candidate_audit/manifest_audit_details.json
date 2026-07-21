@@ -1,0 +1,160 @@
+[
+  {
+    "manifest_name": "hte_feasibility_v1.json",
+    "benchmark_name": "P4-HTE-Feasibility",
+    "manifest_version": "v1",
+    "manifest_hash_reported": "5701c5c98f79a2f7b27c8eb22be71883850c4c0b98acde0ff3269527d2082a1f",
+    "manifest_hash_recomputed": "5701c5c98f79a2f7b27c8eb22be71883850c4c0b98acde0ff3269527d2082a1f",
+    "n_groups": 500,
+    "n_candidates": 4000,
+    "n_gold": 500,
+    "errors": [],
+    "warnings": [],
+    "stats": {
+      "candidate_source_distribution": {
+        "gold": 500,
+        "random_mismatch": 500,
+        "random_corruption": 500,
+        "tanimoto_retrieval": 500,
+        "template_perturbation": 500,
+        "unconstrained_edit": 500,
+        "rule_pc_cng": 500,
+        "external_beam": 500
+      },
+      "reaction_family_distribution": {
+        "Untagged": 1784,
+        "Alkylation": 360,
+        "Pd coupling": 1128,
+        "Cabonylation": 208,
+        "Hydrogenation": 168,
+        "Rh coupling": 184,
+        "Cu coupling": 104,
+        "Amide coupling": 48,
+        "Ni coupling": 16
+      },
+      "split_distribution": {
+        "test": 440,
+        "train": 3152,
+        "val": 408
+      },
+      "candidate_count_per_group": {
+        "min": 8,
+        "max": 8,
+        "mean": 8.0
+      },
+      "known_positive_collisions": 34,
+      "train_overlaps": 539,
+      "nearest_train_similarity": {
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.2215
+      },
+      "oracle_top1_coverage": 1.0,
+      "oracle_top1_hits": 500,
+      "n_unique_scaffolds": 257,
+      "n_unique_templates": 1,
+      "n_unique_parents": 500,
+      "parent_leakage_count": 0
+    }
+  },
+  {
+    "manifest_name": "fixed_forward_candidates_v1.json",
+    "benchmark_name": "P4-Fixed-Forward-Candidates",
+    "manifest_version": "v1",
+    "manifest_hash_reported": "a722572d8e1883366893b23570ce304fd25d803f22e17c52933dd395582e2941",
+    "manifest_hash_recomputed": "a722572d8e1883366893b23570ce304fd25d803f22e17c52933dd395582e2941",
+    "n_groups": 500,
+    "n_candidates": 4000,
+    "n_gold": 500,
+    "errors": [],
+    "warnings": [],
+    "stats": {
+      "candidate_source_distribution": {
+        "gold": 500,
+        "random_mismatch": 500,
+        "random_corruption": 500,
+        "tanimoto_retrieval": 500,
+        "template_perturbation": 500,
+        "unconstrained_edit": 500,
+        "rule_pc_cng": 500,
+        "external_beam": 500
+      },
+      "reaction_family_distribution": {
+        "uspto_om": 4000
+      },
+      "split_distribution": {
+        "val": 416,
+        "train": 3184,
+        "test": 400
+      },
+      "candidate_count_per_group": {
+        "min": 8,
+        "max": 8,
+        "mean": 8.0
+      },
+      "known_positive_collisions": 24,
+      "train_overlaps": 719,
+      "nearest_train_similarity": {
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.332
+      },
+      "oracle_top1_coverage": 1.0,
+      "oracle_top1_hits": 500,
+      "n_unique_scaffolds": 714,
+      "n_unique_templates": 1,
+      "n_unique_parents": 499,
+      "parent_leakage_count": 0
+    }
+  },
+  {
+    "manifest_name": "fixed_retro_candidates_v1.json",
+    "benchmark_name": "P4-Fixed-Retro-Candidates",
+    "manifest_version": "v1",
+    "manifest_hash_reported": "ae9233828e7784900e02cd81049e8724264c7c9d278908b10df58089a398533c",
+    "manifest_hash_recomputed": "ae9233828e7784900e02cd81049e8724264c7c9d278908b10df58089a398533c",
+    "n_groups": 500,
+    "n_candidates": 4000,
+    "n_gold": 500,
+    "errors": [],
+    "warnings": [],
+    "stats": {
+      "candidate_source_distribution": {
+        "gold": 500,
+        "random_mismatch": 500,
+        "random_corruption": 500,
+        "tanimoto_retrieval": 500,
+        "template_perturbation": 500,
+        "unconstrained_edit": 500,
+        "rule_pc_cng": 500,
+        "external_beam": 500
+      },
+      "reaction_family_distribution": {
+        "uspto_om": 4000
+      },
+      "split_distribution": {
+        "train": 3192,
+        "test": 376,
+        "val": 432
+      },
+      "candidate_count_per_group": {
+        "min": 8,
+        "max": 8,
+        "mean": 8.0
+      },
+      "known_positive_collisions": 20,
+      "train_overlaps": 679,
+      "nearest_train_similarity": {
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.3505
+      },
+      "oracle_top1_coverage": 1.0,
+      "oracle_top1_hits": 500,
+      "n_unique_scaffolds": 758,
+      "n_unique_templates": 1,
+      "n_unique_parents": 500,
+      "parent_leakage_count": 0
+    }
+  }
+]

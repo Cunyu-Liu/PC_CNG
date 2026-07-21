@@ -1,0 +1,30 @@
+{
+  "phase": "P4-G1",
+  "status": "GO",
+  "primary_metric": {
+    "n_manifests": 3,
+    "n_total_groups": 1500,
+    "n_total_candidates": 12000,
+    "n_total_errors": 0,
+    "n_total_warnings": 0
+  },
+  "predeclared_threshold": {
+    "max_errors": 0,
+    "max_parent_leakage": 0,
+    "all_groups_have_gold": true,
+    "manifest_hash_fixed": true
+  },
+  "evidence_paths": [
+    "data/p4/manifests/hte_feasibility_v1.json",
+    "data/p4/manifests/fixed_forward_candidates_v1.json",
+    "data/p4/manifests/fixed_retro_candidates_v1.json",
+    "results/p4_candidate_audit/manifest_audit_details.json",
+    "results/p4_candidate_audit/audit_report.md"
+  ],
+  "limitations": [
+    "No errors found.",
+    "Learned PC-CNG candidates are NOT included in v1 (appended as v2 in a later phase).",
+    "Tanimoto retrieval uses Morgan fingerprints (radius 2, 1024 bits)."
+  ],
+  "next_phase_allowed": true
+}

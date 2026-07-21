@@ -1,0 +1,21 @@
+{
+  "manifest_version": "v1",
+  "seed": 20260721,
+  "benchmarks": {
+    "hte_feasibility": {
+      "manifest_hash": "5701c5c98f79a2f7b27c8eb22be71883850c4c0b98acde0ff3269527d2082a1f",
+      "n_groups": 500,
+      "n_candidates": 4000
+    },
+    "fixed_forward": {
+      "manifest_hash": "a722572d8e1883366893b23570ce304fd25d803f22e17c52933dd395582e2941",
+      "n_groups": 500,
+      "n_candidates": 4000
+    },
+    "fixed_retro": {
+      "manifest_hash": "ae9233828e7784900e02cd81049e8724264c7c9d278908b10df58089a398533c",
+      "n_groups": 500,
+      "n_candidates": 4000
+    }
+  }
+}

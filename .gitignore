@@ -64,3 +64,9 @@ dist/
 logs/*.log
 *.bak
 *.tmp
+
+# ===== P4-G1 audit deliverables (small text summaries) =====
+!results/p4_candidate_audit/
+!results/p4_candidate_audit/go_no_go.json
+!results/p4_candidate_audit/audit_report.md
+!results/p4_candidate_audit/manifest_audit_details.json
