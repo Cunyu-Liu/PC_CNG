@@ -522,7 +522,7 @@ Six tests in `test_multitask.py` were fixed during final verification:
 |---|---|---|
 | P3-00 | GO | Bootstrap artifacts ready |
 | P3-01 | GO | MRR 0.243 → 0.61 (+37 pp, CI [34.44, 39.44], p < 1e-4) |
-| P3-02 | partial 翻盘 | PC-CNG beats Chemformer (+22.31 pp); loses to tanimoto_nn (dataset artifact) |
+| P3-02 | partial 翻盘 | PC-CNG beats Chemformer (+21.80 pp); loses to tanimoto_nn (dataset artifact) |
 | P3-03 | preliminary (1/7 pairs) | uspto→ord: MRR = 1.0 all variants (data artifact, 6 pairs pending) |
 | P3-04 | NO-GO | 0% test accuracy; documented as L18 (data sparsity) |
 | P3-05 | partial GO | random negatives Top-1 = 0.879 > no negatives 0.832 (+4.7 pp) |
