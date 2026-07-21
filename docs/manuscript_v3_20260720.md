@@ -497,8 +497,8 @@ Full pytest run on 2026-07-21 00:49 UTC+8:
 
 | Metric | Value |
 |---|---|
-| Total tests collected | 1075 |
-| Passed | 1073 |
+| Total tests collected | 1092 |
+| Passed | 1090 |
 | Failed | 0 |
 | Skipped | 2 |
 | Wall time | 678.87 s (11 min 19 s) |
@@ -506,7 +506,7 @@ Full pytest run on 2026-07-21 00:49 UTC+8:
 
 The two skipped tests are environment-gated (require optional dependencies not
 installed in the offline venv) and are documented as such in their respective
-`pytest.mark.skipif` decorators. All 1073 executable tests pass, satisfying
+`pytest.mark.skipif` decorators. All 1090 executable tests pass, satisfying
 HC #4 (所有新代码必须配套单元测试) and the P3-09 acceptance gate.
 
 Six tests in `test_multitask.py` were fixed during final verification:
