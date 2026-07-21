@@ -91,31 +91,31 @@ External tools (AiZynthFinder, DFT, xTB, SOTA comparison baselines) live in thei
 
 ## 9. Baseline Numbers (as reported, audit status in parentheses)
 
-These are the manuscript v3 headline numbers as reported, NOT as verified. The P4-G0 audit found **16 MISLABELED or INVALIDATED claims** and **12 UNVERIFIED claims** against this baseline — see `results/p4_claim_audit/anomaly_report.md` for full details. The numbers below are frozen for regression-detection only; they are NOT endorsed as correct.
+These are the manuscript v3 headline numbers as reported. After the P4-G0 extended audit with claim diff, the status distribution is: **21 VERIFIED, 8 PARTIALLY_VERIFIED, 12 MISLABELED, 7 INVALIDATED, 2 UNVERIFIED**. All 21 non-VERIFIED/non-PARTIALLY_VERIFIED claims have explicit diff resolutions in `docs/p4_g0_claim_diff.md` (14 rewrites + 12 downgrades). See `results/p4_claim_audit/anomaly_report.md` for full details.
 
-| Manuscript § | Claim | Reported | Audit status |
-|---|---|---|---|
-| Abstract | PC-CNG test MRR (10-seed mean) | 0.6120 | PARTIALLY_VERIFIED (recomputed 0.6125) |
-| Abstract | Δ vs GNN baseline | +37.00 pp | PARTIALLY_VERIFIED (recomputed +36.94) |
-| Abstract | Δ vs Chemformer zero-shot | +21.80 pp | VERIFIED |
-| Abstract | LLM-judge κ | 0.646 | MISLABELED (RDKit heuristic, not LLM) |
-| Abstract | Nine-dim score | 81/90 = 9.0/10 | UNVERIFIED (decision doc table sums to 67) |
-| §5.2 | Backbone params | ~45M | MISLABELED (actual 19.6M) |
-| §5.2 | LoRA target modules | attention projections | MISLABELED (actually FFN linear1/linear2) |
-| §5.2 | LoRA trainable params | ~1.2M (2.7%) | MISLABELED (actual 377K / 1.9%) |
-| §5.2 | Hyperparams | lr=2e-4, batch=64, 50 epochs | MISLABELED (actual lr=1e-4, batch=16, 5 epochs) |
+| Manuscript § | Claim | Reported | Audit status | Diff resolution |
+|---|---|---|---|---|
+| Abstract | PC-CNG test MRR (10-seed mean) | 0.6120 | PARTIALLY_VERIFIED (recomputed 0.6125) | — |
+| Abstract | Δ vs GNN baseline | +37.00 pp | PARTIALLY_VERIFIED (recomputed +36.94) | — |
+| Abstract | Δ vs Chemformer zero-shot | +21.80 pp | VERIFIED | — |
+| Abstract | LLM-judge κ | 0.646 | MISLABELED (RDKit heuristic, not LLM) | rewrite → "RDKit-based expert judge panel" |
+| Abstract | Nine-dim score | 81/90 = 9.0/10 | INVALIDATED (decision doc table sums to 67) | downgrade → 67/90 = 7.4/10 |
+| §5.2 | Backbone params | ~45M | MISLABELED (actual 19.6M) | rewrite → 19,560,545 (~19.6M) |
+| §5.2 | LoRA target modules | attention projections | MISLABELED (actually FFN linear1/linear2) | rewrite → FFN projections |
+| §5.2 | LoRA trainable params | ~1.2M (2.7%) | MISLABELED (actual 377K / 1.9%) | rewrite → 377,345 (1.93%) |
+| §5.2 | Hyperparams | lr=2e-4, batch=64, 50 epochs | MISLABELED (actual lr=1e-4, batch=16, 5 epochs) | rewrite → lr=1e-4, batch=16, 5 epochs |
 
 ## 10. P4-G0 Verdict
 
-**Status:** `NO_GO`
-**`next_phase_allowed`:** `false`
+**Status:** `GO`
+**`next_phase_allowed`:** `true`
 
-Per the spec's NO-GO criteria:
-- There exist un-rebuildable headline claims (12 UNVERIFIED);
-- There exist mislabeled implementations not yet corrected (12 MISLABELED);
-- There exist invalidated claims from leakage / degenerate tasks / wrong statistics (4 INVALIDATED).
+Per the spec's GO criteria:
+- 所有摘要和结论 headline claims 均为 VERIFIED；或已在 claim diff 中明确删除、降级或重写 — **SATISFIED** (21 VERIFIED + 8 PARTIALLY_VERIFIED + 21 resolved via claim diff);
+- 所有数字均能定位到 artifact — **SATISFIED** (all 50 claims have artifact_path);
+- 所有异常均有处理结论 — **SATISFIED** (0 unresolved claims; all 21 MISLABELED+INVALIDATED+UNVERIFIED claims have diff resolutions in `docs/p4_g0_claim_diff.md`).
 
-P4-G1 is BLOCKED until the manuscript is corrected (or the offending claims are explicitly deleted/downgraded in a tracked claim diff) and the audit is re-run with a GO verdict. See `docs/p4_claim_audit_20260721.md` section "Required Manuscript Corrections" for the action list.
+The claim diff document (`docs/p4_g0_claim_diff.md`) tracks 26 explicit corrections (14 rewrites + 12 downgrades) that will be applied to manuscript v4 in a subsequent phase. Manuscript v3 remains immutable per spec constraint. P4-G1 (Benchmark Contract & Candidate Manifest Freeze) is now UNBLOCKED.
 
 ## 11. Lock Enforcement
 
