@@ -1,0 +1,27 @@
+{
+  "task": "P2-08 \u7ffb\u76d8 attempt: NI Coupling with reactants+products features",
+  "data": "NI Coupling Supplement (1,665 rows, 17 catalyst classes, min_count=10)",
+  "feature_types": {
+    "reactants_products": {
+      "top1_mean": 0.782051282051282,
+      "top1_std": 0.020495006509883437,
+      "top3_mean": 0.9487179487179487,
+      "top3_std": 0.015289353692306266,
+      "seeds": 10,
+      "go_criterion": ">=70%",
+      "decision": "GO"
+    },
+    "product_only": {
+      "top1_mean": 0.4952991452991453,
+      "top1_std": 0.030724682851314015,
+      "top3_mean": 0.7598290598290598,
+      "top3_std": 0.041203318951090424,
+      "seeds": 10,
+      "go_criterion": ">=70%",
+      "decision": "NO-GO"
+    }
+  },
+  "majority_baseline": 0.5308483290488432,
+  "go_criterion": "top-1 >= 70%",
+  "conclusion": "P2-08 \u7ffb\u76d8 GO"
+}
