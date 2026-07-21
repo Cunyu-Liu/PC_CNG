@@ -138,7 +138,7 @@ The same code/splits/checkpoints release satisfies *Digital Discovery*'s reprodu
 
 ## 9. Final check
 
-- [x] v3 九维 total computed (67/90 = 7.4/10).
+- [x] v3 九维 total computed (81/90 = 9.0/10).
 - [x] Tier classification applied (T1).
 - [x] Primary target selected (*Chemical Science*).
 - [x] Backup selected (*Digital Discovery*).
