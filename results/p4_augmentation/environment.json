@@ -1,0 +1,8 @@
+{
+  "python": "3.10.20 | packaged by conda-forge | (main, Jun 11 2026, 03:31:56) [GCC 14.3.0]",
+  "platform": "Linux-5.15.0-173-generic-x86_64-with-glibc2.35",
+  "torch": "2.6.0+cu124",
+  "cuda_available": true,
+  "cuda_version": "12.4",
+  "rdkit": "2025.03.6"
+}

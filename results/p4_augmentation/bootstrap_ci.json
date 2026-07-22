@@ -1,0 +1,90 @@
+{
+  "chemformer": {
+    "A6_vs_A0": {
+      "delta_mean": 0.157446,
+      "ci_low": 0.100769,
+      "ci_high": 0.206992,
+      "p_value": 0.0,
+      "n": 10
+    },
+    "A6_vs_A1": {
+      "delta_mean": 0.03563,
+      "ci_low": 0.000524,
+      "ci_high": 0.079145,
+      "p_value": 0.0223,
+      "n": 10
+    },
+    "A6_vs_A2": {
+      "delta_mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "p_value": 1.0,
+      "n": 10
+    },
+    "A6_vs_A3": {
+      "delta_mean": 0.079245,
+      "ci_low": 0.039591,
+      "ci_high": 0.124901,
+      "p_value": 0.0,
+      "n": 10
+    },
+    "A6_vs_A4": {
+      "delta_mean": 0.050162,
+      "ci_low": 0.017385,
+      "ci_high": 0.08874,
+      "p_value": 0.0002,
+      "n": 10
+    },
+    "A6_vs_A5": {
+      "delta_mean": -0.018457,
+      "ci_low": -0.040002,
+      "ci_high": -0.002818,
+      "p_value": 0.9962,
+      "n": 10
+    }
+  },
+  "gnn": {
+    "A6_vs_A0": {
+      "delta_mean": -9.1e-05,
+      "ci_low": -0.012667,
+      "ci_high": 0.013424,
+      "p_value": 0.5023,
+      "n": 10
+    },
+    "A6_vs_A1": {
+      "delta_mean": -0.04203,
+      "ci_low": -0.061334,
+      "ci_high": -0.022121,
+      "p_value": 1.0,
+      "n": 10
+    },
+    "A6_vs_A2": {
+      "delta_mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "p_value": 1.0,
+      "n": 10
+    },
+    "A6_vs_A3": {
+      "delta_mean": -0.111727,
+      "ci_low": -0.137515,
+      "ci_high": -0.087394,
+      "p_value": 1.0,
+      "n": 10
+    },
+    "A6_vs_A4": {
+      "delta_mean": -0.060455,
+      "ci_low": -0.081515,
+      "ci_high": -0.039697,
+      "p_value": 1.0,
+      "n": 10
+    },
+    "A6_vs_A5": {
+      "delta_mean": 3e-05,
+      "ci_low": -0.008243,
+      "ci_high": 0.007939,
+      "p_value": 0.4949,
+      "n": 10
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "source_a": "random_corruption",
+  "source_b": "rule_pc_cng",
+  "n_groups_checked": 500,
+  "n_groups_identical_smiles": 500,
+  "duplicated": true
+}

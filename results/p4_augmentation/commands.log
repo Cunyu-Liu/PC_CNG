@@ -1,0 +1,7 @@
+# P4-G3 augmentation experiment commands
+# chemformer full run (GPU 6):
+python3 -m chem_negative_sampling.pc_cng.run_p4_augmentation --manifest data/p4/manifests/hte_feasibility_v1.json --output-dir results/p4_augmentation_chemformer --backbone chemformer --stage full --device cuda:0 --epochs 5
+# gnn full run (GPU 7):
+python3 -m chem_negative_sampling.pc_cng.run_p4_augmentation --manifest data/p4/manifests/hte_feasibility_v1.json --output-dir results/p4_augmentation_gnn --backbone gnn --stage full --device cuda:0 --epochs 5
+# aggregation:
+python3 -m chem_negative_sampling.pc_cng.aggregate_p4_g3 --chemformer-dir results/p4_augmentation_chemformer --gnn-dir results/p4_augmentation_gnn --output-dir results/p4_augmentation

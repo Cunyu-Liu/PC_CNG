@@ -1,0 +1,34 @@
+{
+  "phase": "P4-G3",
+  "backbones": [
+    "chemformer",
+    "gnn"
+  ],
+  "arms": {
+    "chemformer": [
+      "A0",
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5",
+      "A6"
+    ],
+    "gnn": [
+      "A0",
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5",
+      "A6"
+    ]
+  },
+  "n_runs": 140,
+  "n_paired_prediction_dirs": 140,
+  "aggregation_script": "pc_cng/aggregate_p4_g3.py",
+  "source_dirs": [
+    "results/p4_augmentation_chemformer",
+    "results/p4_augmentation_gnn"
+  ]
+}

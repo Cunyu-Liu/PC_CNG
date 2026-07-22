@@ -79,3 +79,16 @@ logs/*.log
 !results/p4_lora_ablation/noninferiority.json
 !results/p4_lora_ablation/selected_backbone.json
 !results/p4_lora_ablation/go_no_go.json
+
+
+# P4-G3 augmentation results (spec-required outputs; bulk predictions excluded)
+!results/p4_augmentation/
+!results/p4_augmentation/summary.csv
+!results/p4_augmentation/effect_sizes.csv
+!results/p4_augmentation/bootstrap_ci.json
+!results/p4_augmentation/manifest_integrity.json
+!results/p4_augmentation/go_no_go.json
+!results/p4_augmentation/run_manifest.json
+!results/p4_augmentation/environment.json
+!results/p4_augmentation/input_hashes.json
+!results/p4_augmentation/commands.log

@@ -1,0 +1,13 @@
+backbone,arm_id,arm_name,cohens_d,pp_diff,arm_mean_mrr,baseline_mean_mrr
+chemformer,A1,random_mismatch,1.6745,12.1816,0.415286,0.29347
+chemformer,A2,random_corruption,2.4518,15.7446,0.450916,0.29347
+chemformer,A3,tanimoto_retrieval,1.0057,7.8201,0.371671,0.29347
+chemformer,A4,template_perturbation,1.4378,10.7283,0.400753,0.29347
+chemformer,A5,unconstrained_edit,2.9062,17.5903,0.469373,0.29347
+chemformer,A6,rule_pc_cng,2.4518,15.7446,0.450916,0.29347
+gnn,A1,random_mismatch,1.6345,4.194,0.45403,0.412091
+gnn,A2,random_corruption,-0.0028,-0.0091,0.412,0.412091
+gnn,A3,tanimoto_retrieval,3.6736,11.1636,0.523727,0.412091
+gnn,A4,template_perturbation,2.3327,6.0364,0.472455,0.412091
+gnn,A5,unconstrained_edit,-0.0037,-0.0121,0.41197,0.412091
+gnn,A6,rule_pc_cng,-0.0028,-0.0091,0.412,0.412091

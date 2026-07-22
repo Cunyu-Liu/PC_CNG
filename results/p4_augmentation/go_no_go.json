@@ -1,0 +1,47 @@
+{
+  "phase": "P4-G3",
+  "status": "NO_GO",
+  "n_backbones": 2,
+  "backbones_with_positive_ci": [
+    "chemformer"
+  ],
+  "backbones_with_significant_improvement": [
+    "chemformer"
+  ],
+  "mean_improvement_pp": 7.8677,
+  "improvements_by_backbone": {
+    "chemformer": 15.7446,
+    "gnn": -0.0091
+  },
+  "predeclared_threshold": {
+    "strong_go_min_backbones": 2,
+    "strong_go_min_improvement_pp": 1.0,
+    "strong_go_min_vs_best_baseline_pp": 0.5,
+    "weak_go_min_backbones": 1
+  },
+  "next_phase_allowed": false,
+  "manifest_integrity": {
+    "source_a": "random_corruption",
+    "source_b": "rule_pc_cng",
+    "n_groups_checked": 500,
+    "n_groups_identical_smiles": 500,
+    "duplicated": true
+  },
+  "status_override_reason": "A6 (rule_pc_cng) candidate SMILES are identical to A2 (random_corruption) in every group of the frozen v1 manifest; the A6 arm empirically reproduces A2 (bit-identical Chemformer scores) and therefore provides no evidence about rule PC-CNG augmentation. A6 also does not beat the best non-PC-CNG negative baseline (A5 unconstrained_edit on chemformer, A3 tanimoto_retrieval on GNN).",
+  "evidence_paths": [
+    "results/p4_augmentation/summary.csv",
+    "results/p4_augmentation/effect_sizes.csv",
+    "results/p4_augmentation/bootstrap_ci.json",
+    "results/p4_augmentation/manifest_integrity.json",
+    "results/p4_augmentation/paired_predictions"
+  ],
+  "primary_metric": {
+    "name": "test_mrr",
+    "comparison": "A6_vs_A0"
+  },
+  "limitations": [
+    "Frozen v1 manifest duplicates random_corruption SMILES under the rule_pc_cng label in all 500 groups (P4-G1 construction issue); rule PC-CNG augmentation effect is untestable on v1 manifest.",
+    "A v2 manifest with genuinely rule-generated PC-CNG candidates is required before any PC-CNG augmentation claim can be made.",
+    "Rule PC-CNG (A6) did not beat the best simple negative baseline on either backbone under the frozen v1 candidate manifest."
+  ]
+}
