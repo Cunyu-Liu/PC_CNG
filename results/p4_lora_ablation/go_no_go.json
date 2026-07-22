@@ -1,0 +1,37 @@
+{
+  "phase": "P4-G2",
+  "status": "PARTIAL_GO",
+  "primary_metric": {
+    "selected_config": "C3",
+    "selected_mrr": 0.471833,
+    "noninferiority_margin": -0.005,
+    "any_noninferior": false,
+    "param_efficient": true,
+    "config_frozen": true,
+    "seed_variance": {
+      "mrr_mean": 0.471833,
+      "mrr_std": 0.030793,
+      "mrr_min": 0.436537,
+      "mrr_max": 0.493203
+    }
+  },
+  "predeclared_threshold": {
+    "primary_metric": "MRR",
+    "noninferiority_margin": -0.005,
+    "param_efficiency_ratio": 10,
+    "min_seeds": 10
+  },
+  "evidence_paths": [
+    "results/p4_lora_ablation/config_registry.json",
+    "results/p4_lora_ablation/summary.csv",
+    "results/p4_lora_ablation/noninferiority.json",
+    "results/p4_lora_ablation/selected_backbone.json"
+  ],
+  "next_phase_allowed": true,
+  "partial_go_conditions": {
+    "reason": "LoRA slightly below full fine-tuning but efficiency advantage clear (>=10x fewer params)",
+    "requirement": "Formal augmentation main results MUST simultaneously report full fine-tuning sensitivity",
+    "selected_config": "C3",
+    "param_efficiency_ratio": 106.8668009317406
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "C2": {
+    "status": "INFERIOR",
+    "metric": "mrr",
+    "split": "test",
+    "margin": -0.005,
+    "lora_mean_mrr": 0.430887,
+    "full_ft_mean_mrr": 0.541667,
+    "delta_mean": -0.110779,
+    "ci_low": -0.153139,
+    "ci_high": -0.087857,
+    "p_value": 1.0,
+    "n_seeds": 3,
+    "is_noninferior": false
+  },
+  "C3": {
+    "status": "INFERIOR",
+    "metric": "mrr",
+    "split": "test",
+    "margin": -0.005,
+    "lora_mean_mrr": 0.471833,
+    "full_ft_mean_mrr": 0.541667,
+    "delta_mean": -0.069834,
+    "ci_low": -0.092403,
+    "ci_high": -0.039394,
+    "p_value": 1.0,
+    "n_seeds": 3,
+    "is_noninferior": false
+  },
+  "C4": {
+    "status": "INFERIOR",
+    "metric": "mrr",
+    "split": "test",
+    "margin": -0.005,
+    "lora_mean_mrr": 0.451674,
+    "full_ft_mean_mrr": 0.541667,
+    "delta_mean": -0.089993,
+    "ci_low": -0.096948,
+    "ci_high": -0.07803,
+    "p_value": 1.0,
+    "n_seeds": 3,
+    "is_noninferior": false
+  },
+  "C5": {
+    "status": "INFERIOR",
+    "metric": "mrr",
+    "split": "test",
+    "margin": -0.005,
+    "lora_mean_mrr": 0.4243,
+    "full_ft_mean_mrr": 0.541667,
+    "delta_mean": -0.117367,
+    "ci_low": -0.187857,
+    "ci_high": -0.035758,
+    "p_value": 1.0,
+    "n_seeds": 3,
+    "is_noninferior": false
+  }
+}

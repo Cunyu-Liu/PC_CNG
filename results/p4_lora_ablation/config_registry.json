@@ -1,0 +1,261 @@
+{
+  "configs": {
+    "C1": {
+      "config_id": "C1",
+      "name": "zero_shot_frozen",
+      "description": "Zero-shot / frozen backbone (no training)",
+      "adapter": "none",
+      "target_patterns": [],
+      "rank": 0,
+      "alpha": 0.0,
+      "dropout": 0.0
+    },
+    "C2": {
+      "config_id": "C2",
+      "name": "lora_baseline_ffn",
+      "description": "LoRA on FFN (linear1+linear2), rank 8 \u2014 current baseline",
+      "adapter": "lora",
+      "target_patterns": [
+        "backbone.encoder_layers.*.linear1",
+        "backbone.encoder_layers.*.linear2"
+      ],
+      "rank": 8,
+      "alpha": 16.0,
+      "dropout": 0.0
+    },
+    "C3": {
+      "config_id": "C3",
+      "name": "lora_attention",
+      "description": "LoRA on attention output projection (self_attn.out_proj), rank 8",
+      "adapter": "lora",
+      "target_patterns": [
+        "backbone.encoder_layers.*.self_attn.out_proj"
+      ],
+      "rank": 8,
+      "alpha": 16.0,
+      "dropout": 0.0
+    },
+    "C4": {
+      "config_id": "C4",
+      "name": "lora_all_linear_r8",
+      "description": "LoRA on all encoder Linear modules, rank 8",
+      "adapter": "lora",
+      "target_patterns": [
+        "backbone.encoder_layers.*.linear1",
+        "backbone.encoder_layers.*.linear2",
+        "backbone.encoder_layers.*.self_attn.out_proj"
+      ],
+      "rank": 8,
+      "alpha": 16.0,
+      "dropout": 0.0
+    },
+    "C5": {
+      "config_id": "C5",
+      "name": "lora_all_linear_r16",
+      "description": "LoRA on all encoder Linear modules, rank 16",
+      "adapter": "lora",
+      "target_patterns": [
+        "backbone.encoder_layers.*.linear1",
+        "backbone.encoder_layers.*.linear2",
+        "backbone.encoder_layers.*.self_attn.out_proj"
+      ],
+      "rank": 16,
+      "alpha": 32.0,
+      "dropout": 0.0
+    },
+    "C6": {
+      "config_id": "C6",
+      "name": "full_finetune",
+      "description": "Full fine-tuning (all parameters trainable)",
+      "adapter": "full",
+      "target_patterns": [],
+      "rank": 0,
+      "alpha": 0.0,
+      "dropout": 0.0
+    }
+  },
+  "module_registry": {
+    "backbone.encoder_layers.0.self_attn.out_proj": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.0.linear1": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 2048,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.0.linear2": {
+      "type": "nn.Linear",
+      "in_features": 2048,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.1.self_attn.out_proj": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.1.linear1": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 2048,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.1.linear2": {
+      "type": "nn.Linear",
+      "in_features": 2048,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.2.self_attn.out_proj": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.2.linear1": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 2048,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.2.linear2": {
+      "type": "nn.Linear",
+      "in_features": 2048,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.3.self_attn.out_proj": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.3.linear1": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 2048,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.3.linear2": {
+      "type": "nn.Linear",
+      "in_features": 2048,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.4.self_attn.out_proj": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.4.linear1": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 2048,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.4.linear2": {
+      "type": "nn.Linear",
+      "in_features": 2048,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.5.self_attn.out_proj": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.5.linear1": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 2048,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.5.linear2": {
+      "type": "nn.Linear",
+      "in_features": 2048,
+      "out_features": 512,
+      "has_bias": true
+    },
+    "head.net.0": {
+      "type": "nn.Linear",
+      "in_features": 512,
+      "out_features": 256,
+      "has_bias": true
+    },
+    "head.net.3": {
+      "type": "nn.Linear",
+      "in_features": 256,
+      "out_features": 1,
+      "has_bias": true
+    },
+    "backbone.encoder_layers.0.self_attn.in_proj_weight": {
+      "type": "nn.Parameter",
+      "shape": [
+        1536,
+        512
+      ],
+      "note": "Q/K/V combined projection (not nn.Linear, not LoRA-able by current adapter)"
+    },
+    "backbone.encoder_layers.1.self_attn.in_proj_weight": {
+      "type": "nn.Parameter",
+      "shape": [
+        1536,
+        512
+      ],
+      "note": "Q/K/V combined projection (not nn.Linear, not LoRA-able by current adapter)"
+    },
+    "backbone.encoder_layers.2.self_attn.in_proj_weight": {
+      "type": "nn.Parameter",
+      "shape": [
+        1536,
+        512
+      ],
+      "note": "Q/K/V combined projection (not nn.Linear, not LoRA-able by current adapter)"
+    },
+    "backbone.encoder_layers.3.self_attn.in_proj_weight": {
+      "type": "nn.Parameter",
+      "shape": [
+        1536,
+        512
+      ],
+      "note": "Q/K/V combined projection (not nn.Linear, not LoRA-able by current adapter)"
+    },
+    "backbone.encoder_layers.4.self_attn.in_proj_weight": {
+      "type": "nn.Parameter",
+      "shape": [
+        1536,
+        512
+      ],
+      "note": "Q/K/V combined projection (not nn.Linear, not LoRA-able by current adapter)"
+    },
+    "backbone.encoder_layers.5.self_attn.in_proj_weight": {
+      "type": "nn.Parameter",
+      "shape": [
+        1536,
+        512
+      ],
+      "note": "Q/K/V combined projection (not nn.Linear, not LoRA-able by current adapter)"
+    }
+  },
+  "discovered_patterns": {
+    "ffn": [
+      "backbone.encoder_layers.*.linear1",
+      "backbone.encoder_layers.*.linear2"
+    ],
+    "attention": [
+      "backbone.encoder_layers.*.self_attn.out_proj"
+    ],
+    "all_linear": [
+      "backbone.encoder_layers.*.linear1",
+      "backbone.encoder_layers.*.linear2",
+      "backbone.encoder_layers.*.self_attn.out_proj"
+    ]
+  }
+}
