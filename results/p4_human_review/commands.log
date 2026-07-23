@@ -1,0 +1,26 @@
+# P4-G7 Human Expert Calibration — commands log
+# Phase: P4-G7
+# Date: 2026-07-23
+# Seed: 20260723
+# Conda env: pc_cng
+
+# Step 1: Pilot generation (materials preparation)
+python3 -m pc_cng.run_p4_human_review all
+# Outputs: sampling_manifest.json (80 samples, 12 strata), samples.csv (blinded),
+#          blinded_forms/reviewer_{1,2}.csv (shuffled), go_no_go.json (DEFERRED),
+#          pilot_report.json (MATERIALS_PREPARED)
+
+# Step 2: Expert review distribution (MANUAL — not executable by Trae)
+# Blinded forms (reviewer_1.csv, reviewer_2.csv) distributed to >=2 chemistry
+# experts for independent double-blind scoring on 6 dimensions + reason codes.
+# Trae CANNOT fill expert scores or use LLM/rules to auto-fill forms.
+
+# Step 3: Agreement analysis (BLOCKED — requires expert responses)
+# python3 -m pc_cng.run_p4_human_review analyze \
+#   --responses <completed_responses.csv> \
+#   --manifest-review <manifest_review.json>
+# Outputs: agreement_report.json (kappa, alpha, control discrimination, source effects)
+
+# Unit tests:
+# python3 -m pytest chem_negative_sampling/tests/test_human_review_protocol.py -v
+# Result: 47/47 passed

@@ -1,0 +1,10 @@
+{
+  "schema": "p4_input_hashes_v1",
+  "phase": "P4-G7",
+  "algorithm": "sha256",
+  "inputs": {
+    "data/p4/manifests/hte_feasibility_v2.json": "8aa04ef108d94f7bbdc3ef7702f5d8aa5070535a4491e931a76fabe72ed8f281",
+    "results/p4_risk_aware/risk_artifacts.json": "e1cf4e3be3c355e0c544140238b93826e07597562a74dcc5f43e8773ea105904",
+    "results/p4_hte_external_validation/raw_predictions/risk_aware_pc_cng.csv": "52053cf861679163f713891d728b0e3411076b2711c63279cf1d263631c2c5ae"
+  }
+}

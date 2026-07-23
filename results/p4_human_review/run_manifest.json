@@ -1,0 +1,43 @@
+{
+  "schema": "p4_run_manifest_v1",
+  "phase": "P4-G7",
+  "title": "Human Expert Calibration",
+  "timestamp_utc": "2026-07-23T09:04:00Z",
+  "seed": 20260723,
+  "steps": [
+    {
+      "step": 1,
+      "name": "pilot_generation",
+      "command": "python3 -m pc_cng.run_p4_human_review all",
+      "status": "completed",
+      "outputs": [
+        "results/p4_human_review/sampling_manifest.json",
+        "results/p4_human_review/samples.csv",
+        "results/p4_human_review/blinded_forms/reviewer_1.csv",
+        "results/p4_human_review/blinded_forms/reviewer_2.csv",
+        "results/p4_human_review/go_no_go.json",
+        "results/p4_human_review/pilot_report.json"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "expert_review_distribution",
+      "status": "pending",
+      "note": "Blinded forms distributed to >=2 chemistry experts for independent scoring; Trae cannot fill expert scores"
+    },
+    {
+      "step": 3,
+      "name": "agreement_analysis",
+      "command": "python3 -m pc_cng.run_p4_human_review analyze --responses <responses.csv> --manifest-review <manifest_review.json>",
+      "status": "blocked",
+      "note": "Requires expert responses; produces agreement_report.json"
+    }
+  ],
+  "n_samples_pilot": 80,
+  "n_reviewers": 2,
+  "n_strata": 12,
+  "scoring_dimensions": 6,
+  "reason_codes": 10,
+  "verdict": "DEFERRED",
+  "next_phase_allowed": false
+}
