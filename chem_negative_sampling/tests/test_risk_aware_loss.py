@@ -31,6 +31,7 @@ from pc_cng.training.train_risk_aware import (
 from pc_cng.models.risk_aware_scorer import (
     MIN_WEIGHT,
     RISK_SIGNALS,
+    FNR_MODEL_FEATURES,
     WEIGHT_COMPONENTS,
     FalseNegativeRiskModel,
     atom_mapping_quality,
@@ -246,54 +247,79 @@ def _feat(**overrides):
 
 class TestFalseNegativeRiskModel:
     def test_fit_separable(self):
-        pos = [_feat(nearest_positive_similarity=0.9, ensemble_mean=0.9) for _ in range(30)]
-        neg = [_feat(nearest_positive_similarity=0.1, ensemble_mean=0.1) for _ in range(30)]
+        # Use structural features (not ensemble) since FNR model excludes them
+        pos = [_feat(nearest_positive_similarity=0.9, nearest_negative_similarity=0.1,
+                      database_exact_collision=1.0) for _ in range(30)]
+        neg = [_feat(nearest_positive_similarity=0.1, nearest_negative_similarity=0.9,
+                      database_exact_collision=0.0) for _ in range(30)]
         model = FalseNegativeRiskModel()
         metrics = model.fit(pos, neg, epochs=300, lr=0.5)
         assert metrics["train_auroc"] == pytest.approx(1.0)
-        p_pos = model.predict_fnr([_feat(nearest_positive_similarity=0.9, ensemble_mean=0.9)])[0]
-        p_neg = model.predict_fnr([_feat(nearest_positive_similarity=0.1, ensemble_mean=0.1)])[0]
+        p_pos = model.predict_fnr([_feat(nearest_positive_similarity=0.9, nearest_negative_similarity=0.1,
+                                          database_exact_collision=1.0)])[0]
+        p_neg = model.predict_fnr([_feat(nearest_positive_similarity=0.1, nearest_negative_similarity=0.9,
+                                          database_exact_collision=0.0)])[0]
         assert p_pos > 0.8 > p_neg
 
     def test_serialization_roundtrip(self):
-        pos = [_feat(ensemble_mean=0.8) for _ in range(10)]
-        neg = [_feat(ensemble_mean=0.2) for _ in range(10)]
+        pos = [_feat(nearest_positive_similarity=0.9, database_exact_collision=1.0) for _ in range(10)]
+        neg = [_feat(nearest_positive_similarity=0.1, database_exact_collision=0.0) for _ in range(10)]
         model = FalseNegativeRiskModel()
         model.fit(pos, neg, epochs=50)
         d = model.to_dict()
         model2 = FalseNegativeRiskModel.from_dict(d)
-        f = [_feat(ensemble_mean=0.5)]
+        f = [_feat(nearest_positive_similarity=0.5, database_exact_collision=0.0)]
         assert model.predict_fnr(f) == pytest.approx(model2.predict_fnr(f))
         assert json.dumps(d)  # JSON-serializable
 
     def test_feature_names_order(self):
         model = FalseNegativeRiskModel()
-        assert model.feature_names == RISK_SIGNALS
+        assert model.feature_names == FNR_MODEL_FEATURES
+        # FNR model must NOT include ensemble-derived features
+        for ens_feat in ("ensemble_mean", "ensemble_variance",
+                         "epistemic_uncertainty", "aleatoric_uncertainty"):
+            assert ens_feat not in model.feature_names
+
+    def test_all_13_signals_still_computed(self):
+        """Risk extraction still computes all 13 signals; FNR model uses subset."""
+        assert len(RISK_SIGNALS) == 13
+        assert set(FNR_MODEL_FEATURES).issubset(set(RISK_SIGNALS))
 
 
 class TestSampleWeights:
     @staticmethod
     def _two_feats(**kw0):
-        """Two candidates with distinct uncertainty (non-degenerate boundary)."""
+        """Two candidates with full data support and distinct FNR."""
         f0 = _feat(chemical_validity=1.0, reaction_family_support=1.0,
-                   experimental_support=1.0, epistemic_uncertainty=0.8)
+                   experimental_support=1.0)
         f0.update(kw0)
-        f1 = _feat(epistemic_uncertainty=0.2)
+        f1 = _feat(chemical_validity=1.0, reaction_family_support=1.0,
+                   experimental_support=1.0)
         return [f0, f1]
 
     def test_product_form(self):
+        # boundary_value = 1 - |2*FNR - 1|
+        # FNR=0.5 -> boundary=1.0 (max uncertainty); FNR=0.1 -> boundary=0.2
         feats = self._two_feats()
-        out = compute_sample_weights(feats, [0.25, 0.25])
-        rec = out[0]  # highest-uncertainty item -> boundary normalised to 1.0
-        assert rec["false_negative_risk"] == pytest.approx(0.25)
-        assert rec["one_minus_fnr"] == pytest.approx(0.75)
-        assert rec["boundary_value"] == pytest.approx(1.0)
-        assert rec["data_support"] == pytest.approx(1.0)
-        expected = 1.0 * 1.0 * 1.0 * 0.75
-        assert rec["sample_weight"] == pytest.approx(expected)
-        # min-max normalisation puts the low-uncertainty item at boundary 0
-        assert out[1]["boundary_value"] == pytest.approx(0.0)
-        assert out[1]["sample_weight"] == MIN_WEIGHT
+        out = compute_sample_weights(feats, [0.5, 0.1])
+        rec0 = out[0]  # FNR=0.5 -> on decision boundary
+        assert rec0["false_negative_risk"] == pytest.approx(0.5)
+        assert rec0["one_minus_fnr"] == pytest.approx(0.5)
+        assert rec0["boundary_value"] == pytest.approx(1.0)
+        assert rec0["data_support"] == pytest.approx(1.0)
+        expected = 1.0 * 1.0 * 1.0 * 0.5
+        assert rec0["sample_weight"] == pytest.approx(expected)
+        rec1 = out[1]  # FNR=0.1 -> confident negative
+        assert rec1["boundary_value"] == pytest.approx(0.2)
+        assert rec1["sample_weight"] == pytest.approx(1.0 * 1.0 * 0.2 * 0.9)
+
+    def test_boundary_zero_at_extremes(self):
+        """FNR=0 or FNR=1 -> boundary_value=0."""
+        feats = [_feat()]
+        out = compute_sample_weights(feats, [0.0])
+        assert out[0]["boundary_value"] == pytest.approx(0.0)
+        out = compute_sample_weights(feats, [1.0])
+        assert out[0]["boundary_value"] == pytest.approx(0.0)
 
     def test_known_positive_collision_override(self):
         feats = self._two_feats()

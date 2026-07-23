@@ -59,6 +59,24 @@ RISK_SIGNALS = [
     "experimental_support",
 ]
 
+# Features used by the FNR model.  Ensemble-derived signals are excluded
+# because (a) the ensemble is trained on observed data only and is
+# overconfident on near-positive counterfactuals, and (b) the P4-G5 NO-GO
+# check penalises self-score dominance.  Structural / similarity features
+# are more discriminative for distinguishing observed positives from
+# counterfactual unknowns.
+FNR_MODEL_FEATURES = [
+    "database_exact_collision",
+    "template_collision",
+    "nearest_positive_similarity",
+    "nearest_negative_similarity",
+    "reaction_family_support",
+    "edit_locality",
+    "edit_distance",
+    "atom_mapping_quality",
+    "experimental_support",
+]
+
 WEIGHT_COMPONENTS = [
     "chemical_validity",
     "data_support",
@@ -411,9 +429,13 @@ class FalseNegativeRiskModel:
 
     Trained ONLY on observed positives (y=1) vs observed negatives (y=0).
     Synthetic-candidate self-labels are never used.
+
+    Uses FNR_MODEL_FEATURES (structural / similarity signals only) instead
+    of all 13 RISK_SIGNALS, to avoid self-score dominance from the
+    observed-data-trained ensemble.
     """
 
-    def __init__(self, feature_names: Sequence[str] = RISK_SIGNALS):
+    def __init__(self, feature_names: Sequence[str] = FNR_MODEL_FEATURES):
         self.feature_names = list(feature_names)
         self.coef_: Optional[np.ndarray] = None
         self.intercept_: float = 0.0
@@ -521,8 +543,11 @@ def compute_sample_weights(
     """sample_weight = chemical_validity x data_support x boundary_value
     x (1 - false_negative_risk).
 
-    - boundary_value: min-max normalized epistemic uncertainty within the
-      given candidate batch (high uncertainty = high boundary value).
+    - boundary_value: ``1 - |2*FNR - 1|`` (distance from the 0.5 decision
+      boundary).  High when the FNR model is uncertain (FNR≈0.5); low when
+      the model is confident (FNR≈0 or 1).  This replaces the previous
+      min-max normalised epistemic_uncertainty, which was near-zero for
+      feasible-looking candidates (ensemble overconfidence).
     - data_support: 0.5*family_support + 0.5*experimental_support.
     - known_positive_collision overrides fnr to 1.0 (weight -> MIN_WEIGHT).
     - Any component in ``ablate`` is replaced by 1.0 (neutralized).
@@ -533,16 +558,13 @@ def compute_sample_weights(
     if unknown:
         raise ValueError(f"unknown weight components to ablate: {sorted(unknown)}")
 
-    epi = np.array([f["epistemic_uncertainty"] for f in feats], dtype=np.float64)
-    lo, hi = float(epi.min()), float(epi.max())
-    span = hi - lo if hi > lo else 1.0
-
     out: List[Dict[str, float]] = []
     for i, f in enumerate(feats):
         r = float(fnr[i])
         if known_positive_collision is not None and known_positive_collision[i]:
             r = 1.0
-        boundary = float((f["epistemic_uncertainty"] - lo) / span)
+        # boundary_value: distance from FNR=0.5 decision boundary
+        boundary = 1.0 - abs(2.0 * r - 1.0)
         comp = {
             "chemical_validity": float(f["chemical_validity"]),
             "data_support": float(0.5 * f["reaction_family_support"] + 0.5 * f["experimental_support"]),

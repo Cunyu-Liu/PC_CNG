@@ -105,6 +105,32 @@ ABLATION_COMPONENTS = list(WEIGHT_COMPONENTS)
 
 
 # ---------------------------------------------------------------------------
+# Post-hoc temperature scaling (calibration improvement)
+# ---------------------------------------------------------------------------
+
+def _fit_temperature(val_logits: List[float], val_labels: List[int]) -> float:
+    """Find T* that minimises ECE on the validation set.
+
+    Standard post-hoc calibration: logits / T, search T in [0.5, 5.0].
+    Returns T* (1.0 if search fails or no improvement).
+    """
+    if not val_logits:
+        return 1.0
+    best_t, best_ece = 1.0, float("inf")
+    for t in [round(0.5 + 0.1 * i, 1) for i in range(46)]:  # 0.5 .. 5.0
+        probs = [1.0 / (1.0 + math.exp(-max(-30, min(30, l / t)))) for l in val_logits]
+        cal = ece_brier_nll(probs, val_labels)
+        if cal["ece"] < best_ece:
+            best_ece, best_t = cal["ece"], t
+    return best_t
+
+
+def _apply_temperature(logits: List[float], t: float) -> List[float]:
+    """Apply temperature scaling to logits -> probabilities."""
+    return [1.0 / (1.0 + math.exp(-max(-30, min(30, l / t)))) for l in logits]
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -155,6 +181,18 @@ def _gold_smiles_by_group(manifest_path: Path) -> Dict[str, str]:
         for cand in group.get("candidates", []):
             if cand.get("gold_candidate", False):
                 out[gid] = re.sub(r":\d+", "", cand.get("candidate_smiles", ""))
+    return out
+
+
+def _experimental_group_id_map(manifest_path: Path) -> Dict[str, str]:
+    """Map manifest group_id -> experimental_group_id (HTEa split_key)."""
+    out: Dict[str, str] = {}
+    with open(manifest_path, "r") as f:
+        manifest = json.load(f)
+    for group in manifest.get("groups", []):
+        gid = group["group_id"]
+        eid = group.get("experimental_group_id", "") or group.get("parent_reaction_id", "")
+        out[gid] = eid
     return out
 
 
@@ -217,9 +255,15 @@ def stage_risk_model(
     # --- Features + weights for ALL manifest candidates
     splits = load_manifest_candidates(manifest_path)
     gold_map = _gold_smiles_by_group(manifest_path)
+    exp_gid_map = _experimental_group_id_map(manifest_path)
     all_cands = splits["train"] + splits["val"] + splits["test"]
     for c in all_cands:
         c["gold_smiles"] = gold_map.get(c["group_id"], "")
+        # Use the manifest's experimental_group_id (HTEa split_key) so
+        # synthetic candidates inherit their parent reaction's experimental
+        # support.  Previously this was group_id ("hte_xxx") which never
+        # matched any HTEa split_key, giving experimental_support = 0.
+        c["experimental_group_id"] = exp_gid_map.get(c["group_id"], "")
     cand_feats = extractor.extract_batch(all_cands)
     cand_fnr = fnr_model.predict_fnr(cand_feats)
     kpc = [bool(c.get("known_positive_collision")) for c in all_cands]
@@ -238,13 +282,16 @@ def stage_risk_model(
             "weight": {k: round(float(v), 6) for k, v in w.items()},
         }
 
-    # PU prior: mean FNR over train-split rule_pc_cng negatives
+    # PU prior: mean FNR over train-split rule_pc_cng negatives, capped at 0.3
+    # (previous cap was 0.5, which saturated when FNR was inverted on v2
+    # near-positive counterfactuals; a conservative prior prevents nnPU
+    # from treating too many negatives as hidden positives).
     train_a6_fnr = [
         rec["false_negative_risk"]
         for rec in artifacts["candidates"].values()
         if rec["split"] == "train" and rec["candidate_source"] == "rule_pc_cng"
     ]
-    pu_prior = min(0.5, max(0.01, statistics.mean(train_a6_fnr) if train_a6_fnr else 0.1))
+    pu_prior = min(0.3, max(0.01, statistics.mean(train_a6_fnr) if train_a6_fnr else 0.1))
     artifacts["pu_prior"] = round(pu_prior, 6)
     artifacts["n_train_a6_negatives"] = len(train_a6_fnr)
 
@@ -479,19 +526,22 @@ def run_single(
         model.load_state_dict(best_state)
         model = model.to(device)
 
-    # --- HTE test/val eval
+    # --- HTE test/val eval with post-hoc temperature scaling
     test_preds = evaluate_chemformer(model, tokenizer, test_data, device)
     val_preds = evaluate_chemformer(model, tokenizer, val_data, device)
+
+    # Fit temperature on val logits, apply to both val and test
+    val_logits = [float(p["score"]) for p in val_preds]
+    val_labels_raw = [p["label"] for p in val_preds]
+    temp_t = _fit_temperature(val_logits, val_labels_raw)
+    test_logits = [float(p["score"]) for p in test_preds]
+    test_probs_ts = _apply_temperature(test_logits, temp_t)
+    val_probs_ts = _apply_temperature(val_logits, temp_t)
+
     test_metrics = compute_metrics_from_predictions(test_preds)
     val_metrics = compute_metrics_from_predictions(val_preds)
-    test_cal = ece_brier_nll(
-        [float(torch.sigmoid(torch.tensor(p["score"]))) for p in test_preds],
-        [p["label"] for p in test_preds],
-    )
-    val_cal = ece_brier_nll(
-        [float(torch.sigmoid(torch.tensor(p["score"]))) for p in val_preds],
-        [p["label"] for p in val_preds],
-    )
+    test_cal = ece_brier_nll(test_probs_ts, [p["label"] for p in test_preds])
+    val_cal = ece_brier_nll(val_probs_ts, [p["label"] for p in val_preds])
 
     # --- Stress tests
     kp_groups_scored = []
@@ -525,14 +575,16 @@ def run_single(
 
     coll = collision_sensitivity(test_preds, stress_sets["collision_candidate_ids"])
 
-    # --- Selective prediction on test (uncertainty from risk features)
+    # --- Selective prediction on test (uncertainty = FNR, not ensemble variance)
+    # FNR is a better uncertainty signal than ensemble_variance (which is
+    # near-zero for feasible-looking candidates).  High FNR = high uncertainty
+    # about whether the candidate is truly negative -> should abstain.
     probs, labels, unc = [], [], []
-    for p in test_preds:
+    for p, prob_ts in zip(test_preds, test_probs_ts):
         rec = artifacts["candidates"].get(p["candidate_id"], {})
-        feat = rec.get("features", {})
-        probs.append(float(torch.sigmoid(torch.tensor(p["score"]))))
+        probs.append(prob_ts)
         labels.append(p["label"])
-        unc.append(float(feat.get("epistemic_uncertainty", 0.25)))
+        unc.append(float(rec.get("false_negative_risk", 0.5)))
     cr = coverage_risk_curve(probs, labels, unc)
 
     # --- Fixed-forward zero-shot eval (skipped for ablation runs)
@@ -591,6 +643,7 @@ def run_single(
             "risk": [round(v, 6) for v in cr["risk"]],
         },
         "training_stability": {"max_val_mrr_drop": round(max_drop, 6)},
+        "temperature": round(temp_t, 4),
     }
 
     # --- Persist
