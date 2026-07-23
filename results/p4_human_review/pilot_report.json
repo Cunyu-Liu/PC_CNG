@@ -1,0 +1,51 @@
+{
+  "schema": "p4_human_review_pilot_report_v1",
+  "phase": "P4-G7",
+  "status": "MATERIALS_PREPARED",
+  "n_samples": 80,
+  "n_reviewers": 2,
+  "stratum_counts": {
+    "random": 8,
+    "tanimoto": 8,
+    "template": 8,
+    "pc_cng": 8,
+    "known_real_negative": 8,
+    "known_positive_control": 8,
+    "pc_cng_low_risk": 5,
+    "pc_cng_medium_risk": 5,
+    "pc_cng_high_risk": 5,
+    "llm_disagreement": 4,
+    "hte_false_positive": 7,
+    "hte_false_negative": 6
+  },
+  "all_strata_covered": true,
+  "scoring_dimensions": [
+    "structural_validity",
+    "mechanistic_plausibility",
+    "plausible_competing_outcome",
+    "likely_low_yield_failure",
+    "likely_feasible_positive",
+    "confidence"
+  ],
+  "reason_codes": [
+    "wrong_reaction_center",
+    "unlikely_bond_change",
+    "condition_mismatch",
+    "chemoselectivity_issue",
+    "regioselectivity_issue",
+    "stereochemistry_issue",
+    "plausible_side_product",
+    "likely_feasible_alternative",
+    "insufficient_information",
+    "other"
+  ],
+  "blinding_verified": true,
+  "next_steps": [
+    "Distribute blinded forms to >= 2 chemistry experts",
+    "Experts complete scoring independently (no discussion)",
+    "Collect completed forms",
+    "Run analysis: python3 -m pc_cng.run_p4_human_review analyze --responses <path>",
+    "If pilot protocol is validated, generate main review (250 samples)"
+  ],
+  "note": "Pilot materials prepared. Awaiting expert responses. No expert scores have been auto-filled."
+}

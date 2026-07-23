@@ -1,0 +1,6 @@
+{
+  "schema": "p4_computational_validation_v1",
+  "phase": "P4-G7",
+  "status": "PENDING_EXPERT_RESPONSES",
+  "note": "DFT/xTB validation will be performed only on subset with high expert disagreement, high LLM-human disagreement, or high model confidence with low expert confidence. Requires expert responses first."
+}

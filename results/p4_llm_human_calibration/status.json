@@ -1,0 +1,6 @@
+{
+  "schema": "p4_llm_human_calibration_v1",
+  "phase": "P4-G7",
+  "status": "PENDING_EXPERT_RESPONSES",
+  "note": "LLM-human agreement analysis requires both LLM judge scores and expert responses. Will be computed as supplementary analysis after expert forms are received."
+}

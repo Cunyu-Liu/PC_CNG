@@ -107,3 +107,10 @@ logs/*.log
 !results/p4_human_review/blinded_forms/reviewer_1.csv
 !results/p4_human_review/blinded_forms/reviewer_2.csv
 !results/p4_human_review/go_no_go.json
+
+# P4-G7 additional status files
+!results/p4_human_review/pilot_report.json
+!results/p4_llm_human_calibration/
+!results/p4_llm_human_calibration/status.json
+!results/p4_computational_validation/
+!results/p4_computational_validation/status.json
