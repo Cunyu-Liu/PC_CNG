@@ -1,0 +1,104 @@
+{
+  "schema": "p4_hte_data_audit_v1",
+  "phase": "P4-G6",
+  "timestamp": "2026-07-23T16:03:06",
+  "source_publication": "King-Smith et al., 'Probing the Chemical Reactome with High Throughput Experimentation Data', Nat. Chem. 2023. https://www.nature.com/articles/s41557-023-01393-w",
+  "license": "CC-BY 4.0 (Zenodo)",
+  "zenodo_doi": "10.5281/zenodo.552294062",
+  "raw_data_file": "/home/cunyuliu/pc_cng_research/external/HiTEA/data/8_SEPT_APPROVED_full_dataset.csv",
+  "normalized_csv": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+  "parquet_file": "/home/cunyuliu/pc_cng_research/data/processed/p4_hte_normalized.parquet",
+  "split_manifest": "/home/cunyuliu/pc_cng_research/data/p4/manifests/p4_hte_split_v1.json",
+  "required_fields_present": true,
+  "missing_fields": [],
+  "n_records": 39546,
+  "n_screens": 356,
+  "n_notebooks": 356,
+  "n_families": 41,
+  "n_substrates": 566,
+  "n_conditions": 19379,
+  "n_replicate_groups": 344,
+  "zero_type_counts": {
+    "positive_yield": 12499,
+    "low_yield": 4534,
+    "measured_zero": 11527,
+    "below_detection": 10831,
+    "no_product_recorded": 155
+  },
+  "yield_stats": {
+    "min": 0.0,
+    "max": 100.0,
+    "mean": 12.515,
+    "median": 0.0
+  },
+  "split_summary": {
+    "train": {
+      "n_reactions": 29357,
+      "n_screens": 267,
+      "n_families": 41,
+      "yield_mean": 13.992,
+      "yield_median": 0.0,
+      "zero_rate": 8363.2608,
+      "zero_type_counts": {
+        "positive_yield": 10026,
+        "low_yield": 3235,
+        "measured_zero": 8363,
+        "below_detection": 7656,
+        "no_product_recorded": 77
+      }
+    },
+    "val": {
+      "n_reactions": 4291,
+      "n_screens": 41,
+      "n_families": 25,
+      "yield_mean": 9.832,
+      "yield_median": 0.0,
+      "zero_rate": 1319.2692,
+      "zero_type_counts": {
+        "positive_yield": 1253,
+        "low_yield": 548,
+        "measured_zero": 1319,
+        "below_detection": 1155,
+        "no_product_recorded": 16
+      }
+    },
+    "test": {
+      "n_reactions": 5898,
+      "n_screens": 48,
+      "n_families": 32,
+      "yield_mean": 7.112,
+      "yield_median": 0.0,
+      "zero_rate": 1845.3425,
+      "zero_type_counts": {
+        "measured_zero": 1845,
+        "below_detection": 2020,
+        "positive_yield": 1220,
+        "low_yield": 751,
+        "no_product_recorded": 62
+      }
+    }
+  },
+  "split_manifest_summary": {
+    "n_screens_train": 267,
+    "n_screens_val": 41,
+    "n_screens_test": 48,
+    "no_screen_crosses_splits": true
+  },
+  "hte_authenticity_verified": true,
+  "hte_authenticity_evidence": [
+    "Raw data from King-Smith et al. Nat. Chem. 2023 HiTEA repository",
+    "Each record has SCREEN_ID (plate/experimental group) and NOTEBOOK_ID",
+    "Measured yields are Product_Yield_PCT_Area_UV (UV area %)",
+    "Substrate and condition grids derived from Reactant/Catalyst/Reagent columns",
+    "Zero yields classified into measured_zero / below_detection / no_product_recorded"
+  ],
+  "external_data_sources_checked": [
+    "Doyle/Merck C-N coupling HTE: NOT FOUND on server",
+    "Suzuki HTE: present within HiTEA (4915 reactions, KeyWord_STD=SUZUKI)",
+    "Buchwald-Hartwig HTE: present within HiTEA (2992 reactions, KeyWord_STD=BUCHWALD)",
+    "metallaphotoredox HTE: NOT FOUND on server",
+    "ORD: 750 AstraZeneca ELN reactions (0% yield coverage, not used)",
+    "NiCOlit: 1688 Ni-coupling reactions (not HTE grid, not used)"
+  ],
+  "primary_data_source": "HiTEA (King-Smith et al. Nat. Chem. 2023)"
+}

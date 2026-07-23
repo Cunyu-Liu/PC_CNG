@@ -92,3 +92,9 @@ logs/*.log
 !results/p4_augmentation/environment.json
 !results/p4_augmentation/input_hashes.json
 !results/p4_augmentation/commands.log
+
+# P4-G6 HTE external validation results (spec-required outputs; bulk predictions excluded)
+!results/p4_hte_external_validation/
+!results/p4_hte_external_validation/summary.csv
+!results/p4_hte_external_validation/data_audit.json
+!results/p4_hte_external_validation/go_no_go.json

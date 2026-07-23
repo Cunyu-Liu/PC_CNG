@@ -1,0 +1,110 @@
+{
+  "phase": "P4-G6",
+  "status": "WEAK_GO",
+  "reason": "1 main task(s) with improvement >0 and CI all positive; claim limited to specific HTE families/tasks",
+  "primary_method": "risk_aware_pc_cng",
+  "baseline_methods": [
+    "positive_only",
+    "tanimoto_baseline"
+  ],
+  "main_metrics": [
+    "t1_low_yield_auprc_5",
+    "t1_low_yield_auprc_10",
+    "t2_macro_auprc",
+    "t3_spearman",
+    "t4_plate_ndcg",
+    "t5_condition_feasibility_auprc"
+  ],
+  "deltas_vs_best_baseline": {
+    "t1_low_yield_auprc_5": {
+      "challenger": "risk_aware_pc_cng",
+      "challenger_value": 0.700594,
+      "best_baseline": "positive_only",
+      "baseline_value": 0.816316,
+      "delta_mean": -0.115722,
+      "delta_ci_low": -0.20129,
+      "delta_ci_high": -0.004921,
+      "ci_all_positive": false,
+      "improvement_pp": -11.57
+    },
+    "t1_low_yield_auprc_10": {
+      "challenger": "risk_aware_pc_cng",
+      "challenger_value": 0.761135,
+      "best_baseline": "positive_only",
+      "baseline_value": 0.862354,
+      "delta_mean": -0.101219,
+      "delta_ci_low": -0.187247,
+      "delta_ci_high": 0.00295,
+      "ci_all_positive": false,
+      "improvement_pp": -10.12
+    },
+    "t2_macro_auprc": {
+      "challenger": "risk_aware_pc_cng",
+      "challenger_value": 0.227393,
+      "best_baseline": "positive_only",
+      "baseline_value": 0.205852,
+      "delta_mean": 0.021541,
+      "delta_ci_low": 0.008169,
+      "delta_ci_high": 0.092994,
+      "ci_all_positive": true,
+      "improvement_pp": 2.15
+    },
+    "t3_spearman": {
+      "challenger": "risk_aware_pc_cng",
+      "challenger_value": 0.300308,
+      "best_baseline": "tanimoto_baseline",
+      "baseline_value": 0.129825,
+      "delta_mean": 0.170483,
+      "delta_ci_low": -0.005511,
+      "delta_ci_high": 0.350468,
+      "ci_all_positive": false,
+      "improvement_pp": 17.05
+    },
+    "t4_plate_ndcg": {
+      "challenger": "risk_aware_pc_cng",
+      "challenger_value": 0.196609,
+      "best_baseline": "tanimoto_baseline",
+      "baseline_value": 0.196491,
+      "delta_mean": 0.000118,
+      "delta_ci_low": -0.024378,
+      "delta_ci_high": 0.076827,
+      "ci_all_positive": false,
+      "improvement_pp": 0.01
+    },
+    "t5_condition_feasibility_auprc": {
+      "challenger": "risk_aware_pc_cng",
+      "challenger_value": 0.389649,
+      "best_baseline": "tanimoto_baseline",
+      "baseline_value": 0.245727,
+      "delta_mean": 0.143922,
+      "delta_ci_low": -0.012021,
+      "delta_ci_high": 0.349496,
+      "ci_all_positive": false,
+      "improvement_pp": 14.39
+    }
+  },
+  "calibration_check": {
+    "calibration_ok": true,
+    "challenger_ece": 0.165054,
+    "best_baseline_ece": 0.162295,
+    "ece_delta": 0.002759
+  },
+  "verdict_details": {
+    "verdict": "WEAK_GO",
+    "reason": "1 main task(s) with improvement >0 and CI all positive; claim limited to specific HTE families/tasks",
+    "n_metrics_positive_ci": 1,
+    "n_metrics_2pp_significant": 1,
+    "calibration_ok": true,
+    "experimental_groups_verified": true,
+    "next_phase_allowed": true
+  },
+  "next_phase_allowed": true,
+  "evidence_paths": [
+    "results/p4_hte_external_validation/summary.csv",
+    "results/p4_hte_external_validation/data_audit.json",
+    "results/p4_hte_external_validation/raw_predictions/",
+    "results/p4_hte_external_validation/go_no_go.json",
+    "data/processed/p4_hte_normalized.parquet",
+    "data/p4/manifests/p4_hte_split_v1.json"
+  ]
+}
