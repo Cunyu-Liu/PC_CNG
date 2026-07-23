@@ -10,7 +10,7 @@ data/processed/*.tsv
 data/processed/*.zip
 data/processed/*.tar
 data/processed/*.tar.gz
-models/
+/models/
 envs/
 external/
 
