@@ -98,3 +98,12 @@ logs/*.log
 !results/p4_hte_external_validation/summary.csv
 !results/p4_hte_external_validation/data_audit.json
 !results/p4_hte_external_validation/go_no_go.json
+
+# P4-G7 Human expert review (spec-required outputs; blinded forms tracked for audit)
+!results/p4_human_review/
+!results/p4_human_review/sampling_manifest.json
+!results/p4_human_review/samples.csv
+!results/p4_human_review/blinded_forms/
+!results/p4_human_review/blinded_forms/reviewer_1.csv
+!results/p4_human_review/blinded_forms/reviewer_2.csv
+!results/p4_human_review/go_no_go.json

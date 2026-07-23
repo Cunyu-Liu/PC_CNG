@@ -1,0 +1,55 @@
+{
+  "phase": "P4-G7",
+  "status": "DEFERRED",
+  "reason": "Expert review materials prepared. Waiting for real expert responses. Cannot use 'expert validated' until forms are returned and analyzed.",
+  "primary_method": "human_expert_review",
+  "n_samples_prepared": 80,
+  "n_reviewers": 2,
+  "strata": [
+    "random",
+    "tanimoto",
+    "template",
+    "pc_cng",
+    "known_real_negative",
+    "known_positive_control",
+    "pc_cng_low_risk",
+    "pc_cng_medium_risk",
+    "pc_cng_high_risk",
+    "llm_disagreement",
+    "hte_false_positive",
+    "hte_false_negative"
+  ],
+  "scoring_dimensions": [
+    "structural_validity",
+    "mechanistic_plausibility",
+    "plausible_competing_outcome",
+    "likely_low_yield_failure",
+    "likely_feasible_positive",
+    "confidence"
+  ],
+  "reason_codes": [
+    "wrong_reaction_center",
+    "unlikely_bond_change",
+    "condition_mismatch",
+    "chemoselectivity_issue",
+    "regioselectivity_issue",
+    "stereochemistry_issue",
+    "plausible_side_product",
+    "likely_feasible_alternative",
+    "insufficient_information",
+    "other"
+  ],
+  "evidence_paths": [
+    "results/p4_human_review/sampling_manifest.json",
+    "results/p4_human_review/samples.csv",
+    "results/p4_human_review/blinded_forms/",
+    "docs/p4_07_human_review_protocol.md"
+  ],
+  "limitations": [
+    "No expert responses received yet",
+    "Cannot compute kappa/alpha without expert data",
+    "PC-CNG vs baseline comparison requires expert scores"
+  ],
+  "next_phase_allowed": false,
+  "note": "Run 'python3 -m pc_cng.run_p4_human_review analyze' after receiving expert forms"
+}
