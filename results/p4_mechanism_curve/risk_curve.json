@@ -1,0 +1,62 @@
+[
+  {
+    "metric": "false_negative_risk",
+    "n_bins": 1,
+    "bin_centers": [
+      0
+    ],
+    "utility_means": [
+      0.059545
+    ],
+    "risk_means": [
+      0.5
+    ],
+    "utility_curve_shape": "insufficient_data",
+    "utility_r2": {},
+    "risk_curve_shape": "insufficient_data",
+    "risk_r2": {},
+    "n_candidates": 440,
+    "dataset": "g3_v2_test",
+    "scorer": "chemformer"
+  },
+  {
+    "metric": "false_negative_risk",
+    "n_bins": 1,
+    "bin_centers": [
+      0
+    ],
+    "utility_means": [
+      0.044999
+    ],
+    "risk_means": [
+      0.5
+    ],
+    "utility_curve_shape": "insufficient_data",
+    "utility_r2": {},
+    "risk_curve_shape": "insufficient_data",
+    "risk_r2": {},
+    "n_candidates": 438,
+    "dataset": "g3_v2_test",
+    "scorer": "gnn"
+  },
+  {
+    "metric": "false_negative_risk",
+    "n_bins": 1,
+    "bin_centers": [
+      0
+    ],
+    "utility_means": [
+      0.061861
+    ],
+    "risk_means": [
+      0.5
+    ],
+    "utility_curve_shape": "insufficient_data",
+    "utility_r2": {},
+    "risk_curve_shape": "insufficient_data",
+    "risk_r2": {},
+    "n_candidates": 438,
+    "dataset": "g4_v2_test",
+    "scorer": "morgan_mlp"
+  }
+]

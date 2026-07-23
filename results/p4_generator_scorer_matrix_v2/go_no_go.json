@@ -1,0 +1,50 @@
+{
+  "phase": "P4-G4",
+  "status": "GO",
+  "mode": "full_matrix",
+  "manifest_version": "v2",
+  "full_matrix_executed": true,
+  "primary_metric": {
+    "name": "test_mrr",
+    "comparison": "arm_vs_A0 per scorer"
+  },
+  "predeclared_threshold": {
+    "go": "PC-CNG main effect positive OR >=3/4 scorers effect>0 OR survives matching",
+    "no_go": "gains vanish after difficulty matching / explained by hardness or count"
+  },
+  "verdict_details": {
+    "verdict": "GO",
+    "reason": "A6 positive in 3/3 scorers, interaction p=2.75e-05",
+    "n_scorers_positive": 3,
+    "n_total_scorers": 3,
+    "interaction_p": 2.7522289528884695e-05,
+    "a6_duplicated": false,
+    "best_arm_per_scorer": {
+      "chemformer": "A6",
+      "gnn": "A1",
+      "morgan_mlp": "A5"
+    },
+    "next_phase_allowed": true
+  },
+  "key_findings": {
+    "source_x_scorer_interaction_p": 2.7522289528884695e-05,
+    "best_arm_per_scorer": {
+      "chemformer": "A6",
+      "gnn": "A1",
+      "morgan_mlp": "A5"
+    },
+    "n_scorers_with_a6_positive": 3,
+    "n_total_scorers": 3,
+    "a6_duplicated": false,
+    "manifest_version": "v2 (genuine rule PC-CNG candidates, no A6\u2261A2 duplication)"
+  },
+  "limitations": [],
+  "evidence_paths": [
+    "results/p4_generator_scorer_matrix_v2/summary.csv",
+    "results/p4_generator_scorer_matrix_v2/effect_sizes.csv",
+    "results/p4_generator_scorer_matrix_v2/interaction_model.json",
+    "results/p4_generator_scorer_matrix_v2/difficulty_profile.json",
+    "results/p4_generator_scorer_matrix_v2/raw_predictions"
+  ],
+  "next_phase_allowed": true
+}

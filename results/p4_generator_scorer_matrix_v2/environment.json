@@ -1,0 +1,10 @@
+{
+  "python": "3.10.20",
+  "platform": "Linux-5.15.0-173-generic-x86_64-with-glibc2.35",
+  "torch": "2.6.0+cu124",
+  "numpy": "2.2.6",
+  "cuda_available": true,
+  "cuda_device": "cpu",
+  "rdkit": "2025.03.6",
+  "statsmodels": "0.14.6"
+}

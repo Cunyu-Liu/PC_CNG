@@ -1,0 +1,958 @@
+{
+  "phase": "P4-G8A",
+  "n_bins": 10,
+  "difficulty_metrics": [
+    "positive_similarity",
+    "nearest_train_similarity",
+    "scoring_margin",
+    "ensemble_uncertainty",
+    "false_negative_risk",
+    "edit_distance",
+    "known_positive_collision"
+  ],
+  "curve_shapes_tested": [
+    "monotonic_decreasing",
+    "monotonic_increasing",
+    "inverted_u",
+    "threshold",
+    "flat"
+  ],
+  "curves": [
+    {
+      "metric": "positive_similarity",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.459649
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "monotonic_increasing",
+      "utility_r2": {
+        "monotonic_increasing": 0.2727,
+        "monotonic_decreasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.2593,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 440,
+      "dataset": "g3_v2_test",
+      "scorer": "chemformer"
+    },
+    {
+      "metric": "nearest_train_similarity",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.081021,
+        0.060016,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "threshold",
+      "utility_r2": {
+        "monotonic_decreasing": 0.4895,
+        "monotonic_increasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.5676,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 440,
+      "dataset": "g3_v2_test",
+      "scorer": "chemformer"
+    },
+    {
+      "metric": "scoring_margin",
+      "n_bins": 8,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9
+      ],
+      "utility_means": [
+        0.066528,
+        0.066898,
+        0.045265,
+        0.05,
+        0.06369,
+        0.03125,
+        0.070833,
+        0.059375
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "threshold",
+      "utility_r2": {
+        "monotonic_decreasing": 0.0076,
+        "monotonic_increasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.2077,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 440,
+      "dataset": "g3_v2_test",
+      "scorer": "chemformer"
+    },
+    {
+      "metric": "ensemble_uncertainty",
+      "n_bins": 9,
+      "bin_centers": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.0,
+        0.0,
+        0.060811,
+        0.051375,
+        0.065,
+        0.058065,
+        0.077604,
+        0.041176,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "inverted_u",
+      "utility_r2": {
+        "monotonic_increasing": 0.0775,
+        "monotonic_decreasing": -1.0,
+        "inverted_u": 0.6703,
+        "threshold": 0.2118,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 440,
+      "dataset": "g3_v2_test",
+      "scorer": "chemformer"
+    },
+    {
+      "metric": "false_negative_risk",
+      "n_bins": 1,
+      "bin_centers": [
+        0
+      ],
+      "utility_means": [
+        0.059545
+      ],
+      "risk_means": [
+        0.5
+      ],
+      "utility_curve_shape": "insufficient_data",
+      "utility_r2": {},
+      "risk_curve_shape": "insufficient_data",
+      "risk_r2": {},
+      "n_candidates": 440,
+      "dataset": "g3_v2_test",
+      "scorer": "chemformer"
+    },
+    {
+      "metric": "edit_distance",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.157831,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "monotonic_decreasing",
+      "utility_r2": {
+        "monotonic_decreasing": 0.2727,
+        "monotonic_increasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.2593,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 440,
+      "dataset": "g3_v2_test",
+      "scorer": "chemformer"
+    },
+    {
+      "metric": "known_positive_collision",
+      "n_bins": 2,
+      "bin_centers": [
+        0,
+        9
+      ],
+      "utility_means": [
+        0.059681,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "insufficient_data",
+      "utility_r2": {},
+      "risk_curve_shape": "insufficient_data",
+      "risk_r2": {},
+      "n_candidates": 440,
+      "dataset": "g3_v2_test",
+      "scorer": "chemformer"
+    },
+    {
+      "metric": "positive_similarity",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.345781
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "monotonic_increasing",
+      "utility_r2": {
+        "monotonic_increasing": 0.2727,
+        "monotonic_decreasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.2593,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g3_v2_test",
+      "scorer": "gnn"
+    },
+    {
+      "metric": "nearest_train_similarity",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.083821,
+        0.026484,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "threshold",
+      "utility_r2": {
+        "monotonic_decreasing": 0.4111,
+        "monotonic_increasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.4361,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g3_v2_test",
+      "scorer": "gnn"
+    },
+    {
+      "metric": "scoring_margin",
+      "n_bins": 7,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        9
+      ],
+      "utility_means": [
+        0.047727,
+        0.041772,
+        0.038333,
+        0.070085,
+        0.037632,
+        0.03125,
+        0.033333
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "threshold",
+      "utility_r2": {
+        "monotonic_decreasing": 0.1568,
+        "monotonic_increasing": -1.0,
+        "inverted_u": 0.1675,
+        "threshold": 0.3915,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g3_v2_test",
+      "scorer": "gnn"
+    },
+    {
+      "metric": "ensemble_uncertainty",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.06828,
+        0.029717,
+        0.017593,
+        0.033007,
+        0.018478,
+        0.047749,
+        0.136047,
+        0.098485,
+        0.0,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "inverted_u",
+      "utility_r2": {
+        "monotonic_decreasing": 0.0011,
+        "monotonic_increasing": -1.0,
+        "inverted_u": 0.0768,
+        "threshold": 0.0755,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g3_v2_test",
+      "scorer": "gnn"
+    },
+    {
+      "metric": "false_negative_risk",
+      "n_bins": 1,
+      "bin_centers": [
+        0
+      ],
+      "utility_means": [
+        0.044999
+      ],
+      "risk_means": [
+        0.5
+      ],
+      "utility_curve_shape": "insufficient_data",
+      "utility_r2": {},
+      "risk_curve_shape": "insufficient_data",
+      "risk_r2": {},
+      "n_candidates": 438,
+      "dataset": "g3_v2_test",
+      "scorer": "gnn"
+    },
+    {
+      "metric": "edit_distance",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.115938,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "monotonic_decreasing",
+      "utility_r2": {
+        "monotonic_decreasing": 0.2727,
+        "monotonic_increasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.2593,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g3_v2_test",
+      "scorer": "gnn"
+    },
+    {
+      "metric": "known_positive_collision",
+      "n_bins": 2,
+      "bin_centers": [
+        0,
+        9
+      ],
+      "utility_means": [
+        0.045102,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "insufficient_data",
+      "utility_r2": {},
+      "risk_curve_shape": "insufficient_data",
+      "risk_r2": {},
+      "n_candidates": 438,
+      "dataset": "g3_v2_test",
+      "scorer": "gnn"
+    },
+    {
+      "metric": "positive_similarity",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.475355
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "monotonic_increasing",
+      "utility_r2": {
+        "monotonic_increasing": 0.2727,
+        "monotonic_decreasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.2593,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g4_v2_test",
+      "scorer": "morgan_mlp"
+    },
+    {
+      "metric": "nearest_train_similarity",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.11423,
+        0.037251,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "threshold",
+      "utility_r2": {
+        "monotonic_decreasing": 0.4146,
+        "monotonic_increasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.441,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g4_v2_test",
+      "scorer": "morgan_mlp"
+    },
+    {
+      "metric": "scoring_margin",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.047281,
+        0.057639,
+        0.060417,
+        0.074777,
+        0.028261,
+        0.125,
+        0.03125,
+        0.108333,
+        0.125,
+        0.078125
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "threshold",
+      "utility_r2": {
+        "monotonic_increasing": 0.2406,
+        "monotonic_decreasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.346,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g4_v2_test",
+      "scorer": "morgan_mlp"
+    },
+    {
+      "metric": "ensemble_uncertainty",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.0,
+        0.0,
+        0.017293,
+        0.034848,
+        0.016315,
+        0.182251,
+        0.061712,
+        0.055833,
+        0.214286,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "threshold",
+      "utility_r2": {
+        "monotonic_increasing": 0.2114,
+        "monotonic_decreasing": -1.0,
+        "inverted_u": 0.286,
+        "threshold": 0.3684,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g4_v2_test",
+      "scorer": "morgan_mlp"
+    },
+    {
+      "metric": "false_negative_risk",
+      "n_bins": 1,
+      "bin_centers": [
+        0
+      ],
+      "utility_means": [
+        0.061861
+      ],
+      "risk_means": [
+        0.5
+      ],
+      "utility_curve_shape": "insufficient_data",
+      "utility_r2": {},
+      "risk_curve_shape": "insufficient_data",
+      "risk_r2": {},
+      "n_candidates": 438,
+      "dataset": "g4_v2_test",
+      "scorer": "morgan_mlp"
+    },
+    {
+      "metric": "edit_distance",
+      "n_bins": 10,
+      "bin_centers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "utility_means": [
+        0.159384,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "monotonic_decreasing",
+      "utility_r2": {
+        "monotonic_decreasing": 0.2727,
+        "monotonic_increasing": -1.0,
+        "inverted_u": -1.0,
+        "threshold": 0.2593,
+        "flat": 0.0
+      },
+      "risk_curve_shape": "flat",
+      "risk_r2": {
+        "flat": 1.0
+      },
+      "n_candidates": 438,
+      "dataset": "g4_v2_test",
+      "scorer": "morgan_mlp"
+    },
+    {
+      "metric": "known_positive_collision",
+      "n_bins": 2,
+      "bin_centers": [
+        0,
+        9
+      ],
+      "utility_means": [
+        0.062003,
+        0.0
+      ],
+      "risk_means": [
+        0.5,
+        0.5
+      ],
+      "utility_curve_shape": "insufficient_data",
+      "utility_r2": {},
+      "risk_curve_shape": "insufficient_data",
+      "risk_r2": {},
+      "n_candidates": 438,
+      "dataset": "g4_v2_test",
+      "scorer": "morgan_mlp"
+    }
+  ]
+}

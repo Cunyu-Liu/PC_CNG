@@ -1,0 +1,72 @@
+{
+  "external_beam": {
+    "n_total": 500,
+    "n_valid_smiles": 500,
+    "valid_fraction": 1.0,
+    "mean": 0.0857,
+    "std": 0.0424,
+    "p10": 0.0333,
+    "p50": 0.0816,
+    "p90": 0.1356
+  },
+  "random_corruption": {
+    "n_total": 500,
+    "n_valid_smiles": 500,
+    "valid_fraction": 1.0,
+    "mean": 0.6604,
+    "std": 0.1359,
+    "p10": 0.4706,
+    "p50": 0.6735,
+    "p90": 0.8167
+  },
+  "random_mismatch": {
+    "n_total": 500,
+    "n_valid_smiles": 500,
+    "valid_fraction": 1.0,
+    "mean": 0.1165,
+    "std": 0.0876,
+    "p10": 0.0568,
+    "p50": 0.1053,
+    "p90": 0.1648
+  },
+  "rule_pc_cng": {
+    "n_total": 500,
+    "n_valid_smiles": 500,
+    "valid_fraction": 1.0,
+    "mean": 0.6811,
+    "std": 0.1253,
+    "p10": 0.5333,
+    "p50": 0.7,
+    "p90": 0.8302
+  },
+  "tanimoto_retrieval": {
+    "n_total": 500,
+    "n_valid_smiles": 500,
+    "valid_fraction": 1.0,
+    "mean": 0.1491,
+    "std": 0.0864,
+    "p10": 0.0822,
+    "p50": 0.131,
+    "p90": 0.2353
+  },
+  "template_perturbation": {
+    "n_total": 500,
+    "n_valid_smiles": 500,
+    "valid_fraction": 1.0,
+    "mean": 0.149,
+    "std": 0.1518,
+    "p10": 0.0633,
+    "p50": 0.1154,
+    "p90": 0.2254
+  },
+  "unconstrained_edit": {
+    "n_total": 500,
+    "n_valid_smiles": 500,
+    "valid_fraction": 1.0,
+    "mean": 0.5597,
+    "std": 0.1794,
+    "p10": 0.2759,
+    "p50": 0.5882,
+    "p90": 0.7761
+  }
+}

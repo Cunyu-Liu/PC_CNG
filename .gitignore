@@ -118,3 +118,39 @@ logs/*.log
 !results/p4_llm_human_calibration/status.json
 !results/p4_computational_validation/
 !results/p4_computational_validation/status.json
+
+# P4-G4 v2 full generator-scorer matrix (spec-required outputs; bulk predictions excluded)
+!results/p4_generator_scorer_matrix_v2/
+!results/p4_generator_scorer_matrix_v2/summary.csv
+!results/p4_generator_scorer_matrix_v2/effect_sizes.csv
+!results/p4_generator_scorer_matrix_v2/mlp_summary.csv
+!results/p4_generator_scorer_matrix_v2/difficulty_profile.json
+!results/p4_generator_scorer_matrix_v2/interaction_model.json
+!results/p4_generator_scorer_matrix_v2/go_no_go.json
+!results/p4_generator_scorer_matrix_v2/run_manifest.json
+!results/p4_generator_scorer_matrix_v2/environment.json
+!results/p4_generator_scorer_matrix_v2/input_hashes.json
+!results/p4_generator_scorer_matrix_v2/commands.log
+
+# P4-G8A mechanism curve results (spec-required outputs)
+!results/p4_mechanism_curve/
+!results/p4_mechanism_curve/per_candidate_metrics.csv
+!results/p4_mechanism_curve/curve_specs.json
+!results/p4_mechanism_curve/utility_curve.json
+!results/p4_mechanism_curve/risk_curve.json
+!results/p4_mechanism_curve/shape_comparison.csv
+!results/p4_mechanism_curve/go_no_go.json
+!results/p4_mechanism_curve/run_manifest.json
+!results/p4_mechanism_curve/environment.json
+!results/p4_mechanism_curve/input_hashes.json
+!results/p4_mechanism_curve/commands.log
+
+# P4-G8B cross-family transfer results (spec-required outputs)
+!results/p4_cross_family_transfer/
+!results/p4_cross_family_transfer/transfer_results.csv
+!results/p4_cross_family_transfer/family_macro_summary.csv
+!results/p4_cross_family_transfer/go_no_go.json
+!results/p4_cross_family_transfer/run_manifest.json
+!results/p4_cross_family_transfer/environment.json
+!results/p4_cross_family_transfer/input_hashes.json
+!results/p4_cross_family_transfer/commands.log

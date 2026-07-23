@@ -1,0 +1,5 @@
+{
+  "data/p4/manifests/hte_feasibility_v2.json": "8aa04ef108d94f7bbdc3ef7702f5d8aa5070535a4491e931a76fabe72ed8f281",
+  "results/p4_augmentation_v2_chemformer/summary.csv": "cd6ba2a736a70f0aa1f679324db0442ee7906698101741e8a71cc144aa2044c7",
+  "results/p4_augmentation_v2_gnn/summary.csv": "f6cefc1c72ce03dbb81fbb8c1c0f9bf579bf2795e1c6b95cd798e1d79a05c807"
+}

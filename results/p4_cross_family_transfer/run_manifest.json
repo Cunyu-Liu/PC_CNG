@@ -1,0 +1,29 @@
+{
+  "phase": "P4-G8B",
+  "analysis": "cross_family_transfer",
+  "methods": [
+    "direct",
+    "head_ft",
+    "risk_aware"
+  ],
+  "n_seeds": 2,
+  "family_pairs": [
+    [
+      "Pd coupling",
+      "Alkylation"
+    ],
+    [
+      "Pd coupling",
+      "Hydrogenation"
+    ],
+    [
+      "Alkylation",
+      "Cabonylation"
+    ],
+    [
+      "Rh coupling",
+      "Cu coupling"
+    ]
+  ],
+  "n_directions": 7
+}

@@ -1,0 +1,121 @@
+{
+  "phase": "P4-G4",
+  "mode": "full_matrix",
+  "manifest_version": "v2",
+  "entry_condition": "P4-G3 v2 == WEAK_GO -> full 3-scorer x 7-arm x 10-seed matrix",
+  "cell_table_n": 210,
+  "scorers": [
+    "chemformer",
+    "gnn",
+    "morgan_mlp"
+  ],
+  "arms": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6"
+  ],
+  "seeds": [
+    20260721,
+    20260722,
+    20260723,
+    20260724,
+    20260725,
+    20260726,
+    20260727,
+    20260728,
+    20260729,
+    20260730
+  ],
+  "anova": {
+    "formula": "delta_vs_A0 ~ C(source) * C(scorer)",
+    "n_obs": 180,
+    "r_squared": 0.6413,
+    "C(source)": {
+      "F": 13.8659,
+      "p_value": 2.8219468777413524e-11,
+      "df": 5.0
+    },
+    "C(scorer)": {
+      "F": 88.8279,
+      "p_value": 9.047864233023883e-27,
+      "df": 2.0
+    },
+    "C(source):C(scorer)": {
+      "F": 4.2685,
+      "p_value": 2.7522289528884695e-05,
+      "df": 10.0
+    },
+    "Residual": {
+      "F": NaN,
+      "p_value": NaN,
+      "df": 162.0
+    }
+  },
+  "mixed_effects": {
+    "formula": "mrr ~ C(source) * C(scorer), (1 | seed)",
+    "converged": false,
+    "error": "Singular matrix"
+  },
+  "hypotheses": {
+    "H1_pc_cng_intrinsically_valuable": {
+      "verdict": "UNTESTABLE",
+      "reason": "A6 (rule_pc_cng) candidates are byte-identical to A2 (random_corruption) in all 500 groups of the frozen v1 manifest; the v1 benchmark carries no rule PC-CNG signal.",
+      "evidence": "results/p4_augmentation/manifest_integrity.json"
+    },
+    "H2_chemformer_simply_stronger": {
+      "verdict": "REJECTED",
+      "a0_baseline_mrr": {
+        "chemformer": 0.376922,
+        "gnn": 0.284056,
+        "morgan_mlp": 0.419398
+      },
+      "reason": "Chemformer-LoRA has the WEAKEST positive-only baseline (A0 MRR 0.376922) yet shows the largest augmentation gains; scorer strength alone cannot explain the augmentation pattern."
+    },
+    "H3_pc_cng_candidates_harder": {
+      "verdict": "MOOT_FOR_A6",
+      "source_mean_tanimoto_to_gold": {
+        "external_beam": 0.0857,
+        "random_corruption": 0.6604,
+        "random_mismatch": 0.1165,
+        "rule_pc_cng": 0.6811,
+        "tanimoto_retrieval": 0.1491,
+        "template_perturbation": 0.149,
+        "unconstrained_edit": 0.5597
+      },
+      "hardest_source": "rule_pc_cng",
+      "best_arm_per_scorer": {
+        "chemformer": "A6",
+        "gnn": "A1",
+        "morgan_mlp": "A5"
+      },
+      "reason": "A6 \u2261 A2, so PC-CNG hardness is undefined on v1. Descriptively, the best-gaining arms differ per scorer and do not coincide with the hardest source, so difficulty alone does not explain the gains."
+    },
+    "smiles_validity": {
+      "invalid_sources_majority_unparseable": {},
+      "text_artifact_arms": [],
+      "reason": "Sources with valid_fraction < 0.5 are majority-unparseable SMILES. Structure-based scorers (GNN, Morgan MLP) silently drop these candidates, degrading those arms toward the A0 positive-only regime; the text-based Chemformer still scores them as strings, so its gains on arms [] are partly string-level artifacts rather than chemical signal."
+    },
+    "H4_count_or_distribution_difference": {
+      "verdict": "REJECTED_FOR_COUNTS",
+      "counts_matched": false,
+      "reason": "Every treatment arm trains on exactly 394 positives + 394 negatives of one source with identical sampling ratio and budget; candidate-count differences cannot explain between-arm differences. Distribution (difficulty) differences remain and are profiled in difficulty_profile.json."
+    },
+    "H5_source_x_scorer_interaction": {
+      "verdict": "CONFIRMED",
+      "interaction_p_value": 2.7522289528884695e-05,
+      "reason": "ANOVA source\u00d7scorer interaction p=2.75e-05; best arm is scorer-dependent ({'chemformer': 'A6', 'gnn': 'A1', 'morgan_mlp': 'A5'})."
+    },
+    "pc_cng_a6_positive_ci_scorers": [
+      "chemformer",
+      "gnn",
+      "morgan_mlp"
+    ],
+    "n_scorers_with_a6_positive": 3,
+    "n_scorers_total": 3
+  },
+  "counts_matched": false
+}

@@ -1,0 +1,63 @@
+{
+  "phase": "P4-G8A",
+  "status": "GO",
+  "primary_metric": {
+    "name": "curve_shape_reproducibility"
+  },
+  "predeclared_threshold": {
+    "go": "Relationship reproduced in >=2 datasets AND >=2 scorers consistent",
+    "partial_go": "Relationship found but not fully reproduced",
+    "no_go": "No consistent relationship found"
+  },
+  "verdict_details": {
+    "verdict": "GO",
+    "reason": "5 difficulty metrics reproduced across >=2 datasets and >=2 scorers with consistent curve shapes",
+    "n_reproduced_metrics": 5,
+    "reproduced_metrics": [
+      {
+        "metric": "positive_similarity",
+        "shape": "monotonic_increasing",
+        "n_datasets": 2,
+        "n_scorers": 3,
+        "n_consistent": 3
+      },
+      {
+        "metric": "nearest_train_similarity",
+        "shape": "threshold",
+        "n_datasets": 2,
+        "n_scorers": 3,
+        "n_consistent": 3
+      },
+      {
+        "metric": "scoring_margin",
+        "shape": "threshold",
+        "n_datasets": 2,
+        "n_scorers": 3,
+        "n_consistent": 3
+      },
+      {
+        "metric": "ensemble_uncertainty",
+        "shape": "inverted_u",
+        "n_datasets": 2,
+        "n_scorers": 3,
+        "n_consistent": 2
+      },
+      {
+        "metric": "edit_distance",
+        "shape": "monotonic_decreasing",
+        "n_datasets": 2,
+        "n_scorers": 3,
+        "n_consistent": 3
+      }
+    ],
+    "next_phase_allowed": true
+  },
+  "evidence_paths": [
+    "results/p4_mechanism_curve/per_candidate_metrics.csv",
+    "results/p4_mechanism_curve/curve_specs.json",
+    "results/p4_mechanism_curve/utility_curve.json",
+    "results/p4_mechanism_curve/risk_curve.json",
+    "results/p4_mechanism_curve/shape_comparison.csv"
+  ],
+  "next_phase_allowed": true
+}

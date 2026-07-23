@@ -1,0 +1,1 @@
+python3 -m pc_cng.run_p4_g4_v2 --manifest data/p4/manifests/hte_feasibility_v2.json --output-dir results/p4_generator_scorer_matrix_v2 --g3-dir results/p4_augmentation_v2 --stage full --device cpu

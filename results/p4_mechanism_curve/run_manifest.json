@@ -1,0 +1,22 @@
+{
+  "phase": "P4-G8A",
+  "analysis": "difficulty_benefit_risk_mechanism_curve",
+  "n_bins": 10,
+  "difficulty_metrics": [
+    "positive_similarity",
+    "nearest_train_similarity",
+    "scoring_margin",
+    "ensemble_uncertainty",
+    "false_negative_risk",
+    "edit_distance",
+    "known_positive_collision"
+  ],
+  "curve_shapes_tested": [
+    "monotonic_decreasing",
+    "monotonic_increasing",
+    "inverted_u",
+    "threshold",
+    "flat"
+  ],
+  "seed": 20260723
+}

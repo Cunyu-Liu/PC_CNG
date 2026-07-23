@@ -1,0 +1,6 @@
+family,n_experiments,mean_mrr,mean_auprc,mean_ece
+Alkylation,16,0.200386,0.554018,0.148806
+Cabonylation,8,0.289633,0.450843,0.109382
+Cu coupling,8,0.75,0.75,0.138494
+Pd coupling,16,0.150038,0.447498,0.09841
+Rh coupling,8,0.438542,0.645833,0.146304

@@ -1,0 +1,35 @@
+{
+  "phase": "P4-G4",
+  "mode": "full_matrix",
+  "manifest_version": "v2",
+  "scorers": [
+    "chemformer",
+    "gnn",
+    "morgan_mlp"
+  ],
+  "arms": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6"
+  ],
+  "seeds": [
+    20260721,
+    20260722,
+    20260723,
+    20260724,
+    20260725,
+    20260726,
+    20260727,
+    20260728,
+    20260729,
+    20260730
+  ],
+  "n_cells": 210,
+  "g3_source": "results/p4_augmentation_v2_{chemformer,gnn}",
+  "mlp_source": "trained with v2 manifest",
+  "script": "pc_cng/run_p4_g4_v2.py"
+}

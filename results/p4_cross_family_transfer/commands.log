@@ -1,0 +1,1 @@
+python3 -m pc_cng.p4_g8b_cross_family_transfer --manifest data/p4/manifests/hte_feasibility_v2.json --risk-path results/p4_risk_aware/risk_artifacts.json --output-dir results/p4_cross_family_transfer --device cpu

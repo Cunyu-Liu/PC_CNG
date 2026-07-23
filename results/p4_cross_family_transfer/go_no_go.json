@@ -1,0 +1,86 @@
+{
+  "phase": "P4-G8B",
+  "status": "NO_GO",
+  "primary_metric": {
+    "name": "transfer_gain",
+    "comparison": "transferred_vs_baseline"
+  },
+  "predeclared_threshold": {
+    "go": ">=2 chemically different directions CI all positive",
+    "partial_go": ">=1 direction positive; all failures reported",
+    "no_go": "No positive transfer; or severe catastrophic forgetting"
+  },
+  "verdict_details": {
+    "verdict": "NO_GO",
+    "reason": "No positive transfer in any direction",
+    "n_positive_directions": 0,
+    "n_total_directions": 7,
+    "transfer_gains": [
+      {
+        "direction": "Pd coupling\u2192Alkylation",
+        "method": "direct",
+        "transfer_mrr": 0.236811,
+        "baseline_mrr": 0.282361,
+        "gain": -0.04555
+      },
+      {
+        "direction": "Alkylation\u2192Pd coupling",
+        "method": "direct",
+        "transfer_mrr": 0.163367,
+        "baseline_mrr": 0.220052,
+        "gain": -0.056686
+      },
+      {
+        "direction": "Hydrogenation\u2192Pd coupling",
+        "method": "direct",
+        "transfer_mrr": 0.090032,
+        "baseline_mrr": 0.220052,
+        "gain": -0.13002
+      },
+      {
+        "direction": "Alkylation\u2192Cabonylation",
+        "method": "direct",
+        "transfer_mrr": 0.225463,
+        "baseline_mrr": 0.482142,
+        "gain": -0.256679
+      },
+      {
+        "direction": "Cabonylation\u2192Alkylation",
+        "method": "direct",
+        "transfer_mrr": 0.109311,
+        "baseline_mrr": 0.282361,
+        "gain": -0.17305
+      },
+      {
+        "direction": "Rh coupling\u2192Cu coupling",
+        "method": "direct",
+        "transfer_mrr": 0.666667,
+        "baseline_mrr": 1.0,
+        "gain": -0.333333
+      },
+      {
+        "direction": "Cu coupling\u2192Rh coupling",
+        "method": "direct",
+        "transfer_mrr": 0.390278,
+        "baseline_mrr": 0.583333,
+        "gain": -0.193056
+      }
+    ],
+    "positive_directions": [],
+    "negative_directions": [
+      "Pd coupling\u2192Alkylation",
+      "Alkylation\u2192Pd coupling",
+      "Hydrogenation\u2192Pd coupling",
+      "Alkylation\u2192Cabonylation",
+      "Cabonylation\u2192Alkylation",
+      "Rh coupling\u2192Cu coupling",
+      "Cu coupling\u2192Rh coupling"
+    ],
+    "next_phase_allowed": false
+  },
+  "evidence_paths": [
+    "results/p4_cross_family_transfer/transfer_results.csv",
+    "results/p4_cross_family_transfer/family_macro_summary.csv"
+  ],
+  "next_phase_allowed": false
+}

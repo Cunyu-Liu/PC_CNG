@@ -1,0 +1,1 @@
+python3 -m pc_cng.p4_g8a_mechanism_curve --manifest data/p4/manifests/hte_feasibility_v2.json --g3-dir results/p4_augmentation_v2 --risk-path results/p4_risk_aware/risk_artifacts.json --output-dir results/p4_mechanism_curve
