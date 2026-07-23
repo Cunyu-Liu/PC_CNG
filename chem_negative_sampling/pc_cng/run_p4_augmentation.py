@@ -808,6 +808,8 @@ def compute_go_no_go(
     """
     backbones_with_positive_ci = []
     backbones_with_significant_improvement = []
+    backbones_beating_best_baseline = []
+    baseline_comparison: Dict[str, Dict[str, object]] = {}
     all_improvements = []
 
     for backbone, arm_results in all_results.items():
@@ -844,11 +846,32 @@ def compute_go_no_go(
                 best_baseline_mrr = arm_mean
                 best_baseline_id = arm_id
 
+        margin_pp = (mean_a6 - best_baseline_mrr) * 100
         beats_best_baseline = mean_a6 > best_baseline_mrr + 0.005  # 0.5pp
+        if beats_best_baseline:
+            backbones_beating_best_baseline.append(backbone)
+        baseline_comparison[backbone] = {
+            "best_non_pccng_baseline": best_baseline_id,
+            "best_baseline_mean_mrr": round(best_baseline_mrr, 6),
+            "a6_mean_mrr": round(mean_a6, 6),
+            "a6_minus_best_baseline_pp": round(margin_pp, 4),
+            "beats_best_baseline_by_0p5pp": beats_best_baseline,
+        }
 
     n_backbones = len([b for b in all_results if "A0" in all_results[b] and "A6" in all_results[b]])
 
-    if len(backbones_with_positive_ci) >= 2 and len(backbones_with_significant_improvement) >= 2:
+    # STRONG_GO per pre-declared spec requires, in addition to >=2 backbones
+    # with all-positive CI and >=1.0pp mean improvement, that A6 beats the
+    # best non-PC-CNG negative baseline by >=0.5pp on EVERY backbone.
+    strong_go_baseline_ok = (
+        n_backbones >= 2
+        and len(backbones_beating_best_baseline) == n_backbones
+    )
+    if (
+        len(backbones_with_positive_ci) >= 2
+        and len(backbones_with_significant_improvement) >= 2
+        and strong_go_baseline_ok
+    ):
         status = "STRONG_GO"
     elif len(backbones_with_positive_ci) >= 1:
         status = "WEAK_GO"
@@ -863,6 +886,8 @@ def compute_go_no_go(
         "n_backbones": n_backbones,
         "backbones_with_positive_ci": backbones_with_positive_ci,
         "backbones_with_significant_improvement": backbones_with_significant_improvement,
+        "backbones_beating_best_baseline": backbones_beating_best_baseline,
+        "baseline_comparison": baseline_comparison,
         "mean_improvement_pp": round(mean_improvement, 4),
         "improvements_by_backbone": {
             b: round(imp, 4) for b, imp in zip(

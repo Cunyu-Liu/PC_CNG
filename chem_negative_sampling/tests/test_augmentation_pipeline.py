@@ -403,6 +403,72 @@ class TestGoNoGo:
         assert go["status"] == "NO_GO"
         assert go["next_phase_allowed"] is False
 
+    def test_baseline_gate_blocks_strong_go(self):
+        """Positive CI + >=1pp on 2 backbones but A6 fails to beat the best
+        non-PC-CNG baseline by >=0.5pp on one backbone -> WEAK_GO, not STRONG_GO."""
+        all_results = {
+            "chemformer": {
+                "A0": [{"test_metrics": {"mrr": 0.30}} for _ in range(10)],
+                "A5": [{"test_metrics": {"mrr": 0.497}} for _ in range(10)],
+                "A6": [{"test_metrics": {"mrr": 0.50}} for _ in range(10)],
+            },
+            "gnn": {
+                "A0": [{"test_metrics": {"mrr": 0.25}} for _ in range(10)],
+                "A6": [{"test_metrics": {"mrr": 0.45}} for _ in range(10)],
+            },
+        }
+        effects = compute_effect_sizes(all_results)
+        go = compute_go_no_go(all_results, effects)
+        assert go["status"] == "WEAK_GO"
+        assert go["backbones_with_positive_ci"] == ["chemformer", "gnn"]
+        assert go["backbones_beating_best_baseline"] == ["gnn"]
+        cmp = go["baseline_comparison"]["chemformer"]
+        assert cmp["best_non_pccng_baseline"] == "A5"
+        assert cmp["beats_best_baseline_by_0p5pp"] is False
+        assert cmp["a6_minus_best_baseline_pp"] == pytest.approx(0.3, abs=0.01)
+
+    def test_baseline_gate_passes_strong_go(self):
+        """A6 beating best baseline by >0.5pp on both backbones -> STRONG_GO,
+        with baseline comparison recorded."""
+        all_results = {
+            "chemformer": {
+                "A0": [{"test_metrics": {"mrr": 0.30}} for _ in range(10)],
+                "A5": [{"test_metrics": {"mrr": 0.49}} for _ in range(10)],
+                "A6": [{"test_metrics": {"mrr": 0.50}} for _ in range(10)],
+            },
+            "gnn": {
+                "A0": [{"test_metrics": {"mrr": 0.25}} for _ in range(10)],
+                "A1": [{"test_metrics": {"mrr": 0.40}} for _ in range(10)],
+                "A6": [{"test_metrics": {"mrr": 0.45}} for _ in range(10)],
+            },
+        }
+        effects = compute_effect_sizes(all_results)
+        go = compute_go_no_go(all_results, effects)
+        assert go["status"] == "STRONG_GO"
+        assert go["backbones_beating_best_baseline"] == ["chemformer", "gnn"]
+        assert go["baseline_comparison"]["gnn"]["best_non_pccng_baseline"] == "A1"
+        assert go["baseline_comparison"]["gnn"]["beats_best_baseline_by_0p5pp"] is True
+
+    def test_baseline_margin_boundary(self):
+        """Margin of exactly 0.5pp does NOT count (strictly greater required)."""
+        all_results = {
+            "chemformer": {
+                "A0": [{"test_metrics": {"mrr": 0.30}} for _ in range(10)],
+                "A5": [{"test_metrics": {"mrr": 0.495}} for _ in range(10)],
+                "A6": [{"test_metrics": {"mrr": 0.50}} for _ in range(10)],
+            },
+            "gnn": {
+                "A0": [{"test_metrics": {"mrr": 0.25}} for _ in range(10)],
+                "A6": [{"test_metrics": {"mrr": 0.45}} for _ in range(10)],
+            },
+        }
+        effects = compute_effect_sizes(all_results)
+        go = compute_go_no_go(all_results, effects)
+        assert go["baseline_comparison"]["chemformer"][
+            "beats_best_baseline_by_0p5pp"
+        ] is False
+        assert go["status"] == "WEAK_GO"
+
 
 # ---------------------------------------------------------------------------
 # BackboneConfig tests
