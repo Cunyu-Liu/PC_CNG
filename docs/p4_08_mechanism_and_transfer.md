@@ -23,7 +23,7 @@
 ### Design
 
 - **Difficulty metrics (7)**: positive_similarity, nearest_train_similarity, scoring_margin, ensemble_uncertainty, false_negative_risk, edit_distance, database_collision
-- **Spec-listed metric not included**: reaction-center distance (graph distance from edit locus to nearest reaction-center atom). The manifest does not contain a `reaction_center_distance` field; computing it requires parsing atom-mapped reaction SMILES to identify the reaction center, then finding the shortest path to the edit locus. This is documented as a known gap. The GO verdict is unaffected: the GO criteria (>=2 datasets, >=2 scorers, explain utility + FNR) are met by the 7 analyzed metrics, 5 of which reproduced consistently.
+- **Spec-listed metric reaction-center distance: computed post-hoc (compute_rc_distance_v2.py). Coverage 91.0%, Pearson r=0.2001, curve shape=monotonic_increasing (farther from RC = higher downstream loss). Curve stored in results/p4_mechanism_curve/rc_distance_curve.json. GO verdict unaffected (metric confirms expected trend but is degenerate: all non-zero bins have loss=1.0). the GO criteria (>=2 datasets, >=2 scorers, explain utility + FNR) are met by the 7 analyzed metrics, 5 of which reproduced consistently.
 - **Curve shapes tested (5)**: monotonic_decreasing, monotonic_increasing, inverted_u, threshold, flat
 - **Datasets**: G3 v2 test (chemformer + gnn scorers), G4 v2 test (morgan_mlp scorer)
 - **Bin count**: 10 (deciles)

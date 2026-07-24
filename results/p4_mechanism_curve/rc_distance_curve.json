@@ -1,0 +1,36 @@
+{
+  "n_valid": 1198,
+  "n_total": 1316,
+  "coverage": 0.9103343465045592,
+  "pearson_r": 0.20009262994402274,
+  "curve_shape": "monotonic_increasing",
+  "bins": {
+    "bin_0": {
+      "n": 643,
+      "mean_downstream_loss": 0.896041620380656,
+      "positive_rate": 0.2332814930015552
+    },
+    "bin_1": {
+      "n": 150,
+      "mean_downstream_loss": 1.0,
+      "positive_rate": 0.0
+    },
+    "bin_2": {
+      "n": 105,
+      "mean_downstream_loss": 1.0,
+      "positive_rate": 0.0
+    },
+    "bin_3": {
+      "n": 90,
+      "mean_downstream_loss": 1.0,
+      "positive_rate": 0.0
+    },
+    "bin_4": {
+      "n": 210,
+      "mean_downstream_loss": 1.0,
+      "positive_rate": 0.0
+    }
+  },
+  "metric": "reaction_center_distance",
+  "description": "Shortest molecular graph path from PC-CNG edit locus to nearest reaction-center atom"
+}
