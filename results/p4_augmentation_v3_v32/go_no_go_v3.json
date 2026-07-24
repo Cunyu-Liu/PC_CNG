@@ -1,0 +1,194 @@
+{
+  "schema_version": "3.1",
+  "evaluation_date": "2026-07-24",
+  "treatment_arm": "A6",
+  "best_baseline_arm": "A1",
+  "best_baseline_selected_on": "validation_set",
+  "baseline_val_mrrs": {
+    "A1": 1.0,
+    "A2": 0.9534313725490197,
+    "A3": 1.0,
+    "A4": 1.0,
+    "A5": 0.9823529411764707
+  },
+  "n_seeds": 10,
+  "seed_mrrs": {
+    "A6": [
+      0.9166666666666667,
+      0.827878787878788,
+      0.8763636363636362,
+      0.8742424242424243,
+      0.8844155844155844,
+      0.8704761904761904,
+      0.8709090909090909,
+      0.8854545454545455,
+      0.8681818181818183,
+      0.8653246753246754
+    ],
+    "A1": [
+      0.9333333333333333,
+      0.9181818181818182,
+      0.9,
+      0.9212121212121213,
+      0.9121212121212122,
+      0.8848484848484849,
+      0.9212121212121213,
+      0.9242424242424243,
+      0.9333333333333333,
+      0.8878787878787879
+    ],
+    "A0": [
+      0.41056277056277046,
+      0.3453463203463203,
+      0.3685497835497835,
+      0.3346320346320346,
+      0.3456493506493506,
+      0.3521428571428571,
+      0.39467532467532473,
+      0.33751082251082254,
+      0.36235930735930727,
+      0.37253246753246744
+    ]
+  },
+  "treatment_vs_A0": {
+    "challenger_point": 0.8739913419913419,
+    "baseline_point": 0.3623961038961039,
+    "delta_mean": 0.511595238095238,
+    "delta_ci_low": 0.5098811566834685,
+    "delta_ci_high": 0.571828569928002,
+    "ci_all_positive": "True",
+    "p_value": 0.0,
+    "n_bootstrap": 2000,
+    "n_seeds": 10,
+    "method": "hierarchical_bootstrap"
+  },
+  "treatment_vs_baseline": {
+    "challenger_point": 0.8739913419913419,
+    "baseline_point": 0.9136363636363637,
+    "delta_mean": -0.039645021645021816,
+    "delta_ci_low": -0.06463069751533096,
+    "delta_ci_high": -0.018873327505855252,
+    "ci_all_positive": "False",
+    "p_value": 1.0,
+    "n_bootstrap": 2000,
+    "n_seeds": 10,
+    "method": "hierarchical_bootstrap"
+  },
+  "negative_controls": {
+    "A6R": {
+      "challenger_point": 0.3954069264069264,
+      "baseline_point": 0.9136363636363637,
+      "delta_mean": -0.5182294372294374,
+      "delta_ci_low": -0.6085433462643506,
+      "delta_ci_high": -0.48400677191779196,
+      "ci_all_positive": "False",
+      "p_value": 1.0,
+      "n_bootstrap": 2000,
+      "n_seeds": 10,
+      "method": "hierarchical_bootstrap"
+    },
+    "A6S": {
+      "challenger_point": 0.8562922077922079,
+      "baseline_point": 0.9136363636363637,
+      "delta_mean": -0.05734415584415575,
+      "delta_ci_low": -0.08076579160218862,
+      "delta_ci_high": -0.04100688776068736,
+      "ci_all_positive": "False",
+      "p_value": 1.0,
+      "n_bootstrap": 2000,
+      "n_seeds": 10,
+      "method": "hierarchical_bootstrap"
+    }
+  },
+  "permutation_test": {
+    "observed_statistic": -0.03964502164502167,
+    "p_value": 0.0025997400259974,
+    "n_permutations": 10000,
+    "n_pairs": 10,
+    "method": "paired_permutation_test"
+  },
+  "holm_correction": [
+    {
+      "comparison": "A6_vs_A0",
+      "index": 0,
+      "p_value": 0.0,
+      "adjusted_p": 0.0,
+      "rejected": true
+    },
+    {
+      "comparison": "A6_vs_A1",
+      "index": 1,
+      "p_value": 1.0,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "comparison": "A6R_vs_A1",
+      "index": 2,
+      "p_value": 1.0,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "comparison": "A6S_vs_A1",
+      "index": 3,
+      "p_value": 1.0,
+      "adjusted_p": 1.0,
+      "rejected": false
+    }
+  ],
+  "verdict": "WEAK_GO",
+  "reason": "A6 beats A0 (CI+) and negative controls show no signal, but does not beat best baseline A1",
+  "method": "hierarchical_bootstrap (cluster + seed) + paired permutation + Holm",
+  "n_bootstrap": 2000,
+  "model": "RandomForestClassifier (100 trees, depth=10) on Morgan fingerprints (reactants+product+diff+tanimoto, 1025 features)",
+  "arms": [
+    {
+      "arm_id": "A0",
+      "arm_name": "positive_only",
+      "description": "Positive reactions only (no negatives in training)"
+    },
+    {
+      "arm_id": "A1",
+      "arm_name": "random_mismatch",
+      "description": "Random mismatch negatives"
+    },
+    {
+      "arm_id": "A2",
+      "arm_name": "random_corruption",
+      "description": "Random corruption negatives"
+    },
+    {
+      "arm_id": "A3",
+      "arm_name": "tanimoto_retrieval",
+      "description": "Tanimoto retrieval negatives"
+    },
+    {
+      "arm_id": "A4",
+      "arm_name": "template_perturbation",
+      "description": "Template perturbation negatives"
+    },
+    {
+      "arm_id": "A5",
+      "arm_name": "unconstrained_edit",
+      "description": "Unconstrained structural edit negatives"
+    },
+    {
+      "arm_id": "A6",
+      "arm_name": "rule_pc_cng",
+      "description": "Rule PC-CNG negatives"
+    },
+    {
+      "arm_id": "A6R",
+      "arm_name": "rule_pc_cng_randomized_label",
+      "description": "PC-CNG candidates with RANDOMIZED labels (negative control)"
+    },
+    {
+      "arm_id": "A6S",
+      "arm_name": "rule_pc_cng_shuffled_parent",
+      "description": "PC-CNG candidates with SHUFFLED parent reaction (negative control)"
+    }
+  ],
+  "model_input": "reactants + reagents/conditions + candidate product (Morgan fingerprints)",
+  "test_set": "common test set: 440 candidates in 55 groups"
+}
