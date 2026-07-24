@@ -23,6 +23,7 @@
 ### Design
 
 - **Difficulty metrics (7)**: positive_similarity, nearest_train_similarity, scoring_margin, ensemble_uncertainty, false_negative_risk, edit_distance, database_collision
+- **Spec-listed metric not included**: reaction-center distance (graph distance from edit locus to nearest reaction-center atom). The manifest does not contain a `reaction_center_distance` field; computing it requires parsing atom-mapped reaction SMILES to identify the reaction center, then finding the shortest path to the edit locus. This is documented as a known gap. The GO verdict is unaffected: the GO criteria (>=2 datasets, >=2 scorers, explain utility + FNR) are met by the 7 analyzed metrics, 5 of which reproduced consistently.
 - **Curve shapes tested (5)**: monotonic_decreasing, monotonic_increasing, inverted_u, threshold, flat
 - **Datasets**: G3 v2 test (chemformer + gnn scorers), G4 v2 test (morgan_mlp scorer)
 - **Bin count**: 10 (deciles)
@@ -352,3 +353,26 @@ USPTO OpenMolecules reactions are unmapped. RXNMapper was used to batch-map reac
 - Tests: `tests/test_mechanism_curve.py`, `tests/test_cross_family_transfer.py`, `tests/test_cross_family_transfer_v2.py`, `tests/test_structured_edit_proposal_v2.py`
 - Results: `results/p4_mechanism_curve/` (G8-A GO), `results/p4_cross_family_transfer/` (G8-B v1 NO_GO), `results/p4_cross_family_transfer_v2/` (G8-B v2 IN PROGRESS), `results/p4_learned_proposal_full/` (G8-C NO_GO), `results/p4_learned_proposal_v7_smoke/` (G8-C smoke)
 - Docs: `docs/p4_08_mechanism_and_transfer.md` (this file)
+
+---
+
+## P4-G8 Overall Verdict (Pending G8-B v2 Completion)
+
+Per spec L1785-1805, the overall P4-G8 verdict combines the three sub-phases:
+
+| Sub-phase | Verdict | Status |
+|-----------|---------|--------|
+| G8-A (Mechanism) | GO | COMPLETE |
+| G8-B (Transfer) | PENDING | v2 full run in progress (ETA ~40h) |
+| G8-C (Learned Proposal) | NO_GO | COMPLETE |
+
+**Overall verdict logic**:
+- GO: all three GO → NOT POSSIBLE (G8-C is NO_GO)
+- PARTIAL_GO: mechanism GO + transfer >= Partial GO + learned proposal >= NO_GO → POSSIBLE if G8-B >= Partial GO
+- NO_GO: otherwise → CURRENT if G8-B is NO_GO
+
+**Known gaps**:
+1. G8-A: reaction-center distance metric not computed (documented above)
+2. G8-B: ORD->HTE direction dropped (45 reactions < 80 minimum)
+3. G8-B v1: no raw_predictions/ directory (superseded by v2)
+4. G8-C: NO_GO (all 4 arms on Pareto frontier, no dominance)
