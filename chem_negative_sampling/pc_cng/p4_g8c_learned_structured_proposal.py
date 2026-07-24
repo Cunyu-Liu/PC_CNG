@@ -40,10 +40,13 @@ come merely from generating more candidates).
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import math
 import os
+import platform
 import statistics
+import sys
 import time
 from dataclasses import dataclass, field
 from enum import IntEnum
@@ -1746,6 +1749,44 @@ def main() -> None:
                str(output_dir / "model_checkpoint.pt"))
     with open(output_dir / "train_log.json", "w") as f:
         json.dump(log, f, indent=2)
+
+    # Standard phase outputs (spec L116-128)
+    with open(output_dir / "run_manifest.json", "w") as f:
+        json.dump({
+            "phase": PHASE, "version": "full_spec",
+            "arms": ARMS,
+            "n_train_reactions": len(train_rxns),
+            "hidden_dim": args.hidden_dim,
+            "num_heads": args.num_heads,
+            "num_rounds": args.num_rounds,
+            "stages": ["reconstruction", "rule_imitation",
+                       "competing_outcomes", "risk_adjusted_dpo"],
+            "n_bootstrap": args.n_bootstrap,
+            "seed": args.seed,
+        }, f, indent=2)
+    with open(output_dir / "environment.json", "w") as f:
+        env = {"python": sys.version.split()[0],
+               "platform": platform.platform(),
+               "torch": torch.__version__, "numpy": np.__version__}
+        try:
+            import rdkit
+            env["rdkit"] = rdkit.__version__
+        except ImportError:
+            pass
+        json.dump(env, f, indent=2)
+    hashes = {}
+    for p in [args.train_data, args.val_data, args.test_data]:
+        if p and Path(p).exists():
+            h = hashlib.sha256()
+            with open(p, "rb") as fh:
+                for chunk in iter(lambda: fh.read(8192), b""):
+                    h.update(chunk)
+            hashes[str(p)] = h.hexdigest()
+    with open(output_dir / "input_hashes.json", "w") as f:
+        json.dump(hashes, f, indent=2)
+    with open(output_dir / "commands.log", "w") as f:
+        f.write(" ".join([sys.executable, "-m", "pc_cng.p4_g8c_learned_structured_proposal"] +
+                         [f"--{k}={v}" for k, v in vars(args).items()]) + "\n")
 
     print(f"\n[{PHASE}] verdict={verdict['verdict']}")
     print(f"[{PHASE}] utility_delta={ci[0]:+.4f} CI[{ci[1]:+.4f},{ci[2]:+.4f}]")
