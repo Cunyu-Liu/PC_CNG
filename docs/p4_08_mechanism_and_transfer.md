@@ -372,7 +372,7 @@ Per spec L1785-1805, the overall P4-G8 verdict combines the three sub-phases:
 - NO_GO: otherwise → CURRENT if G8-B is NO_GO
 
 **Known gaps**:
-1. G8-A: reaction-center distance metric not computed (documented above)
+1. G8-A: reaction-center distance metric COMPUTED (commit e52841b, coverage 91%, monotonic_increasing)
 2. G8-B: ORD->HTE direction dropped (45 reactions < 80 minimum)
 3. G8-B v1: no raw_predictions/ directory (superseded by v2)
 4. G8-C: NO_GO (all 4 arms on Pareto frontier, no dominance)
