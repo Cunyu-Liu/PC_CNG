@@ -88,11 +88,33 @@ results/p4_mechanism_curve/
 
 #### Current Progress
 
-- Classification phase COMPLETE: USPTO EAS=11836, C-N=18964; ORD EAS=35, C-N=20
+- Classification phase COMPLETE: USPTO EAS=2129 train, C-N=1306 train; ORD EAS=31 train, C-N=14 train
 - Training phase IN PROGRESS: first direction (USPTO:EAS→USPTO:C-N coupling)
-- Smoke: 3 directions × 6 methods × 2 seeds = 36 runs
-- Full: 7 directions × 6 methods × 10 seeds = 420 runs
-  
+- Smoke (PID 263373): 3 directions x 6 methods x 2 seeds = 36 runs, ETA ~2.5h
+- Full (PID 320457): 7 directions x 6 methods x 10 seeds = 420 runs, ETA ~34h
+
+#### Previous Smoke Result (results/p4_g8b_v2_smoke/, 2026-07-24 00:56)
+
+A previous smoke run (same code, same 2 seeds, 3 directions) completed with **NO_GO**:
+- 0 positive directions (CI > 0), 17 negative directions, 0 severe forgetting
+- All deltas negative: transfer hurts performance with Morgan MLP
+- Smallest negative deltas: EWC and LoRA adapter (designed to mitigate negative transfer)
+- Largest negative deltas: USPTO->HTE:Pd coupling (delta ~ -0.13, domain shift)
+- With 2 seeds, sign-flip p-values are all 0.5 (test underpowered); full 10-seed run needed
+- Best-case outcome from full run: PARTIAL_GO if 10-seed CI tightens enough for some methods
+
+#### Data Limitations
+
+- **ORD->HTE direction dropped**: ORD has only 45 EAS+C-N train reactions (31 EAS + 14 C-N),
+  below MIN_FAMILY_SIZE=80. The spec lists ORD->HTE as a priority direction, but the data
+  is insufficient. Documented as a limitation in the verdict.
+- **HTE family pairs filtered**: Only families with >=80 train reactions are used as source
+  (Pd coupling=354, Alkylation=93). Cabonylation(60), Hydrogenation(54), Rh(60), Cu(30)
+  are excluded. Hydrogenation has 0 test records.
+- **7 actual directions**: 2 EAS<->C-N + 2 USPTO->HTE + 0 ORD->HTE + 3 HTE family = 7
+  (Pd->Alkylation, Alkylation->Pd, Alkylation->Cabonylation)
+- **Morgan MLP scorer**: A simple model; Chemformer/GNN transfer not repeated in v2.
+  Complex architectures might transfer better but are out of scope for this phase.
 
 #### Improvements over v1
 
@@ -136,6 +158,17 @@ results/p4_cross_family_transfer_v2/
 ├── raw_predictions/
 └── _cache/
 ```
+
+---
+
+## G8-C Gate Verification
+
+Per spec L1590-1600, G8-C requires:
+- P4-G3 >= Weak GO: **WEAK_GO** (v2 re-run with remediated manifest) PASS
+- P4-G4 >= Partial GO: **GO** (v2 generator x scorer matrix) PASS
+- P4-G5 >= Partial GO: **PARTIAL_GO** (PU-NNPU ECE -89.8%) PASS
+
+All gate conditions met. G8-C was legitimately started.
 
 ---
 
