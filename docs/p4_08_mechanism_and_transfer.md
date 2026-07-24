@@ -98,10 +98,34 @@ results/p4_mechanism_curve/
 A previous smoke run (same code, same 2 seeds, 3 directions) completed with **NO_GO**:
 - 0 positive directions (CI > 0), 17 negative directions, 0 severe forgetting
 - All deltas negative: transfer hurts performance with Morgan MLP
-- Smallest negative deltas: EWC and LoRA adapter (designed to mitigate negative transfer)
-- Largest negative deltas: USPTO->HTE:Pd coupling (delta ~ -0.13, domain shift)
 - With 2 seeds, sign-flip p-values are all 0.5 (test underpowered); full 10-seed run needed
-- Best-case outcome from full run: PARTIAL_GO if 10-seed CI tightens enough for some methods
+
+**Per-method ranking** (mean delta across directions, best to worst):
+
+| Method | Mean Delta | Range | Notes |
+|--------|-----------|-------|-------|
+| EWC | -0.031 | [-0.092, -0.000] | Best; CI crosses zero in all 3 directions |
+| LoRA adapter | -0.035 | [-0.103, -0.000] | Second best; CI crosses zero in EAS->C-N |
+| Multi-task | -0.044 | [-0.086, -0.001] | |
+| Head-FT | -0.047 | [-0.130, -0.002] | |
+| Risk-aware | -0.047 | [-0.131, -0.002] | |
+| Direct | -0.047 | [-0.131, -0.002] | Worst; no negative-transfer mitigation |
+
+**Methods with CI crossing zero** (potential to flip positive with 10 seeds):
+
+| Direction | Method | CI | Domain Sim |
+|-----------|--------|-----|-----------|
+| EAS->C-N | LoRA | [-0.0005, +0.0002] | 0.103 |
+| EAS->C-N | EWC | [-0.0007, +0.0001] | 0.103 |
+| C-N->EAS | EWC | [-0.0002, +0.0001] | 0.098 |
+| USPTO->HTE:Pd | EWC | [-0.1255, +0.0013] | 0.118 |
+
+**Domain similarity**: All directions have very low Tanimoto similarity (~0.10), indicating
+minimal chemical space overlap between families. This explains why transfer is hard.
+
+**Prediction for full 10-seed run**: EWC is the strongest candidate for PARTIAL_GO.
+If 10-seed CI tightens enough for 1-2 EWC directions to have CI lower bound > 0,
+verdict becomes PARTIAL_GO. If all remain negative, NO_GO.
 
 #### Data Limitations
 
