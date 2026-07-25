@@ -88,6 +88,10 @@ from .reaction_center_edit_decoder import (
     build_edit_candidate_groups,
     move_formed_bond_in_product,
 )
+from .g8c_data_preparation import (
+    extract_real_edit_targets,
+    load_g8c_training_data,
+)
 from .atom_mapped_graph_edit import (
     ReactionCenterEdit,
     extract_reaction_center,
@@ -1420,6 +1424,47 @@ def _extract_targets(reaction: str) -> Tuple[int, int]:
     return 0, int(EditType.NO_EDIT)
 
 
+def compute_logp(out: StructuredProposalOutput, loci: torch.Tensor,
+                 types: torch.Tensor,
+                 graph_offset: int = 0) -> torch.Tensor:
+    """Compute log-probability of (locus, edit_type) under model.
+
+    graph_offset: index offset into the batch (for combined batches).
+    """
+    n = loci.shape[0]
+    locus_logits = out.locus_logits[graph_offset:graph_offset + n]
+    type_logits = out.type_logits[graph_offset:graph_offset + n]
+    locus_logp = F.log_softmax(locus_logits, dim=-1).gather(
+        -1, loci.clamp(min=0, max=locus_logits.shape[-1] - 1).unsqueeze(-1)).squeeze(-1)
+    type_logp = F.log_softmax(type_logits, dim=-1).gather(
+        -1, types.clamp(min=0).unsqueeze(-1)).squeeze(-1)
+    return locus_logp + type_logp
+
+
+def _resolve_targets(reaction: str,
+                     edit_targets_cache: Optional[Dict[str, Dict[str, Any]]] = None,
+                     rule_proposals_cache: Optional[Dict[str, List[Dict[str, Any]]]] = None,
+                     prefer_rule: bool = False) -> Tuple[int, int]:
+    """Resolve (locus, edit_type) for a reaction using REAL data.
+
+    When ``prefer_rule`` and a rule-proposal cache hit exists, use the
+    first rule proposal.  Otherwise use the cached real edit target,
+    falling back to a fresh ``extract_real_edit_targets`` call.
+    """
+    if prefer_rule and rule_proposals_cache is not None:
+        props = rule_proposals_cache.get(reaction)
+        if props:
+            p = props[0]
+            return int(p["locus"]), int(p["edit_type"])
+    if edit_targets_cache is not None:
+        t = edit_targets_cache.get(reaction)
+        if t is not None:
+            return int(t["locus"]), int(t["edit_type"])
+    t = extract_real_edit_targets(reaction)
+    return int(t["locus"]), int(t["edit_type"])
+
+
+# REAL-DATA train_stage (phase-2 fix)
 def train_stage(model: StructuredProposalModel, stage: int,
                 train_reactions: Sequence[str],
                 val_reactions: Sequence[str],
@@ -1427,12 +1472,30 @@ def train_stage(model: StructuredProposalModel, stage: int,
                 epochs: int, batch_size: int, lr: float,
                 device: torch.device, seed: int = BASE_SEED,
                 log: Optional[List[dict]] = None,
-                map_unmapped: bool = False) -> List[dict]:
-    """Run a single training stage.  Returns the per-epoch log entries."""
+                map_unmapped: bool = False,
+                edit_targets_cache: Optional[Dict[str, Dict[str, Any]]] = None,
+                rule_proposals_cache: Optional[Dict[str, List[Dict[str, Any]]]] = None,
+                competing_pairs_cache: Optional[List[Dict[str, Any]]] = None,
+                preference_pairs_cache: Optional[List[Dict[str, Any]]] = None,
+                ref_model: Optional[StructuredProposalModel] = None) -> List[dict]:
+    """Run a single training stage.  Returns the per-epoch log entries.
+
+    Stages 1-4 now use REAL supervision:
+        * Stage 1: real edit targets from atom-mapped reaction centers.
+        * Stage 2: real rule-generator proposals (imitation).
+        * Stage 3: real HTE competing-outcome pairs (contrastive).
+        * Stage 4: real DPO preference pairs with a frozen reference model.
+    When a cache is ``None`` the stage falls back to
+    ``extract_real_edit_targets`` so the function remains usable standalone.
+    """
     set_seed(seed)
     model.to(device)
+    if ref_model is not None:
+        ref_model.to(device)
+        ref_model.eval()
+        for p in ref_model.parameters():
+            p.requires_grad_(False)
     opt = torch.optim.Adam(model.parameters(), lr=lr)
-    grad_clip = 1.0  # prevent DPO loss explosion
     stage_losses = {
         1: Stage1ReconstructionLoss(),
         2: Stage2ImitationLoss(),
@@ -1442,70 +1505,240 @@ def train_stage(model: StructuredProposalModel, stage: int,
     loss_fn = stage_losses[stage]
     log = log if log is not None else []
     n = len(train_reactions)
+
     for epoch in range(epochs):
         model.train()
-        order = np.random.RandomState(seed + epoch).permutation(n)
+        order = np.random.RandomState(seed + epoch).permutation(n) if n > 0 else []
         total_loss = 0.0
         n_batches = 0
         for start in range(0, n, batch_size):
             idx = order[start:start + batch_size]
             batch_rxns = [train_reactions[i] for i in idx]
-            batch, success_rxns = _collate_reactions(batch_rxns, device, map_unmapped=map_unmapped)
-            if batch is None:
-                continue
             opt.zero_grad()
-            out = model(batch)
-            num_g = len(success_rxns)
+
             if stage == 1:
-                loci = torch.tensor(
-                    [_extract_targets(r)[0] for r in success_rxns],
-                    device=device, dtype=torch.long)
-                types = torch.tensor(
-                    [_extract_targets(r)[1] for r in success_rxns],
-                    device=device, dtype=torch.long)
+                # Stage 1: REAL edit targets from atom-mapped reaction centers.
+                batch, success_rxns = _collate_reactions(
+                    batch_rxns, device, map_unmapped=map_unmapped)
+                if batch is None:
+                    continue
+                out = model(batch)
+                pairs = [_resolve_targets(r, edit_targets_cache)
+                         for r in success_rxns]
+                loci = torch.tensor([p[0] for p in pairs],
+                                    device=device, dtype=torch.long)
+                loci = loci.clamp(min=0, max=out.locus_logits.shape[-1] - 1)  # phase2-clamp-loci
+                types = torch.tensor([p[1] for p in pairs],
+                                     device=device, dtype=torch.long)
                 loss, _ = loss_fn(out, loci, types)
+
             elif stage == 2:
-                loci = torch.tensor(
-                    [_extract_targets(r)[0] for r in success_rxns],
-                    device=device, dtype=torch.long)
-                types = torch.tensor(
-                    [_extract_targets(r)[1] for r in success_rxns],
-                    device=device, dtype=torch.long)
-                locus_probs = F.one_hot(loci, num_classes=out.locus_logits.shape[-1]).float()
+                # Stage 2: imitate REAL rule-generator proposals.
+                batch, success_rxns = _collate_reactions(
+                    batch_rxns, device, map_unmapped=map_unmapped)
+                if batch is None:
+                    continue
+                out = model(batch)
+                pairs = [_resolve_targets(
+                    r, edit_targets_cache, rule_proposals_cache,
+                    prefer_rule=True) for r in success_rxns]
+                loci = torch.tensor([p[0] for p in pairs],
+                                    device=device, dtype=torch.long)
+                loci = loci.clamp(min=0, max=out.locus_logits.shape[-1] - 1)  # phase2-clamp-loci
+                types = torch.tensor([p[1] for p in pairs],
+                                     device=device, dtype=torch.long)
+                locus_probs = F.one_hot(
+                    loci, num_classes=out.locus_logits.shape[-1]).float()
                 type_probs = F.one_hot(types, num_classes=NUM_EDIT_TYPES).float()
                 loss, _ = loss_fn(out, locus_probs, type_probs)
+
             elif stage == 3:
-                pos_mask = torch.ones(num_g, device=device)
-                if num_g > 1:
-                    pos_mask[num_g // 2:] = 0
-                loss, _ = loss_fn(out, pos_mask)
+                # Stage 3: REAL competing-outcome pairs from HTE data.
+                if competing_pairs_cache:
+                    pairs = [competing_pairs_cache[int(i) % len(competing_pairs_cache)]
+                             for i in idx]
+                    pref_rxns = [p["reaction_smiles"] for p in pairs]
+                    comp_rxns = [p.get("competing_reaction_smiles") or p["reaction_smiles"]
+                                 for p in pairs]
+                    pref_batch, pref_success = _collate_reactions(
+                        pref_rxns, device, map_unmapped=map_unmapped)
+                    comp_batch, comp_success = _collate_reactions(
+                        comp_rxns, device, map_unmapped=map_unmapped)
+                    if pref_batch is None or comp_batch is None:
+                        batch, success_rxns = _collate_reactions(
+                            batch_rxns, device, map_unmapped=map_unmapped)
+                        if batch is None:
+                            continue
+                        out = model(batch)
+                        num_g = len(success_rxns)
+                        pos_mask = torch.ones(num_g, device=device)
+                        if num_g > 1:
+                            pos_mask[num_g // 2:] = 0
+                        loss, _ = loss_fn(out, pos_mask)
+                    else:
+                        # Combine preferred and competing into a SINGLE batch
+                        # so collate_graphs pads all to the same max_nodes.
+                        combined_rxns = pref_rxns + comp_rxns
+                        combined_batch, combined_success = _collate_reactions(
+                            combined_rxns, device, map_unmapped=map_unmapped)
+                        if combined_batch is None:
+                            continue
+                        out = model(combined_batch)
+                        num_pref = len(pref_success)
+                        num_comp = len(comp_success)
+                        pos_mask = torch.cat([
+                            torch.ones(num_pref, device=device),
+                            torch.zeros(num_comp, device=device)])
+                        loss, _ = loss_fn(out, pos_mask)
+                else:
+                    batch, success_rxns = _collate_reactions(
+                        batch_rxns, device, map_unmapped=map_unmapped)
+                    if batch is None:
+                        continue
+                    out = model(batch)
+                    num_g = len(success_rxns)
+                    pos_mask = torch.ones(num_g, device=device)
+                    if num_g > 1:
+                        pos_mask[num_g // 2:] = 0
+                    loss, _ = loss_fn(out, pos_mask)
+
             else:  # stage 4 DPO
-                g = num_g // 2 if num_g >= 2 else 1
-                out_pref = StructuredProposalOutput(
-                    locus_logits=out.locus_logits[:g], type_logits=out.type_logits[:g],
-                    arg_logits={k: v[:g] for k, v in out.arg_logits.items()},
-                    validity_mask=out.validity_mask[:g], risk=out.risk[:g],
-                    uncertainty=out.uncertainty[:g], graph_emb=out.graph_emb[:g],
-                    node_emb=out.node_emb)
-                out_disp = StructuredProposalOutput(
-                    locus_logits=out.locus_logits[g:g * 2] if out.locus_logits.shape[0] >= g * 2 else out.locus_logits[:g],
-                    type_logits=out.type_logits[g:g * 2] if out.type_logits.shape[0] >= g * 2 else out.type_logits[:g],
-                    arg_logits={k: (v[g:g * 2] if v.shape[0] >= g * 2 else v[:g]) for k, v in out.arg_logits.items()},
-                    validity_mask=out.validity_mask[g:g * 2] if out.validity_mask.shape[0] >= g * 2 else out.validity_mask[:g],
-                    risk=out.risk[g:g * 2] if out.risk.shape[0] >= g * 2 else out.risk[:g],
-                    uncertainty=out.uncertainty[g:g * 2] if out.uncertainty.shape[0] >= g * 2 else out.uncertainty[:g],
-                    graph_emb=out.graph_emb[g:g * 2] if out.graph_emb.shape[0] >= g * 2 else out.graph_emb[:g],
-                    node_emb=out.node_emb)
-                loci = torch.tensor(
-                    [_extract_targets(r)[0] for r in success_rxns[:g]],
-                    device=device, dtype=torch.long)
-                types = torch.tensor(
-                    [_extract_targets(r)[1] for r in success_rxns[:g]],
-                    device=device, dtype=torch.long)
-                ref_pref = torch.zeros(g, device=device)
-                ref_disp = torch.zeros(g, device=device)
-                loss, _ = loss_fn(out_pref, out_disp, loci, types,
-                                  loci, types, ref_pref, ref_disp)
+                if preference_pairs_cache:
+                    pairs = [preference_pairs_cache[int(i) % len(preference_pairs_cache)]
+                             for i in idx]
+                    pref_rxns = [p["preferred_reaction"] for p in pairs]
+                    disp_rxns = [p["dispreferred_reaction"] for p in pairs]
+                    pref_batch, pref_success = _collate_reactions(
+                        pref_rxns, device, map_unmapped=map_unmapped)
+                    disp_batch, disp_success = _collate_reactions(
+                        disp_rxns, device, map_unmapped=map_unmapped)
+                    if pref_batch is None or disp_batch is None:
+                        batch, success_rxns = _collate_reactions(
+                            batch_rxns, device, map_unmapped=map_unmapped)
+                        if batch is None:
+                            continue
+                        out = model(batch)
+                        num_g = len(success_rxns)
+                        g = num_g // 2 if num_g >= 2 else 1
+                        out_pref = StructuredProposalOutput(
+                            locus_logits=out.locus_logits[:g], type_logits=out.type_logits[:g],
+                            arg_logits={k: v[:g] for k, v in out.arg_logits.items()},
+                            validity_mask=out.validity_mask[:g], risk=out.risk[:g],
+                            uncertainty=out.uncertainty[:g], graph_emb=out.graph_emb[:g],
+                            node_emb=out.node_emb)
+                        out_disp = StructuredProposalOutput(
+                            locus_logits=out.locus_logits[g:g * 2] if out.locus_logits.shape[0] >= g * 2 else out.locus_logits[:g],
+                            type_logits=out.type_logits[g:g * 2] if out.type_logits.shape[0] >= g * 2 else out.type_logits[:g],
+                            arg_logits={k: (v[g:g * 2] if v.shape[0] >= g * 2 else v[:g]) for k, v in out.arg_logits.items()},
+                            validity_mask=out.validity_mask[g:g * 2] if out.validity_mask.shape[0] >= g * 2 else out.validity_mask[:g],
+                            risk=out.risk[g:g * 2] if out.risk.shape[0] >= g * 2 else out.risk[:g],
+                            uncertainty=out.uncertainty[g:g * 2] if out.uncertainty.shape[0] >= g * 2 else out.uncertainty[:g],
+                            graph_emb=out.graph_emb[g:g * 2] if out.graph_emb.shape[0] >= g * 2 else out.graph_emb[:g],
+                            node_emb=out.node_emb)
+                        pairs_t = [_resolve_targets(r, edit_targets_cache)
+                                    for r in success_rxns[:g]]
+                        loci = torch.tensor([p[0] for p in pairs_t],
+                                            device=device, dtype=torch.long)
+                        loci = loci.clamp(min=0, max=out.locus_logits.shape[-1] - 1)  # phase2-clamp-loci
+                        types = torch.tensor([p[1] for p in pairs_t],
+                                             device=device, dtype=torch.long)
+                        ref_pref = torch.zeros(g, device=device)
+                        ref_disp = torch.zeros(g, device=device)
+                        loss, _ = loss_fn(out_pref, out_disp, loci, types,
+                                          loci, types, ref_pref, ref_disp)
+                    else:
+                        # Combine preferred and dispreferred into SINGLE batch
+                        # so collate_graphs pads all to same max_nodes
+                        combined_rxns = pref_rxns + disp_rxns
+                        combined_batch, combined_success = _collate_reactions(
+                            combined_rxns, device, map_unmapped=map_unmapped)
+                        if combined_batch is None:
+                            continue
+                        out_all = model(combined_batch)
+                        num_pref = len(pref_success)
+                        num_disp = len(disp_success)
+                        g = min(num_pref, num_disp)
+                        pref_pairs_t = [_resolve_targets(r, edit_targets_cache)
+                                        for r in pref_success[:g]]
+                        disp_pairs_t = [_resolve_targets(r, edit_targets_cache)
+                                        for r in disp_success[:g]]
+                        pref_loci = torch.tensor([p[0] for p in pref_pairs_t],
+                                                 device=device, dtype=torch.long)
+                        pref_types = torch.tensor([p[1] for p in pref_pairs_t],
+                                                  device=device, dtype=torch.long)
+                        disp_loci = torch.tensor([p[0] for p in disp_pairs_t],
+                                                 device=device, dtype=torch.long)
+                        disp_types = torch.tensor([p[1] for p in disp_pairs_t],
+                                                  device=device, dtype=torch.long)
+                        max_locus = out_all.locus_logits.shape[-1] - 1
+                        pref_loci = pref_loci.clamp(min=0, max=max_locus)
+                        disp_loci = disp_loci.clamp(min=0, max=max_locus)
+                        if ref_model is not None:
+                            with torch.no_grad():
+                                ref_out_all = ref_model(combined_batch)
+                            ref_pref = compute_logp(ref_out_all, pref_loci, pref_types,
+                                                     graph_offset=0)
+                            ref_disp = compute_logp(ref_out_all, disp_loci, disp_types,
+                                                     graph_offset=num_pref)
+                        else:
+                            ref_pref = torch.zeros(g, device=device)
+                            ref_disp = torch.zeros(g, device=device)
+                        # Slice outputs from combined batch
+                        out_pref = StructuredProposalOutput(
+                            locus_logits=out_all.locus_logits[:g],
+                            type_logits=out_all.type_logits[:g],
+                            arg_logits={k: v[:g] for k, v in out_all.arg_logits.items()},
+                            validity_mask=out_all.validity_mask[:g],
+                            risk=out_all.risk[:g],
+                            uncertainty=out_all.uncertainty[:g],
+                            graph_emb=out_all.graph_emb[:g],
+                            node_emb=out_all.node_emb)
+                        out_disp = StructuredProposalOutput(
+                            locus_logits=out_all.locus_logits[num_pref:num_pref + g],
+                            type_logits=out_all.type_logits[num_pref:num_pref + g],
+                            arg_logits={k: v[num_pref:num_pref + g] for k, v in out_all.arg_logits.items()},
+                            validity_mask=out_all.validity_mask[num_pref:num_pref + g],
+                            risk=out_all.risk[num_pref:num_pref + g],
+                            uncertainty=out_all.uncertainty[num_pref:num_pref + g],
+                            graph_emb=out_all.graph_emb[num_pref:num_pref + g],
+                            node_emb=out_all.node_emb)
+                        loss, _ = loss_fn(out_pref, out_disp, pref_loci, pref_types,
+                                          disp_loci, disp_types, ref_pref, ref_disp)
+                else:
+                    batch, success_rxns = _collate_reactions(
+                        batch_rxns, device, map_unmapped=map_unmapped)
+                    if batch is None:
+                        continue
+                    out = model(batch)
+                    num_g = len(success_rxns)
+                    g = num_g // 2 if num_g >= 2 else 1
+                    out_pref = StructuredProposalOutput(
+                        locus_logits=out.locus_logits[:g], type_logits=out.type_logits[:g],
+                        arg_logits={k: v[:g] for k, v in out.arg_logits.items()},
+                        validity_mask=out.validity_mask[:g], risk=out.risk[:g],
+                        uncertainty=out.uncertainty[:g], graph_emb=out.graph_emb[:g],
+                        node_emb=out.node_emb)
+                    out_disp = StructuredProposalOutput(
+                        locus_logits=out.locus_logits[g:g * 2] if out.locus_logits.shape[0] >= g * 2 else out.locus_logits[:g],
+                        type_logits=out.type_logits[g:g * 2] if out.type_logits.shape[0] >= g * 2 else out.type_logits[:g],
+                        arg_logits={k: (v[g:g * 2] if v.shape[0] >= g * 2 else v[:g]) for k, v in out.arg_logits.items()},
+                        validity_mask=out.validity_mask[g:g * 2] if out.validity_mask.shape[0] >= g * 2 else out.validity_mask[:g],
+                        risk=out.risk[g:g * 2] if out.risk.shape[0] >= g * 2 else out.risk[:g],
+                        uncertainty=out.uncertainty[g:g * 2] if out.uncertainty.shape[0] >= g * 2 else out.uncertainty[:g],
+                        graph_emb=out.graph_emb[g:g * 2] if out.graph_emb.shape[0] >= g * 2 else out.graph_emb[:g],
+                        node_emb=out.node_emb)
+                    pairs_t = [_resolve_targets(r, edit_targets_cache)
+                                for r in success_rxns[:g]]
+                    loci = torch.tensor([p[0] for p in pairs_t],
+                                        device=device, dtype=torch.long)
+                    loci = loci.clamp(min=0, max=out.locus_logits.shape[-1] - 1)  # phase2-clamp-loci
+                    types = torch.tensor([p[1] for p in pairs_t],
+                                         device=device, dtype=torch.long)
+                    ref_pref = torch.zeros(g, device=device)
+                    ref_disp = torch.zeros(g, device=device)
+                    loss, _ = loss_fn(out_pref, out_disp, loci, types,
+                                      loci, types, ref_pref, ref_disp)
+
             if not torch.isfinite(loss) or float(loss.item()) > 1e4:
                 opt.zero_grad()
                 continue
@@ -1519,7 +1752,8 @@ def train_stage(model: StructuredProposalModel, stage: int,
         model.eval()
         val_loss = 0.0
         with torch.no_grad():
-            vb, v_success = _collate_reactions(val_reactions[:batch_size], device, map_unmapped=map_unmapped)
+            vb, v_success = _collate_reactions(
+                val_reactions[:batch_size], device, map_unmapped=map_unmapped)
             if vb is not None:
                 vout = model(vb)
                 val_loss = min(float(vout.locus_logits.std().item()), 1e3)
@@ -1652,6 +1886,26 @@ def main() -> None:
 
     rule_generator = ReactionBoundaryGenerator(
         max_candidates_per_reaction=args.top_k, allow_unmapped_fallback=False)
+    # G8C real-data loading (phase-2 fix)
+    # ---------------------------------------------------------------------------
+    g8c_data = None
+    try:
+        g8c_data = load_g8c_training_data(
+            generator=rule_generator,
+            use_rule_generator=not args.smoke,
+            max_rule_reactions=args.limit_train if args.smoke else None,
+        )
+        print(f"[{PHASE}] g8c data loaded: "
+              f"edit_targets={len(g8c_data['edit_targets'])} "
+              f"rule_proposals={len(g8c_data['rule_proposals'])} "
+              f"competing_pairs={len(g8c_data['competing_pairs'])} "
+              f"preference_pairs={len(g8c_data['preference_pairs'])}")
+    except Exception as exc:
+        print(f"[{PHASE}] WARNING: g8c data loading failed: {exc}; "
+              "falling back to per-batch target extraction")
+        g8c_data = None
+
+
 
     model = StructuredProposalModel(
         hidden_dim=args.hidden_dim, num_heads=args.num_heads,
@@ -1660,13 +1914,30 @@ def main() -> None:
     stages = [1, 2, 3, 4] if args.stage <= 0 else [args.stage]
     n_rounds = 1 if args.smoke else args.num_rounds
     log: List[dict] = []
+    # Build a frozen reference model for Stage-4 DPO (a copy of the
+    # model after Stage 3).  We snapshot it once per round before the
+    # DPO stage runs, so it reflects the pre-DPO policy.
+    ref_model = None
     for rnd in range(n_rounds):
+        # Snapshot the current model as the reference for the upcoming
+        # DPO stage (if any).  Re-snapshotted each round.
+        if 4 in stages and ref_model is None:
+            import copy
+            ref_model = copy.deepcopy(model)
+            ref_model.eval()
+            for p in ref_model.parameters():
+                p.requires_grad_(False)
         for st in stages:
             log = train_stage(
                 model, st, train_rxns, val_rxns, rule_generator,
                 epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
                 device=device, seed=args.seed + rnd * 100, log=log,
-                map_unmapped=args.map_unmapped)
+                map_unmapped=args.map_unmapped,
+                edit_targets_cache=g8c_data['edit_targets'] if g8c_data else None,
+                rule_proposals_cache=g8c_data['rule_proposals'] if g8c_data else None,
+                competing_pairs_cache=g8c_data['competing_pairs'] if g8c_data else None,
+                preference_pairs_cache=g8c_data['preference_pairs'] if g8c_data else None,
+                ref_model=ref_model if st == 4 else None)
 
     # Comparison arms
     eval_rxns = test_rxns[: min(len(test_rxns), 50 if not args.smoke else 8)]

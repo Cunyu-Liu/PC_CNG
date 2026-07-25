@@ -1,0 +1,15 @@
+{
+  "split_type": "random",
+  "description": "Stratified random baseline (in-distribution).  Stratification key is `reaction_family`.  Used as the upper-bound comparator for the OOD splits.",
+  "criteria": "stratified_random_by_reaction_family",
+  "stratify_key": "reaction_family",
+  "is_ood": false,
+  "split_name": "random",
+  "n_train": 25308,
+  "n_val": 6327,
+  "n_test": 7911,
+  "n_total": 39546,
+  "train_fraction": 0.6399635867091489,
+  "val_fraction": 0.15999089667728722,
+  "test_fraction": 0.20004551661356396
+}

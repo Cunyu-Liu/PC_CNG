@@ -1,0 +1,47 @@
+/home/cunyuliu/miniconda3/envs/pc_cng/lib/python3.10/site-packages/rxnmapper/batched_mapper.py:4: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+[P4-G8B-v2] Loading HTE manifest: data/p4/manifests/hte_feasibility_v2.json
+[P4-G8B-v2] Classifying USPTO reactions (rule-based EAS / C-N)...
+[P4-G8B-v2] Classifying ORD reactions...
+  USPTO:C-N coupling: train=1306 val=204 test=173
+  USPTO:EAS: train=2129 val=283 test=262
+  ORD:C-N coupling: train=14 val=1 test=5
+  ORD:EAS: train=31 val=0 test=4
+  HTE:Alkylation: train=93 val=15 test=27
+  HTE:Amide coupling: train=12 val=6 test=0
+  HTE:Cabonylation: train=60 val=9 test=9
+  HTE:Cu coupling: train=30 val=6 test=3
+  HTE:Hydrogenation: train=54 val=9 test=0
+  HTE:Ni coupling: train=6 val=0 test=0
+  HTE:Pd coupling: train=354 val=42 test=27
+  HTE:Rh coupling: train=60 val=3 test=6
+  HTE:Untagged: train=513 val=63 test=93
+
+[P4-G8B-v2] 3 directions × 6 methods × 2 seeds
+
+[P4-G8B-v2] === USPTO:EAS→USPTO:C-N coupling ===
+  direct         mrr=0.0343 delta=-0.0016 CI[-0.0024,-0.0000] p=0.5000
+  head_ft        mrr=0.0343 delta=-0.0016 CI[-0.0025,-0.0000] p=0.5000
+  lora_adapter   mrr=0.0355 delta=-0.0003 CI[-0.0005,+0.0002] p=0.5000
+  ewc            mrr=0.0352 delta=-0.0006 CI[-0.0007,+0.0001] p=0.5000
+  risk_aware     mrr=0.0342 delta=-0.0016 CI[-0.0023,-0.0000] p=0.5000
+  multi_task     mrr=0.0359 delta=+0.0001 CI[-0.0000,+0.0003] p=0.5000
+
+[P4-G8B-v2] === USPTO:C-N coupling→USPTO:EAS ===
+  direct         mrr=0.0263 delta=-0.0092 CI[-0.0085,-0.0037] p=0.5000
+  head_ft        mrr=0.0263 delta=-0.0092 CI[-0.0084,-0.0037] p=0.5000
+  lora_adapter   mrr=0.0349 delta=-0.0006 CI[-0.0005,-0.0001] p=0.5000
+  ewc            mrr=0.0355 delta=-0.0000 CI[-0.0002,+0.0001] p=1.0000
+  risk_aware     mrr=0.0265 delta=-0.0090 CI[-0.0083,-0.0038] p=0.5000
+  multi_task     mrr=0.0345 delta=-0.0010 CI[-0.0016,-0.0001] p=0.5000
+
+[P4-G8B-v2] === USPTO:EAS+C-N→HTE:Pd coupling ===
+  direct         mrr=0.0969 delta=-0.1311 CI[-0.1454,-0.0569] p=0.5000
+  head_ft        mrr=0.0977 delta=-0.1303 CI[-0.1455,-0.0610] p=0.5000
+  lora_adapter   mrr=0.1253 delta=-0.1027 CI[-0.1391,-0.0008] p=0.5000
+  ewc            mrr=0.1360 delta=-0.0920 CI[-0.1255,+0.0013] p=0.5000
+  risk_aware     mrr=0.0972 delta=-0.1308 CI[-0.1455,-0.0596] p=0.5000
+  multi_task     mrr=0.1421 delta=-0.0859 CI[-0.1152,-0.0034] p=0.5000
+
+[P4-G8B-v2] Complete (14981.8s)  Verdict: NO_GO
+[P4-G8B-v2] No positive transfer with CI>0

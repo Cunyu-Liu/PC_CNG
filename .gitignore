@@ -154,3 +154,15 @@ logs/*.log
 !results/p4_cross_family_transfer/environment.json
 !results/p4_cross_family_transfer/input_hashes.json
 !results/p4_cross_family_transfer/commands.log
+
+# Phase3/G8C large data (regenerable)
+data/g8c/*.csv
+data/g8c/*.parquet
+data/g8c/*.pkl
+data/ood_splits/*.parquet
+data/ood_splits/*.pkl
+# top-level build logs
+results_p4_g1_build.log
+results/**/*.log
+!results/**/summary.json
+!results/**/metrics.json

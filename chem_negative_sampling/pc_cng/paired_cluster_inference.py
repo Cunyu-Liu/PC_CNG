@@ -317,6 +317,24 @@ def macro_auprc_metric(records: list[dict], bin_key: str = "yield_bin") -> float
     return float(np.mean(auprcs)) if auprcs else 0.0
 
 
+def family_macro_auprc_metric(records: list[dict], family_key: str = "reaction_family") -> float:
+    """Macro-averaged AUPRC across reaction families (matches G6 primary endpoint definition).
+
+    Groups records by reaction_family and computes binary AUPRC within each family,
+    then macro-averages. Families with only one label class are skipped.
+    """
+    families = defaultdict(list)
+    for r in records:
+        fam = r.get(family_key, "unknown")
+        families[fam].append(r)
+    auprcs = []
+    for fam, fam_records in families.items():
+        if len(set(r.get("label", 0) for r in fam_records)) < 2:
+            continue
+        auprcs.append(auprc_metric(fam_records))
+    return float(np.mean(auprcs)) if auprcs else 0.0
+
+
 def mae_metric(records: list[dict]) -> float:
     """Mean Absolute Error for regression."""
     errors = [abs(r.get("score", 0.0) - r.get("measured_yield", 0.0)) for r in records]

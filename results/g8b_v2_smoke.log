@@ -1,0 +1,47 @@
+[P4-G8B-v2] Loading HTE manifest: data/p4/manifests/hte_feasibility_v2.json
+[P4-G8B-v2] Classifying USPTO reactions (rule-based EAS / C-N)...
+/home/cunyuliu/miniconda3/envs/pc_cng_gpu/lib/python3.10/site-packages/rxnmapper/batched_mapper.py:4: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+[P4-G8B-v2] Classifying ORD reactions...
+  USPTO:C-N coupling: train=1306 val=204 test=173
+  USPTO:EAS: train=2129 val=283 test=262
+  ORD:C-N coupling: train=14 val=1 test=5
+  ORD:EAS: train=31 val=0 test=4
+  HTE:Alkylation: train=93 val=15 test=27
+  HTE:Amide coupling: train=12 val=6 test=0
+  HTE:Cabonylation: train=60 val=9 test=9
+  HTE:Cu coupling: train=30 val=6 test=3
+  HTE:Hydrogenation: train=54 val=9 test=0
+  HTE:Ni coupling: train=6 val=0 test=0
+  HTE:Pd coupling: train=354 val=42 test=27
+  HTE:Rh coupling: train=60 val=3 test=6
+  HTE:Untagged: train=513 val=63 test=93
+
+[P4-G8B-v2] 3 directions × 6 methods × 2 seeds
+
+[P4-G8B-v2] === USPTO:EAS→USPTO:C-N coupling ===
+  direct         mrr=0.0345 delta=-0.0013 CI[-0.0046,+0.0001] p=0.5000
+  head_ft        mrr=0.0346 delta=-0.0012 CI[-0.0023,+0.0001] p=0.5000
+  lora_adapter   mrr=0.0354 delta=-0.0004 CI[-0.0004,+0.0003] p=0.5000
+  ewc            mrr=0.0352 delta=-0.0006 CI[-0.0012,+0.0002] p=0.5000
+  risk_aware     mrr=0.0341 delta=-0.0017 CI[-0.0047,+0.0000] p=0.5000
+  multi_task     mrr=0.0359 delta=+0.0001 CI[+0.0000,+0.0005] p=0.5000
+
+[P4-G8B-v2] === USPTO:C-N coupling→USPTO:EAS ===
+  direct         mrr=0.0268 delta=-0.0088 CI[-0.0080,-0.0036] p=0.5000
+  head_ft        mrr=0.0263 delta=-0.0093 CI[-0.0087,-0.0037] p=0.5000
+  lora_adapter   mrr=0.0346 delta=-0.0011 CI[-0.0011,-0.0003] p=0.5000
+  ewc            mrr=0.0355 delta=-0.0001 CI[-0.0003,+0.0002] p=0.5000
+  risk_aware     mrr=0.0261 delta=-0.0096 CI[-0.0079,-0.0037] p=0.5000
+  multi_task     mrr=0.0349 delta=-0.0008 CI[-0.0011,-0.0002] p=0.5000
+
+[P4-G8B-v2] === USPTO:EAS+C-N→HTE:Pd coupling ===
+  direct         mrr=0.1826 delta=+0.0092 CI[-0.1122,+0.0172] p=0.5000
+  head_ft        mrr=0.0939 delta=-0.0795 CI[-0.1301,-0.0227] p=0.5000
+  lora_adapter   mrr=0.0999 delta=-0.0735 CI[-0.1340,+0.0068] p=0.5000
+  ewc            mrr=0.1145 delta=-0.0589 CI[-0.1211,+0.0189] p=0.5000
+  risk_aware     mrr=0.1370 delta=-0.0364 CI[-0.1150,+0.0044] p=1.0000
+  multi_task     mrr=0.1429 delta=-0.0305 CI[-0.0965,+0.0409] p=0.5000
+
+[P4-G8B-v2] Complete (47310.9s)  Verdict: PARTIAL_GO
+[P4-G8B-v2] 1 positive direction×method entries across 1 pair group(s); all failures reported

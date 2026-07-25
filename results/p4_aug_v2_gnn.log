@@ -1,0 +1,488 @@
+[P4-G3] Stage: full
+[P4-G3] Manifest: data/p4/manifests/hte_feasibility_v2.json
+[P4-G3] Output: results/p4_augmentation_v2_gnn
+[P4-G3] Device: cuda:6
+[P4-G3] Loading manifest data...
+  Train: 3152 candidates (394 gold)
+  Val:   408 candidates (51 gold)
+  Test:  440 candidates (55 gold)
+[P4-G3] Backbones: ['gnn']
+[P4-G3] Arms: ['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6']
+[P4-G3] Seeds: [20260721, 20260722, 20260723, 20260724, 20260725, 20260726, 20260727, 20260728, 20260729, 20260730]
+[P4-G3] Epochs: 5
+[P4-G3] Chemformer config from selected_backbone.json: rank=8, targets=['backbone.encoder_layers.*.self_attn.out_proj']
+
+[P4-G3] Running gnn × A0 × seed=20260721...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3385  Top1: 0.1091  AUPRC: 0.1193
+  wall_clock: 9.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260722...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.2576  Top1: 0.0364  AUPRC: 0.1229
+  wall_clock: 9.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260723...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  trainable_params: 187265
+  test MRR: 0.2585  Top1: 0.0182  AUPRC: 0.1293
+  wall_clock: 9.0s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260724...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  trainable_params: 187265
+  test MRR: 0.2511  Top1: 0.0182  AUPRC: 0.1259
+  wall_clock: 9.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260725...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.2876  Top1: 0.0545  AUPRC: 0.1115
+  wall_clock: 5.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260726...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.2815  Top1: 0.0364  AUPRC: 0.1191
+  wall_clock: 7.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260727...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.2664  Top1: 0.0364  AUPRC: 0.1105
+  wall_clock: 7.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260728...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  trainable_params: 187265
+  test MRR: 0.2984  Top1: 0.0545  AUPRC: 0.1409
+  wall_clock: 9.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260729...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3051  Top1: 0.0545  AUPRC: 0.1532
+  wall_clock: 7.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A0 × seed=20260730...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  trainable_params: 187265
+  test MRR: 0.2958  Top1: 0.0182  AUPRC: 0.1395
+  wall_clock: 9.0s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260721...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3497  Top1: 0.1091  AUPRC: 0.1799
+  wall_clock: 15.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260722...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3481  Top1: 0.0909  AUPRC: 0.2034
+  wall_clock: 9.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260723...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3604  Top1: 0.1273  AUPRC: 0.2200
+  wall_clock: 9.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260724...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3861  Top1: 0.1818  AUPRC: 0.2102
+  wall_clock: 12.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260725...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3547  Top1: 0.1273  AUPRC: 0.1822
+  wall_clock: 9.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260726...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3496  Top1: 0.1091  AUPRC: 0.1715
+  wall_clock: 15.9s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260727...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3466  Top1: 0.0909  AUPRC: 0.1901
+  wall_clock: 12.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260728...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3342  Top1: 0.0727  AUPRC: 0.1738
+  wall_clock: 9.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260729...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3338  Top1: 0.0727  AUPRC: 0.1759
+  wall_clock: 9.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A1 × seed=20260730...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.4226  Top1: 0.2000  AUPRC: 0.2141
+  wall_clock: 9.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260721...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3255  Top1: 0.0727  AUPRC: 0.1228
+  wall_clock: 15.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260722...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.2534  Top1: 0.0000  AUPRC: 0.1231
+  wall_clock: 9.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260723...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3176  Top1: 0.0727  AUPRC: 0.1306
+  wall_clock: 12.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260724...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3781  Top1: 0.1273  AUPRC: 0.1448
+  wall_clock: 14.7s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260725...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.2947  Top1: 0.0364  AUPRC: 0.1182
+  wall_clock: 15.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260726...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3635  Top1: 0.1091  AUPRC: 0.1485
+  wall_clock: 11.8s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260727...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3648  Top1: 0.0909  AUPRC: 0.1611
+  wall_clock: 11.7s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260728...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3830  Top1: 0.1273  AUPRC: 0.1565
+  wall_clock: 14.9s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260729...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.3058  Top1: 0.0545  AUPRC: 0.1288
+  wall_clock: 14.8s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A2 × seed=20260730...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3775  Top1: 0.1091  AUPRC: 0.1496
+  wall_clock: 9.6s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260721...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.2701  Top1: 0.0182  AUPRC: 0.1360
+  wall_clock: 15.5s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260722...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.2976  Top1: 0.0364  AUPRC: 0.1383
+  wall_clock: 15.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260723...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.2963  Top1: 0.0545  AUPRC: 0.1369
+  wall_clock: 15.5s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260724...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.3038  Top1: 0.0364  AUPRC: 0.1417
+  wall_clock: 15.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260725...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3167  Top1: 0.0727  AUPRC: 0.1463
+  wall_clock: 15.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260726...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3042  Top1: 0.0364  AUPRC: 0.1393
+  wall_clock: 15.6s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260727...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.2731  Top1: 0.0000  AUPRC: 0.1411
+  wall_clock: 15.5s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260728...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3126  Top1: 0.0909  AUPRC: 0.1519
+  wall_clock: 15.0s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260729...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3038  Top1: 0.0364  AUPRC: 0.1512
+  wall_clock: 15.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A3 × seed=20260730...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3058  Top1: 0.0545  AUPRC: 0.1461
+  wall_clock: 9.6s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260721...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3188  Top1: 0.0727  AUPRC: 0.1670
+  wall_clock: 15.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260722...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.3464  Top1: 0.0909  AUPRC: 0.1683
+  wall_clock: 15.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260723...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.3181  Top1: 0.0727  AUPRC: 0.1665
+  wall_clock: 15.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260724...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3685  Top1: 0.1455  AUPRC: 0.1704
+  wall_clock: 9.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260725...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.3346  Top1: 0.1091  AUPRC: 0.1904
+  wall_clock: 14.8s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260726...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.2877  Top1: 0.0364  AUPRC: 0.1586
+  wall_clock: 9.6s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260727...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3471  Top1: 0.0909  AUPRC: 0.1678
+  wall_clock: 15.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260728...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.2995  Top1: 0.0364  AUPRC: 0.1587
+  wall_clock: 9.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260729...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3303  Top1: 0.0727  AUPRC: 0.1733
+  wall_clock: 9.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A4 × seed=20260730...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3257  Top1: 0.0727  AUPRC: 0.1757
+  wall_clock: 9.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260721...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3110  Top1: 0.0364  AUPRC: 0.1223
+  wall_clock: 12.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260722...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3143  Top1: 0.0545  AUPRC: 0.1270
+  wall_clock: 14.6s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260723...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3211  Top1: 0.0545  AUPRC: 0.1345
+  wall_clock: 9.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260724...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3725  Top1: 0.1273  AUPRC: 0.1438
+  wall_clock: 9.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260725...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3068  Top1: 0.0364  AUPRC: 0.1278
+  wall_clock: 15.0s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260726...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3114  Top1: 0.0364  AUPRC: 0.1284
+  wall_clock: 9.1s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260727...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3457  Top1: 0.0727  AUPRC: 0.1495
+  wall_clock: 12.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260728...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3725  Top1: 0.1273  AUPRC: 0.1575
+  wall_clock: 9.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260729...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.3016  Top1: 0.0364  AUPRC: 0.1267
+  wall_clock: 15.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A5 × seed=20260730...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3460  Top1: 0.0545  AUPRC: 0.1422
+  wall_clock: 9.5s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260721...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3396  Top1: 0.0545  AUPRC: 0.1408
+  wall_clock: 9.5s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260722...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.3523  Top1: 0.1091  AUPRC: 0.1805
+  wall_clock: 15.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260723...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3576  Top1: 0.1091  AUPRC: 0.1797
+  wall_clock: 15.6s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260724...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3846  Top1: 0.1818  AUPRC: 0.1814
+  wall_clock: 9.3s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260725...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3702  Top1: 0.1455  AUPRC: 0.1774
+  wall_clock: 15.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260726...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 187265
+  test MRR: 0.3672  Top1: 0.1455  AUPRC: 0.1809
+  wall_clock: 15.5s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260727...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3351  Top1: 0.0727  AUPRC: 0.1774
+  wall_clock: 12.7s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260728...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 187265
+  test MRR: 0.3218  Top1: 0.0909  AUPRC: 0.1582
+  wall_clock: 9.2s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260729...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  trainable_params: 187265
+  test MRR: 0.3414  Top1: 0.0909  AUPRC: 0.1783
+  wall_clock: 15.4s  peak_mem: 36MB
+
+[P4-G3] Running gnn × A6 × seed=20260730...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 187265
+  test MRR: 0.3584  Top1: 0.1273  AUPRC: 0.1861
+  wall_clock: 12.2s  peak_mem: 36MB
+
+[P4-G3] Summary CSV: results/p4_augmentation_v2_gnn/summary.csv
+[P4-G3] Effect sizes CSV: results/p4_augmentation_v2_gnn/effect_sizes.csv
+
+[P4-G3] GO/NO-GO: results/p4_augmentation_v2_gnn/go_no_go.json
+  Status: WEAK_GO
+  Mean improvement: 6.87pp
+  Backbones with positive CI: ['gnn']
+[P4-G3] Model manifest: results/p4_augmentation_v2_gnn/model_manifests/gnn_manifest.json

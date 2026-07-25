@@ -1,0 +1,17 @@
+{
+  "split_type": "scaffold",
+  "description": "Group-disjoint split by Murcko scaffold of `reactant_1_smiles`. Test scaffolds are structurally novel relative to train.",
+  "criteria": "group_disjoint_by_murcko_scaffold",
+  "n_train_scaffolds": 168,
+  "n_test_scaffolds": 4,
+  "n_invalid_smiles": 126,
+  "is_ood": true,
+  "split_name": "scaffold",
+  "n_train": 24794,
+  "n_val": 6198,
+  "n_test": 8554,
+  "n_total": 39546,
+  "train_fraction": 0.6269660648358873,
+  "val_fraction": 0.15672887270520405,
+  "test_fraction": 0.21630506245890863
+}

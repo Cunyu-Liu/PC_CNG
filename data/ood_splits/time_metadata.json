@@ -1,0 +1,20 @@
+{
+  "split_type": "time",
+  "description": "Time-proxy split.  HiTEA is a single 2023 publication, so a true year split is unavailable.  Records are sorted by the numeric suffix of `notebook_id` (which increases with experimental page order) and the newest 20% form the test set.",
+  "criteria": "temporal_by_notebook_id_suffix",
+  "proxy_field": "notebook_id",
+  "suffix_min": 7,
+  "suffix_max": 3076,
+  "test_suffix_min": 2620,
+  "test_suffix_max": 3076,
+  "is_ood": true,
+  "limitation": "True publication-year split impossible (single source). Notebook page order used as a monotonic proxy.",
+  "split_name": "time",
+  "n_train": 25310,
+  "n_val": 6327,
+  "n_test": 7909,
+  "n_total": 39546,
+  "train_fraction": 0.6400141607242199,
+  "val_fraction": 0.15999089667728722,
+  "test_fraction": 0.1999949425984929
+}

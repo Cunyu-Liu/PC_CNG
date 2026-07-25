@@ -1,0 +1,496 @@
+/home/cunyuliu/miniconda3/envs/pc_cng_gpu/lib/python3.10/site-packages/torch/nn/functional.py:5962: UserWarning: Support for mismatched key_padding_mask and attn_mask is deprecated. Use same type for both instead.
+  warnings.warn(
+[P4-G3] Stage: full
+[P4-G3] Manifest: data/p4/manifests/hte_feasibility_v2.json
+[P4-G3] Output: results/p4_augmentation_v2_chemformer
+[P4-G3] Device: cuda:6
+[P4-G3] Loading manifest data...
+  Train: 3152 candidates (394 gold)
+  Val:   408 candidates (51 gold)
+  Test:  440 candidates (55 gold)
+[P4-G3] Backbones: ['chemformer']
+[P4-G3] Arms: ['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6']
+[P4-G3] Seeds: [20260721, 20260722, 20260723, 20260724, 20260725, 20260726, 20260727, 20260728, 20260729, 20260730]
+[P4-G3] Epochs: 5
+[P4-G3] Chemformer config from selected_backbone.json: rank=8, targets=['backbone.encoder_layers.*.self_attn.out_proj']
+
+[P4-G3] Running chemformer × A0 × seed=20260721...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.3556  Top1: 0.0727  AUPRC: 0.1473
+  wall_clock: 29.7s  peak_mem: 357MB
+
+[P4-G3] Running chemformer × A0 × seed=20260722...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3897  Top1: 0.0727  AUPRC: 0.1990
+  wall_clock: 17.3s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A0 × seed=20260723...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  trainable_params: 180737
+  test MRR: 0.3558  Top1: 0.0909  AUPRC: 0.1552
+  wall_clock: 30.1s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A0 × seed=20260724...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  trainable_params: 180737
+  test MRR: 0.4056  Top1: 0.1636  AUPRC: 0.1774
+  wall_clock: 29.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A0 × seed=20260725...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4255  Top1: 0.1636  AUPRC: 0.2029
+  wall_clock: 17.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A0 × seed=20260726...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3426  Top1: 0.0364  AUPRC: 0.1880
+  wall_clock: 17.9s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A0 × seed=20260727...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.3503  Top1: 0.0727  AUPRC: 0.1674
+  wall_clock: 29.4s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A0 × seed=20260728...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  trainable_params: 180737
+  test MRR: 0.4013  Top1: 0.1455  AUPRC: 0.1708
+  wall_clock: 30.7s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A0 × seed=20260729...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  trainable_params: 180737
+  test MRR: 0.3219  Top1: 0.1273  AUPRC: 0.1271
+  wall_clock: 29.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A0 × seed=20260730...
+  Arm A0: 394 pos + 0 neg = 394 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4209  Top1: 0.1455  AUPRC: 0.1883
+  wall_clock: 18.0s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260721...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.4993  Top1: 0.2545  AUPRC: 0.2042
+  wall_clock: 42.3s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260722...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.5261  Top1: 0.3091  AUPRC: 0.3049
+  wall_clock: 42.7s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260723...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.2229  Top1: 0.0182  AUPRC: 0.1217
+  wall_clock: 39.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260724...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.1919  Top1: 0.0000  AUPRC: 0.0924
+  wall_clock: 41.6s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260725...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.4187  Top1: 0.1455  AUPRC: 0.1852
+  wall_clock: 40.3s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260726...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.5437  Top1: 0.3818  AUPRC: 0.2552
+  wall_clock: 42.1s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260727...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.1843  Top1: 0.0000  AUPRC: 0.0949
+  wall_clock: 44.5s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260728...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3452  Top1: 0.1091  AUPRC: 0.1219
+  wall_clock: 26.7s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260729...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.1846  Top1: 0.0000  AUPRC: 0.0895
+  wall_clock: 26.9s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A1 × seed=20260730...
+  Arm A1: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4694  Top1: 0.2182  AUPRC: 0.2448
+  wall_clock: 27.3s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260721...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.3318  Top1: 0.0545  AUPRC: 0.1526
+  wall_clock: 35.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260722...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4024  Top1: 0.1091  AUPRC: 0.1986
+  wall_clock: 27.0s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260723...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.4209  Top1: 0.1636  AUPRC: 0.1992
+  wall_clock: 44.6s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260724...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3594  Top1: 0.1091  AUPRC: 0.1610
+  wall_clock: 26.6s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260725...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.4155  Top1: 0.1273  AUPRC: 0.1861
+  wall_clock: 43.9s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260726...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3903  Top1: 0.1273  AUPRC: 0.1903
+  wall_clock: 26.3s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260727...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.3936  Top1: 0.1273  AUPRC: 0.2042
+  wall_clock: 44.5s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260728...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.3688  Top1: 0.0727  AUPRC: 0.1915
+  wall_clock: 40.4s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260729...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.3748  Top1: 0.0727  AUPRC: 0.1730
+  wall_clock: 44.0s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A2 × seed=20260730...
+  Arm A2: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4748  Top1: 0.2182  AUPRC: 0.2686
+  wall_clock: 26.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260721...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.2274  Top1: 0.0182  AUPRC: 0.0965
+  wall_clock: 42.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260722...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4261  Top1: 0.2000  AUPRC: 0.1701
+  wall_clock: 25.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260723...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.2598  Top1: 0.0909  AUPRC: 0.0936
+  wall_clock: 43.3s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260724...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.2138  Top1: 0.0000  AUPRC: 0.0954
+  wall_clock: 42.5s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260725...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3666  Top1: 0.0909  AUPRC: 0.1535
+  wall_clock: 26.1s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260726...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.4458  Top1: 0.2182  AUPRC: 0.1858
+  wall_clock: 34.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260727...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.3398  Top1: 0.1636  AUPRC: 0.0993
+  wall_clock: 42.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260728...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.1908  Top1: 0.0000  AUPRC: 0.0903
+  wall_clock: 40.7s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260729...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.2830  Top1: 0.1091  AUPRC: 0.0917
+  wall_clock: 40.6s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A3 × seed=20260730...
+  Arm A3: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4442  Top1: 0.1636  AUPRC: 0.2349
+  wall_clock: 24.5s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260721...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3785  Top1: 0.0727  AUPRC: 0.1639
+  wall_clock: 25.6s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260722...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4484  Top1: 0.2364  AUPRC: 0.2129
+  wall_clock: 24.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260723...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.2971  Top1: 0.0545  AUPRC: 0.1092
+  wall_clock: 24.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260724...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.3358  Top1: 0.1636  AUPRC: 0.1950
+  wall_clock: 42.0s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260725...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.4011  Top1: 0.1636  AUPRC: 0.1533
+  wall_clock: 33.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260726...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.5273  Top1: 0.3455  AUPRC: 0.2053
+  wall_clock: 33.9s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260727...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 4
+  trainable_params: 180737
+  test MRR: 0.3149  Top1: 0.1091  AUPRC: 0.1313
+  wall_clock: 42.6s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260728...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3418  Top1: 0.0727  AUPRC: 0.1600
+  wall_clock: 25.6s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260729...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.2062  Top1: 0.0000  AUPRC: 0.0901
+  wall_clock: 42.5s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A4 × seed=20260730...
+  Arm A4: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4210  Top1: 0.1636  AUPRC: 0.1570
+  wall_clock: 25.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260721...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3403  Top1: 0.0545  AUPRC: 0.1543
+  wall_clock: 24.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260722...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.4203  Top1: 0.1636  AUPRC: 0.2073
+  wall_clock: 33.3s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260723...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.4130  Top1: 0.1636  AUPRC: 0.2035
+  wall_clock: 41.3s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260724...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3670  Top1: 0.1091  AUPRC: 0.1566
+  wall_clock: 24.9s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260725...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.4239  Top1: 0.1455  AUPRC: 0.1885
+  wall_clock: 32.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260726...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.3845  Top1: 0.1273  AUPRC: 0.1891
+  wall_clock: 32.4s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260727...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.4103  Top1: 0.1636  AUPRC: 0.2160
+  wall_clock: 41.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260728...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.4070  Top1: 0.1455  AUPRC: 0.2040
+  wall_clock: 29.4s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260729...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3809  Top1: 0.0909  AUPRC: 0.1711
+  wall_clock: 24.9s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A5 × seed=20260730...
+  Arm A5: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4688  Top1: 0.2182  AUPRC: 0.2716
+  wall_clock: 25.0s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260721...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3373  Top1: 0.0545  AUPRC: 0.1540
+  wall_clock: 24.8s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260722...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.4021  Top1: 0.1091  AUPRC: 0.2009
+  wall_clock: 33.9s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260723...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.4273  Top1: 0.1818  AUPRC: 0.2024
+  wall_clock: 42.6s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260724...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.3730  Top1: 0.1091  AUPRC: 0.1604
+  wall_clock: 33.4s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260725...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 3
+  trainable_params: 180737
+  test MRR: 0.4164  Top1: 0.1273  AUPRC: 0.1854
+  wall_clock: 33.0s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260726...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.4015  Top1: 0.1455  AUPRC: 0.1893
+  wall_clock: 42.2s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260727...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4403  Top1: 0.2000  AUPRC: 0.2228
+  wall_clock: 25.4s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260728...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  trainable_params: 180737
+  test MRR: 0.3948  Top1: 0.1091  AUPRC: 0.1952
+  wall_clock: 42.5s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260729...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.3906  Top1: 0.1273  AUPRC: 0.1772
+  wall_clock: 25.4s  peak_mem: 358MB
+
+[P4-G3] Running chemformer × A6 × seed=20260730...
+  Arm A6: 394 pos + 394 neg = 788 training examples
+  Early stopping at epoch 2
+  trainable_params: 180737
+  test MRR: 0.4764  Top1: 0.2182  AUPRC: 0.2722
+  wall_clock: 25.4s  peak_mem: 358MB
+
+[P4-G3] Summary CSV: results/p4_augmentation_v2_chemformer/summary.csv
+[P4-G3] Effect sizes CSV: results/p4_augmentation_v2_chemformer/effect_sizes.csv
+
+[P4-G3] GO/NO-GO: results/p4_augmentation_v2_chemformer/go_no_go.json
+  Status: WEAK_GO
+  Mean improvement: 2.90pp
+  Backbones with positive CI: ['chemformer']
+[P4-G3] Model manifest: results/p4_augmentation_v2_chemformer/model_manifests/chemformer_manifest.json

@@ -1,0 +1,136 @@
+[P4-G2] Stage: screening
+[P4-G2] Manifest: /home/cunyuliu/pc_cng_research/data/p4/manifests/hte_feasibility_v1.json
+[P4-G2] Output: /home/cunyuliu/pc_cng_research/results/p4_lora_ablation_screening
+[P4-G2] Device: cuda:0
+[P4-G2] Loading manifest data...
+  Train: 3152 candidates (394 gold)
+  Val:   408 candidates (51 gold)
+  Test:  440 candidates (55 gold)
+[P4-G2] Auto-discovering module names...
+  Config registry saved: /home/cunyuliu/pc_cng_research/results/p4_lora_ablation_screening/config_registry.json
+  Discovered Linear modules: 26
+  ffn patterns: ['backbone.encoder_layers.*.linear1', 'backbone.encoder_layers.*.linear2']
+  attention patterns: ['backbone.encoder_layers.*.self_attn.out_proj']
+  all_linear patterns: ['backbone.encoder_layers.*.linear1', 'backbone.encoder_layers.*.linear2', 'backbone.encoder_layers.*.self_attn.out_proj']
+[P4-G2] Configs: ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
+[P4-G2] Seeds: [20260721, 20260722, 20260723]
+[P4-G2] Epochs: 5
+
+[P4-G2] Running C1 (zero_shot_frozen) seed=20260721...
+/home/cunyuliu/miniconda3/envs/pc_cng_gpu/lib/python3.10/site-packages/torch/nn/functional.py:5962: UserWarning: Support for mismatched key_padding_mask and attn_mask is deprecated. Use same type for both instead.
+  warnings.warn(
+/home/cunyuliu/miniconda3/envs/pc_cng_gpu/lib/python3.10/site-packages/torch/nn/functional.py:5962: UserWarning: Support for mismatched key_padding_mask and attn_mask is deprecated. Use same type for both instead.
+  warnings.warn(
+  trainable_params: 131585
+  test MRR: 0.2124  Top1: 0.0000  NDCG: 0.3950
+  wall_clock: 11.3s  peak_mem: 165MB
+
+[P4-G2] Running C1 (zero_shot_frozen) seed=20260722...
+  trainable_params: 131585
+  test MRR: 0.4308  Top1: 0.2000  NDCG: 0.5675
+  wall_clock: 8.3s  peak_mem: 162MB
+
+[P4-G2] Running C1 (zero_shot_frozen) seed=20260723...
+  trainable_params: 131585
+  test MRR: 0.1938  Top1: 0.0000  NDCG: 0.3789
+  wall_clock: 8.2s  peak_mem: 162MB
+
+[P4-G2] Running C2 (lora_baseline_ffn) seed=20260721...
+  Epoch 1/5: train_loss=1.2218 val_loss=0.7133
+  trainable_params: 377345
+  test MRR: 0.4178  Top1: 0.1818  NDCG: 0.5581
+  wall_clock: 280.4s  peak_mem: 868MB
+
+[P4-G2] Running C2 (lora_baseline_ffn) seed=20260722...
+  Epoch 1/5: train_loss=1.2145 val_loss=0.6203
+  trainable_params: 377345
+  test MRR: 0.4411  Top1: 0.1636  NDCG: 0.5781
+  wall_clock: 312.8s  peak_mem: 875MB
+
+[P4-G2] Running C2 (lora_baseline_ffn) seed=20260723...
+  Epoch 1/5: train_loss=1.2168 val_loss=0.6283
+  trainable_params: 377345
+  test MRR: 0.4338  Top1: 0.1818  NDCG: 0.5717
+  wall_clock: 308.5s  peak_mem: 875MB
+
+[P4-G2] Running C3 (lora_attention) seed=20260721...
+  Epoch 1/5: train_loss=1.2209 val_loss=0.7211
+  trainable_params: 180737
+  test MRR: 0.4932  Top1: 0.2000  NDCG: 0.6192
+  wall_clock: 181.4s  peak_mem: 197MB
+
+[P4-G2] Running C3 (lora_attention) seed=20260722...
+  Epoch 1/5: train_loss=1.2209 val_loss=0.7214
+  trainable_params: 180737
+  test MRR: 0.4365  Top1: 0.1636  NDCG: 0.5750
+  wall_clock: 181.9s  peak_mem: 197MB
+
+[P4-G2] Running C3 (lora_attention) seed=20260723...
+  Epoch 1/5: train_loss=1.2187 val_loss=0.7254
+  trainable_params: 180737
+  test MRR: 0.4858  Top1: 0.2727  NDCG: 0.6105
+  wall_clock: 178.8s  peak_mem: 197MB
+
+[P4-G2] Running C4 (lora_all_linear_r8) seed=20260721...
+  Epoch 1/5: train_loss=1.2178 val_loss=0.6787
+  trainable_params: 426497
+  test MRR: 0.4759  Top1: 0.2364  NDCG: 0.6041
+  wall_clock: 317.8s  peak_mem: 875MB
+
+[P4-G2] Running C4 (lora_all_linear_r8) seed=20260722...
+  Epoch 1/5: train_loss=1.2122 val_loss=0.6318
+  trainable_params: 426497
+  test MRR: 0.4320  Top1: 0.1636  NDCG: 0.5711
+  wall_clock: 282.7s  peak_mem: 875MB
+
+[P4-G2] Running C4 (lora_all_linear_r8) seed=20260723...
+  Epoch 1/5: train_loss=1.2115 val_loss=0.6172
+  trainable_params: 426497
+  test MRR: 0.4471  Top1: 0.1636  NDCG: 0.5832
+  wall_clock: 292.8s  peak_mem: 875MB
+
+[P4-G2] Running C5 (lora_all_linear_r16) seed=20260721...
+  Epoch 1/5: train_loss=1.2155 val_loss=0.6574
+  trainable_params: 721409
+  test MRR: 0.5352  Top1: 0.2909  NDCG: 0.6501
+  wall_clock: 318.9s  peak_mem: 880MB
+
+[P4-G2] Running C5 (lora_all_linear_r16) seed=20260722...
+  Epoch 1/5: train_loss=1.2089 val_loss=0.6342
+  trainable_params: 721409
+  test MRR: 0.3411  Top1: 0.0545  NDCG: 0.5015
+  wall_clock: 299.1s  peak_mem: 880MB
+
+[P4-G2] Running C5 (lora_all_linear_r16) seed=20260723...
+  Epoch 1/5: train_loss=1.2109 val_loss=0.5830
+  trainable_params: 721409
+  test MRR: 0.3967  Top1: 0.1273  NDCG: 0.5434
+  wall_clock: 267.6s  peak_mem: 880MB
+
+[P4-G2] Running C6 (full_finetune) seed=20260721...
+  Epoch 1/5: train_loss=1.2284 val_loss=0.7103
+  trainable_params: 19314785
+  test MRR: 0.5709  Top1: 0.3636  NDCG: 0.6764
+  wall_clock: 211.1s  peak_mem: 1208MB
+
+[P4-G2] Running C6 (full_finetune) seed=20260722...
+  Epoch 1/5: train_loss=1.2306 val_loss=0.7223
+  trainable_params: 19314785
+  test MRR: 0.5289  Top1: 0.2909  NDCG: 0.6451
+  wall_clock: 215.2s  peak_mem: 1210MB
+
+[P4-G2] Running C6 (full_finetune) seed=20260723...
+  Epoch 1/5: train_loss=1.2360 val_loss=0.6316
+  trainable_params: 19314785
+  test MRR: 0.5252  Top1: 0.2727  NDCG: 0.6426
+  wall_clock: 281.0s  peak_mem: 1210MB
+
+[P4-G2] Summary CSV: /home/cunyuliu/pc_cng_research/results/p4_lora_ablation_screening/summary.csv
+[P4-G2] Non-inferiority: /home/cunyuliu/pc_cng_research/results/p4_lora_ablation_screening/noninferiority.json
+  C2: INFERIOR (delta_mean=-0.110779, ci_low=-0.153139)
+  C3: INFERIOR (delta_mean=-0.069834, ci_low=-0.092403)
+  C4: INFERIOR (delta_mean=-0.089993, ci_low=-0.096948)
+  C5: INFERIOR (delta_mean=-0.117367, ci_low=-0.187857)
+
+[P4-G2] GO/NO-GO: /home/cunyuliu/pc_cng_research/results/p4_lora_ablation_screening/go_no_go.json
+  Status: NO_GO

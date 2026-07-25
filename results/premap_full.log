@@ -1,0 +1,16 @@
+Read 500 valid reactions
+/home/cunyuliu/miniconda3/envs/pc_cng/lib/python3.10/site-packages/rxnmapper/batched_mapper.py:4: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+RXNMapper loaded, mapping in chunks...
+  Chunk 1: 50/500 mapped
+  Chunk 2: 100/500 mapped
+  Chunk 3: 150/500 mapped
+  Chunk 4: 200/500 mapped
+  Chunk 5: 250/500 mapped
+  Chunk 6 failed: "" is not a valid SMILES string
+  Chunk 7: 346/500 mapped
+  Chunk 8: 396/500 mapped
+  Chunk 9: 446/500 mapped
+  Chunk 10: 496/500 mapped
+Mapped 496 reactions (out of 500)
+Saved to data/p4/g8c_full_mapped_reactions.json

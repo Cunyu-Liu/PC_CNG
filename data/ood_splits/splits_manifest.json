@@ -1,0 +1,56 @@
+{
+  "parquet_path": "/home/cunyuliu/pc_cng_research/data/processed/p4_hte_normalized.parquet",
+  "n_records": 39546,
+  "seed": 20260725,
+  "test_fraction": 0.2,
+  "val_fraction_of_train": 0.2,
+  "splits": {
+    "reaction_family": {
+      "n_train": 23705,
+      "n_val": 5926,
+      "n_test": 9915,
+      "is_ood": true
+    },
+    "scaffold": {
+      "n_train": 24794,
+      "n_val": 6198,
+      "n_test": 8554,
+      "is_ood": true
+    },
+    "condition_space": {
+      "n_train": 25177,
+      "n_val": 6294,
+      "n_test": 8075,
+      "is_ood": true
+    },
+    "time": {
+      "n_train": 25310,
+      "n_val": 6327,
+      "n_test": 7909,
+      "is_ood": true
+    },
+    "author_lab": {
+      "n_train": 29410,
+      "n_val": 7353,
+      "n_test": 2783,
+      "is_ood": true
+    },
+    "random": {
+      "n_train": 25308,
+      "n_val": 6327,
+      "n_test": 7911,
+      "is_ood": false
+    },
+    "patent": {
+      "n_train": 2000,
+      "n_val": 500,
+      "n_test": 500,
+      "n_train_total": 360622,
+      "n_val_total": 63639,
+      "n_test_total": 105977,
+      "is_ood": true,
+      "is_external_to_hitea": true,
+      "source_dataset": "uspto_openmolecules_normalized.csv"
+    }
+  }
+}

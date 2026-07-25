@@ -1,0 +1,28 @@
+/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/p4_g8c_learned_structured_proposal.py:1028: DeprecationWarning: `trapz` is deprecated. Use `trapezoid` instead, or one of the numerical integration functions in `scipy.integrate`.
+  return float(np.trapz(precision, recall))
+[P4-G8C] Loading data ...
+[P4-G8C] train=32 val=16 test=16
+[P4-G8C] stage=1 epTraceback (most recent call last):
+  File "/home/cunyuliu/miniconda3/envs/pc_cng/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/cunyuliu/miniconda3/envs/pc_cng/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/p4_g8c_learned_structured_proposal.py", line 1658, in <module>
+    if __name__ == "__main__":
+  File "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/p4_g8c_learned_structured_proposal.py", line 1572, in main
+    test_positives = positives[: max(1, len(positives) // 2)]
+  File "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/p4_g8c_learned_structured_proposal.py", line 1168, in run_comparison_arms
+    # learned edits (shared decode for both learned arms)
+  File "/home/cunyuliu/pc_cng_research/chem_negative_sampling/pc_cng/p4_g8c_learned_structured_proposal.py", line 834, in generate_structured_proposal
+    locus_keep = keep.max(dim=-1).values  # [max_len]
+RuntimeError: The size of tensor a (16) must match the size of tensor b (4) at non-singleton dimension 1
+[P4-G8C] Loading data ...
+[P4-G8C] train=32 val=16 test=16
+[P4-G8C] stage=1 epoch=0 train_loss=3.9897 val_signal=0.3519
+[P4-G8C] stage=1 epoch=1 train_loss=3.5121 val_signal=0.6577
+[P4-G8C] stage=2 epoch=0 train_loss=2.5963 val_signal=0.9476
+[P4-G8C] stage=2 epoch=1 train_loss=2.1323 val_signal=1.2530
+[P4-G8C] stage=3 epoch=0 train_loss=0.0385 val_signal=0.9087
+[P4-G8C] stage=3 epoch=1 train_loss=-0.0237 val_signal=0.5367
+[P4-G8C] stage=4 epoch=0 train_loss=0.2500 val_signal=0.5367
+[P4-G8C] stage=4 epoch=1 train_loss=0.2500 val_signal=0.5367

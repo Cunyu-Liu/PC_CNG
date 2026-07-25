@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          if [ -f chem_negative_sampling/requirements.txt ]; then pip install -r chem_negative_sampling/requirements.txt; fi
+
+      - name: Run unit tests
+        run: |
+          cd chem_negative_sampling
+          python -m pytest tests/ -q --tb=short
+
+      - name: Verify provenance schema
+        run: |
+          python -c "import json, glob; [json.load(open(f)) for f in glob.glob('results/*/run_provenance.json')[:5]]"
+
+      - name: Verify claim registry
+        run: |
+          test -f docs/claim_registry.csv
+          test -f docs/00_当前有效文档/NMI_FINAL_GOAL.md
+
+  smoke-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Clean environment smoke test
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          bash scripts/smoke_test_install.sh

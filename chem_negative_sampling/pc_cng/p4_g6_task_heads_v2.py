@@ -101,19 +101,24 @@ def _reaction_features(record: dict) -> np.ndarray:
 
 
 def _condition_aware_features(record: dict) -> np.ndarray:
-    """Features for T5: reactants + conditions + product.
+    """Features for T5: reactants + conditions + product + diff + tanimoto.
 
-    Concatenates fingerprints of reactants, agents/conditions, and product.
+    v2.1: Added diff_fp (|product - reactants|) and tanimoto similarity
+    for reaction-center awareness, similar to G3 v3.2 approach.
     """
     reactants = record.get("reactants", "")
     agents = record.get("agents", record.get("conditions", ""))
     product = record.get("products", "")
 
-    # Each component gets its own fingerprint subspace
-    r_fp = _morgan_fp(reactants, nbits=1024)
-    a_fp = _morgan_fp(agents, nbits=512)
-    p_fp = _morgan_fp(product, nbits=1024)
-    return np.concatenate([r_fp, a_fp, p_fp])
+    r_fp = _morgan_fp(reactants, nbits=512)
+    a_fp = _morgan_fp(agents, nbits=256)
+    p_fp = _morgan_fp(product, nbits=512)
+    diff_fp = np.abs(p_fp - r_fp)
+    # Tanimoto similarity between reactants and product
+    intersection = float(np.dot(r_fp, p_fp))
+    union = float(r_fp.sum() + p_fp.sum() - intersection)
+    tanimoto = intersection / union if union > 0 else 0.0
+    return np.concatenate([r_fp, a_fp, p_fp, diff_fp, np.array([tanimoto], dtype=np.float32)])
 
 
 # ---------------------------------------------------------------------------
@@ -247,14 +252,14 @@ class T3Regression(TaskHead):
         self._scaler_std = None
 
     def train(self, train_records: list[dict], sample_weight: Optional[np.ndarray] = None, **kwargs):
-        from sklearn.ensemble import GradientBoostingRegressor
+        from sklearn.ensemble import RandomForestRegressor
         X = np.array([_reaction_features(r) for r in train_records])
         y = np.array([float(r.get("measured_yield", 0)) for r in train_records])
         # Normalize targets
         self._scaler_mean = y.mean()
         self._scaler_std = y.std() + 1e-8
         y_norm = (y - self._scaler_mean) / self._scaler_std
-        self.model = GradientBoostingRegressor(n_estimators=100, max_depth=3)
+        self.model = RandomForestRegressor(n_estimators=100, max_depth=8, n_jobs=4, random_state=42)
         self.model.fit(X, y_norm, sample_weight=sample_weight)
         self.is_trained = True
 
@@ -282,14 +287,14 @@ class T4PlateRanking(TaskHead):
         self._scaler_std = 1.0
 
     def train(self, train_records: list[dict], sample_weight: Optional[np.ndarray] = None, **kwargs):
-        from sklearn.ensemble import GradientBoostingRegressor
+        from sklearn.ensemble import RandomForestRegressor
         X = np.array([_reaction_features(r) for r in train_records])
         y = np.array([float(r.get("measured_yield", 0)) for r in train_records])
         self._scaler_mean = y.mean()
         self._scaler_std = y.std() + 1e-8
         y_norm = (y - self._scaler_mean) / self._scaler_std
         # Use regression as ranking proxy (pairwise loss approximated by pointwise)
-        self.model = GradientBoostingRegressor(n_estimators=100, max_depth=3, loss="squared_error")
+        self.model = RandomForestRegressor(n_estimators=100, max_depth=8, n_jobs=4, random_state=42)
         self.model.fit(X, y_norm, sample_weight=sample_weight)
         self.is_trained = True
 
@@ -315,7 +320,7 @@ class T5ConditionFeasibility(TaskHead):
         self.yield_threshold = yield_threshold
 
     def train(self, train_records: list[dict], sample_weight: Optional[np.ndarray] = None, **kwargs):
-        from sklearn.linear_model import LogisticRegression
+        from sklearn.ensemble import RandomForestClassifier
         X = np.array([_condition_aware_features(r) for r in train_records])
         y = np.array([
             1 if float(r.get("measured_yield", 0)) >= self.yield_threshold else 0
@@ -325,7 +330,10 @@ class T5ConditionFeasibility(TaskHead):
             self._weights = np.zeros(X.shape[1])
             self.is_trained = True
             return
-        self.model = LogisticRegression(max_iter=500, class_weight="balanced", solver="liblinear")
+        self.model = RandomForestClassifier(
+            n_estimators=100, max_depth=10, n_jobs=4,
+            class_weight="balanced", random_state=42,
+        )
         self.model.fit(X, y, sample_weight=sample_weight)
         self.is_trained = True
 

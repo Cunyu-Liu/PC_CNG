@@ -1,0 +1,38 @@
+[P4-G8B-v2] Loading HTE manifest: data/p4/manifests/hte_feasibility_v2.json
+[P4-G8B-v2] Classifying USPTO reactions (rule-based EAS / C-N)...
+/home/cunyuliu/miniconda3/envs/pc_cng_gpu/lib/python3.10/site-packages/rxnmapper/batched_mapper.py:4: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+[P4-G8B-v2] Classifying ORD reactions...
+  USPTO:C-N coupling: train=1306 val=204 test=173
+  USPTO:EAS: train=2129 val=283 test=262
+  ORD:C-N coupling: train=14 val=1 test=5
+  ORD:EAS: train=31 val=0 test=4
+  HTE:Alkylation: train=93 val=15 test=27
+  HTE:Amide coupling: train=12 val=6 test=0
+  HTE:Cabonylation: train=60 val=9 test=9
+  HTE:Cu coupling: train=30 val=6 test=3
+  HTE:Hydrogenation: train=54 val=9 test=0
+  HTE:Ni coupling: train=6 val=0 test=0
+  HTE:Pd coupling: train=354 val=42 test=27
+  HTE:Rh coupling: train=60 val=3 test=6
+  HTE:Untagged: train=513 val=63 test=93
+
+[P4-G8B-v2] 7 directions × 6 methods × 10 seeds
+
+[P4-G8B-v2] === USPTO:EAS→USPTO:C-N coupling ===
+  direct         mrr=0.0334 delta=-0.0024 CI[-0.0014,-0.0000] p=0.0020
+  head_ft        mrr=0.0343 delta=-0.0015 CI[-0.0005,-0.0000] p=0.0020
+  lora_adapter   mrr=0.0351 delta=-0.0006 CI[-0.0004,+0.0000] p=0.0020
+  ewc            mrr=0.0351 delta=-0.0006 CI[-0.0002,+0.0000] p=0.0020
+  risk_aware     mrr=0.0335 delta=-0.0023 CI[-0.0013,-0.0000] p=0.0020
+  multi_task     mrr=0.0358 delta=+0.0000 CI[-0.0000,+0.0001] p=0.1797
+
+[P4-G8B-v2] === USPTO:C-N coupling→USPTO:EAS ===
+  direct         mrr=0.0268 delta=-0.0088 CI[-0.0020,-0.0009] p=0.0020
+  head_ft        mrr=0.0267 delta=-0.0089 CI[-0.0022,-0.0010] p=0.0020
+  lora_adapter   mrr=0.0349 delta=-0.0007 CI[-0.0001,-0.0000] p=0.0020
+  ewc            mrr=0.0355 delta=-0.0001 CI[-0.0000,+0.0000] p=0.0215
+  risk_aware     mrr=0.0270 delta=-0.0086 CI[-0.0021,-0.0009] p=0.0020
+  multi_task     mrr=0.0350 delta=-0.0006 CI[-0.0001,-0.0000] p=0.0020
+
+[P4-G8B-v2] === USPTO:EAS+C-N→HTE:Pd coupling ===

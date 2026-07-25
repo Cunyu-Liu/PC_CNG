@@ -1,0 +1,23 @@
+{
+  "split_type": "author_lab",
+  "description": "Lab-disjoint split via `notebook_id` prefix.  The smaller lab (``00707420``) is held out entirely for test, giving a true author/lab OOD evaluation.",
+  "criteria": "group_disjoint_by_notebook_id_prefix",
+  "proxy_field": "notebook_id",
+  "n_train_labs": 1,
+  "n_test_labs": 1,
+  "train_labs": [
+    "00119131"
+  ],
+  "test_labs": [
+    "00707420"
+  ],
+  "is_ood": true,
+  "split_name": "author_lab",
+  "n_train": 29410,
+  "n_val": 7353,
+  "n_test": 2783,
+  "n_total": 39546,
+  "train_fraction": 0.7436908916198857,
+  "val_fraction": 0.1859353664087392,
+  "test_fraction": 0.07037374197137511
+}
