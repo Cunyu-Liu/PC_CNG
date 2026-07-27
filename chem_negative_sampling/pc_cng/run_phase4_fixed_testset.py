@@ -87,7 +87,10 @@ from pc_cng.paired_cluster_inference import (  # noqa: E402
     holm_correction,
     paired_cluster_bootstrap,
 )
-from pc_cng.chem_utils import atom_balance_score  # noqa: E402
+from pc_cng.chem_utils import atom_count_distance  # noqa: E402
+from pc_cng.p4_g8c_learned_structured_proposal import (  # noqa: E402
+    _strip_atom_maps,
+)
 from pc_cng.phase3_enhanced import (  # noqa: E402
     EnhancedMLP,
     morgan_fingerprint,
@@ -150,12 +153,17 @@ N_RULE_CANDIDATES = 8
 N_LEARNED_CANDIDATES = 8
 SHUFFLED_OFFSET = 7
 
-# Atom-balance tolerance for fixed-pool eligibility (matches the exhaustive
-# proposal generator's default).  A candidate is "balanced" when its
-# atom-balance score vs the reactants is no more than BALANCE_EPS below the
-# TRUE product's own score, i.e. it is stoichiometrically constructible to
-# the same degree as the observed outcome.
-BALANCE_EPS = 0.011
+# Atom-balance tolerance for fixed-pool eligibility.  Distance-based
+# criterion (v4): a candidate is "balanced" when its L1 atom-count distance
+# vs the reactants exceeds the TRUE product's own distance by at most
+# BALANCE_DIST_SLACK.  Slack=2 admits exactly one atom transmutation
+# (one element -1, another +1 -> L1 +2) while foreign products (shuffled /
+# random mismatch) differ by far more and stay excluded.  The previous
+# ratio-based eps (0.011) silently killed ALL transmutation candidates on
+# large multi-component systems (HTE: 2/150 = 0.013 > eps), starving the
+# learned arm's semi_hard pool and giving rule_pc_cng a pool-monopoly
+# home advantage.
+BALANCE_DIST_SLACK = 2
 
 DEFAULT_OUTPUT = _REPO_ROOT / "results" / "phase4_fixed_testset"
 
@@ -223,6 +231,7 @@ def generate_union_candidates(
     seed: int,
     n_rule: int = N_RULE_CANDIDATES,
     n_learned: int = N_LEARNED_CANDIDATES,
+    stats: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, List[Dict]]:
     """Generate a union candidate pool per reaction row.
 
@@ -246,21 +255,31 @@ def generate_union_candidates(
             parsed_rows.append((rxn, prod))
 
     true_fps: Dict[str, Optional[np.ndarray]] = {}
-    true_bal: Dict[str, float] = {}
+    true_dist: Dict[str, int] = {}
+    strip_cache: Dict[str, str] = {}
 
     def _true_fp(prod: str):
         if prod not in true_fps:
             true_fps[prod] = morgan_fingerprint(prod)
         return true_fps[prod]
 
-    def _true_balance(rxn: str, prod: str) -> float:
+    def _norm(smi: str) -> str:
+        # Normalise for the atom-count distance: strip atom maps (and the
+        # bracket-H bookkeeping that pre-mapped datasets like HiTEA carry)
+        # so reactants / true product / candidate are all plain SMILES and
+        # the L1 distance reflects composition, not mapping artefacts.
+        if smi not in strip_cache:
+            strip_cache[smi] = _strip_atom_maps(smi)
+        return strip_cache[smi]
+
+    def _true_dist(rxn: str, prod: str) -> int:
         # Keyed by the full reaction: the same product SMILES can arise
-        # from different reactant sets, and the balance reference depends
+        # from different reactant sets, and the distance reference depends
         # on the reactants.
-        if rxn not in true_bal:
-            reactants = rxn.split(">")[0]
-            true_bal[rxn] = atom_balance_score(reactants, prod)
-        return true_bal[rxn]
+        if rxn not in true_dist:
+            true_dist[rxn] = atom_count_distance(
+                _norm(rxn.split(">")[0]), _norm(prod))
+        return true_dist[rxn]
 
     def _mk_candidate(neg_rxn: str, source: str, true_prod: str,
                       pos_rxn: str) -> Optional[Dict]:
@@ -270,24 +289,25 @@ def generate_union_candidates(
         if not _is_valid_mol(neg_prod):
             return None
         sim = _tanimoto(morgan_fingerprint(neg_prod), _true_fp(true_prod))
-        # Atom-conservation flag (v3): a TRUE boundary negative must be
-        # stoichiometrically constructible from the reactants to the same
-        # degree as the TRUE product (leaving-group losses are priced into
-        # the true product's own score).  Connectivity edits (bond
-        # migration / bond order) pass; foreign-atom transmutations and
-        # foreign-product mismatches fail.  Composition-mismatch detection
-        # is exactly the shortcut the shuffled_parent control learns, so
-        # the fixed pools must exclude non-constructible candidates for
-        # H2 to be a valid test (see build_fixed_pools).
-        parts = neg_rxn.split(">")
-        bal = atom_balance_score(parts[0], neg_prod) if len(parts) == 3 else 0.0
-        balanced = bal >= _true_balance(pos_rxn, true_prod) - BALANCE_EPS
+        # Atom-conservation flag (v4, distance-based): a candidate is
+        # "balanced" when its L1 atom-count distance vs the reactants
+        # exceeds the TRUE product's own distance by at most
+        # BALANCE_DIST_SLACK.  Slack=2 admits exactly one atom
+        # transmutation (one element -1, another +1 -> L1 +2) while
+        # foreign products (shuffled / random mismatch) differ by far
+        # more and stay excluded.  Composition-mismatch detection is
+        # exactly the shortcut the shuffled_parent control learns, so the
+        # fixed pools must exclude non-constructible candidates for H2 to
+        # be a valid test (see build_fixed_pools).
+        reactants = _norm(pos_rxn.split(">")[0])
+        d_neg = atom_count_distance(reactants, _norm(neg_prod))
+        balanced = d_neg <= _true_dist(pos_rxn, true_prod) + BALANCE_DIST_SLACK
         return {
             "neg_rxn": neg_rxn,
             "neg_product": neg_prod,
             "source": source,
             "sim": float(sim),
-            "atom_bal": float(bal),
+            "atom_dist": int(d_neg),
             "balanced": bool(balanced),
             "valid": True,
             "pool": _pool_of_sim(sim),
@@ -322,12 +342,19 @@ def generate_union_candidates(
                                     "max_candidates_per_reaction", 4))
                 raw = rule_gen._rule_gen.generate_for_reaction(
                     rxn, source_id="phase4", include_failed=False)
+                n_rule_added = 0
                 for c in (raw or [])[:n_rule]:
                     neg = getattr(c, "candidate_reaction", None)
                     if neg and isinstance(neg, str):
                         _try_add(neg, "rule_pc_cng")
-            except Exception:
-                pass
+                        n_rule_added += 1
+                if stats is not None:
+                    key = "rule_ok" if n_rule_added else "rule_empty"
+                    stats[key] = stats.get(key, 0) + 1
+            except Exception as exc:
+                if stats is not None:
+                    stats["rule_err"] = stats.get("rule_err", 0) + 1
+                    stats.setdefault("rule_err_msg", str(exc)[:160])
 
         # learned candidates (multi; exhaustive decoder attaches the
         # pre-applied product so no fragile re-application is needed)
@@ -343,15 +370,20 @@ def generate_union_candidates(
                     risk_rerank=False,
                     map_unmapped=True,
                     require_atom_balance=True,
-                    balance_eps=BALANCE_EPS)
+                    balance_dist_slack=BALANCE_DIST_SLACK)
+                if stats is not None:
+                    key = "learned_ok" if edits else "learned_empty"
+                    stats[key] = stats.get(key, 0) + 1
                 for edit in edits or []:
                     edited = getattr(edit, "applied_product", None)
                     if not edited:
                         edited = _apply_structured_edit(rxn, edit)
                     if edited and isinstance(edited, str):
                         _try_add(f"{reactants}>{agents}>{edited}", "learned_structured")
-            except Exception:
-                pass
+            except Exception as exc:
+                if stats is not None:
+                    stats["learned_err"] = stats.get("learned_err", 0) + 1
+                    stats.setdefault("learned_err_msg", str(exc)[:160])
 
         # random real product (from TRAIN product pool - no test leakage)
         if product_pool:
@@ -780,15 +812,21 @@ def run_scenario(split_name: str, split_data: Dict, model, device,
     # ----- Union candidate pools (train side for diff arms, test side for
     # ----- fixed evaluation pools)
     t0 = time.time()
+    gen_stats: Dict[str, Any] = {}
     cand_train = generate_union_candidates(
-        train_rows, raw_rule, raw_learned, product_pool, seed=args.seed)
+        train_rows, raw_rule, raw_learned, product_pool, seed=args.seed,
+        stats=gen_stats)
     cand_test = generate_union_candidates(
-        test_rows, raw_rule, raw_learned, product_pool, seed=args.seed + 1)
+        test_rows, raw_rule, raw_learned, product_pool, seed=args.seed + 1,
+        stats=gen_stats)
     print(f"  [candidates] train={sum(len(v) for v in cand_train.values())} "
           f"test={sum(len(v) for v in cand_test.values())} ({time.time()-t0:.1f}s)")
+    if gen_stats:
+        print(f"  [gen-stats] {gen_stats}")
 
     # ----- Fixed test pools
     pools, audit = build_fixed_pools(test_rows, cand_test, seed=args.seed)
+    audit["gen_stats"] = gen_stats
     for pool in POOL_NAMES:
         a = audit["pools"][pool]
         print(f"  [pool:{pool}] n_pos={a['n_pos']} sim_mean={a['sim_mean']} "

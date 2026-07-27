@@ -361,6 +361,12 @@ class NegativeGenerator:
         (``require_atom_balance=True``) so the emitted negatives are
         stoichiometrically constructible - i.e. no composition-mismatch
         shortcut that a shuffled-parent control could exploit.
+
+        Uses the distance-based tolerance (``balance_dist_slack=2``,
+        admits exactly one atom transmutation) so the learned arm's
+        TRAINING negatives match the Phase 4 fixed-pool eligibility
+        criterion; the legacy ratio mode silently starved transmutations
+        on large multi-component systems.
         """
         try:
             from pc_cng.p4_g8c_learned_structured_proposal import (
@@ -376,6 +382,7 @@ class NegativeGenerator:
                 risk_rerank=False,
                 map_unmapped=True,
                 require_atom_balance=True,
+                balance_dist_slack=2,
             )
             # Reconstruct the full negative reaction from the edited product.
             parts = reaction_smiles.split(">")

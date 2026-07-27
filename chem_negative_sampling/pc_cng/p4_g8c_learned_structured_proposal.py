@@ -102,6 +102,7 @@ from .atom_mapped_graph_edit import (
 )
 from .chem_utils import (
     atom_balance_score,
+    atom_count_distance,
     canonicalize_reaction,
     is_valid_smiles,
     join_reaction,
@@ -902,6 +903,7 @@ def generate_structured_proposal_exhaustive(
         map_unmapped: bool = True,
         require_atom_balance: bool = False,
         balance_eps: float = 0.011,
+        balance_dist_slack: Optional[int] = None,
         ) -> List[StructuredEdit]:
     """Deterministic, model-ranked enumeration of the structured edit space.
 
@@ -911,14 +913,26 @@ def generate_structured_proposal_exhaustive(
     them.  Works for unmapped reactions and products without formed bonds.
 
     When ``require_atom_balance`` is set, candidates whose atom-balance
-    score vs the reactants falls more than ``balance_eps`` below the TRUE
-    product's score are rejected.  This enforces stoichiometric
-    constructibility relative to the observed outcome (leaving-group losses
-    are tolerated because the reference is the true product, not exact
-    equality): connectivity edits (bond migration / bond order) pass,
-    foreign-atom transmutations and product swaps do not.  The result is a
-    boundary negative with no composition-mismatch shortcut - the signal a
-    shuffled-parent control exploits.
+    vs the reactants degrades beyond the tolerance relative to the TRUE
+    product are rejected.  Two tolerance modes:
+
+      * ``balance_dist_slack`` set (preferred, v4): L1 atom-count distance
+        criterion - candidate rejected when
+        ``dist(reactants, cand) > dist(reactants, true) + slack``.
+        slack=2 admits exactly one atom transmutation while foreign
+        products stay excluded, independent of system size.
+      * legacy ratio mode (``balance_dist_slack=None``): candidate
+        rejected when its atom-balance SCORE falls more than
+        ``balance_eps`` below the true product's score.  WARNING: on
+        large multi-component systems the ratio tolerance silently kills
+        ALL single transmutations (L1 +2 on ~150 atoms exceeds eps).
+
+    This enforces stoichiometric constructibility relative to the
+    observed outcome (leaving-group losses are tolerated because the
+    reference is the true product, not exact equality): connectivity
+    edits (bond migration / bond order) pass, product swaps do not.  The
+    result is a boundary negative with no composition-mismatch shortcut -
+    the signal a shuffled-parent control exploits.
     """
     device = device or next(model.parameters()).device
     model.eval()
@@ -952,11 +966,25 @@ def generate_structured_proposal_exhaustive(
     orig_product = _strip_atom_maps(_product_smiles(reaction_smiles))
     # Balance reference: the TRUE product's own score vs the ORIGINAL
     # reactants (string-based; leaving-group loss already priced in).
-    orig_reactants = reaction_smiles.split(">")[0]
+    # NORMALISATION (v4.1): strip atom maps from the reactants side too.
+    # Datasets like HiTEA ship pre-mapped reactions whose bracket-H tokens
+    # ([CH3], [cH], [NH]) are counted by the regex tokenizer, while the
+    # (map-stripped) candidate products carry none - the asymmetric H
+    # bookkeeping inflated d_neg and systematically excluded valid
+    # boundary edits in the fixed-pool eligibility check.
+    orig_reactants = _strip_atom_maps(reaction_smiles.split(">")[0])
     bal_floor = -1.0
+    dist_ceiling: Optional[int] = None
     if require_atom_balance:
-        bal_floor = atom_balance_score(orig_reactants, orig_product) \
-            - balance_eps
+        if balance_dist_slack is not None:
+            # Distance-based (v4): size-independent; slack=2 admits
+            # exactly one atom transmutation.
+            dist_ceiling = atom_count_distance(orig_reactants,
+                                               orig_product) \
+                + balance_dist_slack
+        else:
+            bal_floor = atom_balance_score(orig_reactants, orig_product) \
+                - balance_eps
 
     # --- 2. Featurise the product graph directly ---------------------------
     map_to_idx = {a.GetAtomMapNum(): a.GetIdx() for a in mol.GetAtoms()
@@ -1027,9 +1055,13 @@ def generate_structured_proposal_exhaustive(
                   extra_score: float = 0.0) -> None:
         if prod_smi is None or prod_smi in seen_products:
             return
-        if require_atom_balance and \
-                atom_balance_score(orig_reactants, prod_smi) < bal_floor:
-            return
+        if require_atom_balance:
+            if dist_ceiling is not None:
+                if atom_count_distance(orig_reactants, prod_smi) \
+                        > dist_ceiling:
+                    return
+            elif atom_balance_score(orig_reactants, prod_smi) < bal_floor:
+                return
         seen_products.add(prod_smi)
         t = int(edit_type)
         joint = float(locus_np[locus]) + float(type_np[t]) + extra_score
