@@ -311,13 +311,17 @@ class NegativeGenerator:
     """
 
     def __init__(self, method: str, model=None, top_k: int = 1,
-                 device=None, seed: int = 20260725):
+                 device=None, seed: int = 20260725,
+                 product_pool=None):
         self.method = method
         self.model = model
         self.top_k = top_k
         self.device = device
         self.seed = seed
         self._cache: Dict[str, Optional[str]] = {}
+        # Real product SMILES pool for proper random_mismatch baseline
+        # (None falls back to legacy trivial 7-molecule pool)
+        self._product_pool = list(product_pool) if product_pool else None
         if method == METHOD_RULE:
             from pc_cng.reaction_boundary_generator import ReactionBoundaryGenerator
             # allow_unmapped_fallback=True so we don't depend on the slow
@@ -349,20 +353,29 @@ class NegativeGenerator:
         return neg
 
     def _generate_learned(self, reaction_smiles: str) -> Optional[str]:
-        """Use the G8-C StructuredProposalModel to propose a negative."""
+        """Use the G8-C StructuredProposalModel to propose a negative.
+
+        Uses the deterministic, model-ranked exhaustive edit generator with
+        opportunistic RXNMapper atom-mapping (``map_unmapped=True``) and
+        atom-balance filtering relative to the true product
+        (``require_atom_balance=True``) so the emitted negatives are
+        stoichiometrically constructible - i.e. no composition-mismatch
+        shortcut that a shuffled-parent control could exploit.
+        """
         try:
             from pc_cng.p4_g8c_learned_structured_proposal import (
-                generate_structured_proposal,
+                generate_structured_proposal_exhaustive,
                 _apply_structured_edit,
-                _safe_split,
             )
-            edits = generate_structured_proposal(
+            edits = generate_structured_proposal_exhaustive(
                 self.model,
                 reaction_smiles,
                 top_k=max(1, self.top_k),
                 device=self.device,
                 use_validity_mask=True,
                 risk_rerank=False,
+                map_unmapped=True,
+                require_atom_balance=True,
             )
             # Reconstruct the full negative reaction from the edited product.
             parts = reaction_smiles.split(">")
@@ -370,7 +383,12 @@ class NegativeGenerator:
                 return None
             reactants, agents = parts[0], parts[1]
             for edit in edits:
-                edited_product = _apply_structured_edit(reaction_smiles, edit)
+                # Exhaustive decoder attaches the pre-applied product; only
+                # fall back to string round-trip for legacy sampled edits.
+                edited_product = getattr(edit, "applied_product", None)
+                if not edited_product:
+                    edited_product = _apply_structured_edit(
+                        reaction_smiles, edit)
                 if edited_product and isinstance(edited_product, str):
                     return f"{reactants}>{agents}>{edited_product}"
             return None
@@ -394,23 +412,36 @@ class NegativeGenerator:
             return None
 
     def _generate_random(self, reaction_smiles: str) -> Optional[str]:
-        """Random product mismatch: replace the product with a simple valid molecule.
+        """Random product mismatch: replace the product with another real product.
 
-        Uses a fixed pool of common simple molecules so the result is always
-        a syntactically valid (but chemically nonsensical) reaction.  This is
-        the ``obvious negative`` baseline.
+        If ``product_pool`` (real product SMILES sampled from the training set)
+        is available, sample a random different product from it.  This produces
+        chemically valid but mismatched reactions - a meaningful baseline that
+        requires the model to learn reaction-specific transformations rather
+        than trivially detecting 7 fixed simple molecules.
+
+        Falls back to a small trivial pool only when no pool is provided
+        (legacy behavior, kept for backward compatibility).
         """
         try:
             parts = reaction_smiles.split(">")
             if len(parts) != 3:
                 return None
             reactants, agents, product = parts[0], parts[1], parts[2]
-            # Pool of simple, guaranteed-valid molecules to use as fake products.
-            pool = ["c1ccccc1", "C", "CC", "CCC", "CCO", "C1CCCCC1", "CC(=O)O"]
-            if not hasattr(self, "_pool_idx"):
-                self._pool_idx = 0
-            fake_product = pool[self._pool_idx % len(pool)]
-            self._pool_idx += 1
+            if self._product_pool:
+                # Sample a random different product from the real pool
+                fake_product = self._rng.choice(self._product_pool)
+                attempts = 0
+                while fake_product == product and attempts < 5:
+                    fake_product = self._rng.choice(self._product_pool)
+                    attempts += 1
+            else:
+                # Legacy trivial pool (backward compatibility)
+                pool = ["c1ccccc1", "C", "CC", "CCC", "CCO", "C1CCCCC1", "CC(=O)O"]
+                if not hasattr(self, "_pool_idx"):
+                    self._pool_idx = 0
+                fake_product = pool[self._pool_idx % len(pool)]
+                self._pool_idx += 1
             return f"{reactants}>{agents}>{fake_product}"
         except Exception:
             return None

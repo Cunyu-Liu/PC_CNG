@@ -282,25 +282,60 @@ class ShuffledParentGenerator:
 
 
 def build_shuffled_parent_dataset(
-    rows, generator, fp_fn=reaction_fp_enhanced,
+    rows, generator=None, fp_fn=reaction_fp_enhanced,
     offset: int = 7,
 ) -> Tuple[Optional[np.ndarray], np.ndarray, List[Dict]]:
-    """Build a dataset where negatives are shifted by ``offset`` reactions.
+    """Same-reactant shuffled-product negative control.
 
-    Positive i is paired with negative (i + offset).  This preserves the
-    negative distribution but breaks the chemistry-specific link, testing
-    whether gains come from generator quality or from matching.
+    Positive i: reactants_A_i > agents > product_A_i  (real reaction)
+    Negative i: reactants_A_i > agents > product_A_j  (j = i+offset; the real
+                product from a DIFFERENT reaction, reactants preserved).
+
+    Rationale: the previous implementation shifted the ENTIRE negative
+    reaction (different reactants), so the classifier only needed to detect
+    whether the reaction fingerprint belonged to the positive family - a
+    trivially easy task that inflated AUPRC to 0.80-0.99 and made the arm
+    incomparable to learned_structured.  By preserving the reactants and only
+    shuffling the (real) product, task difficulty is aligned with
+    learned_structured (same reactant, only product differs), so the
+    comparison tests whether structured-edit negatives capture
+    reaction-specific chemistry beyond random real-product mismatches.
+
+    ``generator`` is accepted for backward compatibility but unused.
     """
-    pairs = _generate_pairs(rows, generator, fp_fn)
-    n = len(pairs)
+    del generator  # unused: negatives are shuffled real products, not generated
+    # Parse all reactions into (reactants, agents, product, pos_rxn, meta)
+    parsed: List[Tuple[str, str, str, str, dict]] = []
+    for _, row in rows.iterrows():
+        rxn = row.get("reaction_smiles")
+        if not rxn or not isinstance(rxn, str):
+            continue
+        parts = rxn.split(">")
+        if len(parts) != 3 or not parts[2]:
+            continue
+        meta = {
+            "experimental_group": str(row.get("experimental_group",
+                                              row.get("split_key", "default"))),
+            "reaction_family": str(row.get("reaction_family", "unknown")),
+            "yield_bin": int(row.get("yield_bin", 0)) if "yield_bin" in row else 0,
+        }
+        parsed.append((parts[0], parts[1], parts[2], rxn, meta))
+    n = len(parsed)
     if n < 4:
         return None, np.array([]), []
+
     fps: List[np.ndarray] = []
     labels: List[int] = []
     records: List[Dict] = []
-    for i, (pos_rxn, _, meta) in enumerate(pairs):
-        # Pair with negative from reaction (i + offset) mod n
-        neg_rxn = pairs[(i + offset) % n][1]
+    for i, (r, a, p, pos_rxn, meta) in enumerate(parsed):
+        # Negative: same reactants+agents, real product from reaction (i+offset)
+        p_shuffled = parsed[(i + offset) % n][2]
+        if p_shuffled == p:
+            # identical product would leak the label; shift one further
+            p_shuffled = parsed[(i + offset + 1) % n][2]
+        if p_shuffled == p:
+            continue
+        neg_rxn = f"{r}>{a}>{p_shuffled}"
         pos_fp = fp_fn(pos_rxn)
         neg_fp = fp_fn(neg_rxn)
         if pos_fp is None or neg_fp is None:
@@ -315,7 +350,7 @@ def build_shuffled_parent_dataset(
         fps.append(neg_fp)
         labels.append(0)
         records.append({
-            "reaction_smiles": neg_rxn, "negative_smiles": neg_rxn,
+            "reaction_smiles": neg_rxn, "negative_smiles": p_shuffled,
             "label": 0, "score": 0.0,
             "method": METHOD_SHUFFLED_PARENT, "is_positive": False, **meta,
         })
@@ -374,10 +409,16 @@ def evaluate_method_v2(
         rng.shuffle(y_tr)
 
     clf = make_classifier(X_tr.shape[1], seed, use_gnn=use_gnn)
-    clf.train(X_tr, y_tr, epochs=MLP_EPOCHS, batch_size=MLP_BATCH,
-              lr=MLP_LR, verbose=False)
-
-    scores = clf.predict_proba(X_te)
+    if use_gnn and hasattr(clf, "fit_reactions"):
+        train_rxns = [r["reaction_smiles"] for r in rec_tr]
+        test_rxns = [r["reaction_smiles"] for r in rec_te]
+        clf.fit_reactions(train_rxns, y_tr, epochs=MLP_EPOCHS,
+                          batch_size=MLP_BATCH, lr=MLP_LR, verbose=False)
+        scores = np.asarray(clf.predict_proba_reactions(test_rxns)).flatten()
+    else:
+        clf.train(X_tr, y_tr, epochs=MLP_EPOCHS, batch_size=MLP_BATCH,
+                  lr=MLP_LR, verbose=False)
+        scores = clf.predict_proba(X_te)
     for i, rec in enumerate(rec_te):
         if i < len(scores):
             rec["score"] = float(scores[i])
@@ -412,6 +453,22 @@ def run_split_v2(split_name: str, split_data: Dict, methods: Sequence[str],
 
     # Build generators for each method (with robust fallback)
     generators: Dict[str, Any] = {}
+
+    # Build real product pool for proper random_mismatch baseline
+    # (sample real products from training set instead of 7 trivial molecules)
+    product_pool = []
+    try:
+        for _, row in split_data["train"].iterrows():
+            rxn = row.get("reaction_smiles", "")
+            if rxn and isinstance(rxn, str) and ">" in rxn:
+                parts = rxn.split(">")
+                if len(parts) == 3 and parts[2]:
+                    product_pool.append(parts[2])
+    except Exception:
+        pass
+    if product_pool:
+        print(f"  [random] using real product pool: {len(product_pool)} products")
+
     for method in methods:
         try:
             if method == METHOD_LEARNED and model is None:
@@ -419,6 +476,9 @@ def run_split_v2(split_name: str, split_data: Dict, methods: Sequence[str],
                 continue
             if method == METHOD_LEARNED:
                 base = NegativeGenerator(method, model=model, device=device, seed=seed)
+            elif method == METHOD_RANDOM and product_pool:
+                # Pass real product pool for meaningful random_mismatch baseline
+                base = NegativeGenerator(method, seed=seed, product_pool=product_pool)
             else:
                 base = NegativeGenerator(method, seed=seed)
             # Wrap with robust fallback (Improvement A)
@@ -450,20 +510,30 @@ def run_split_v2(split_name: str, split_data: Dict, methods: Sequence[str],
             t0 = time.time()
             print(f"  [{method}] training ({len(X_tr)} samples) ...")
             clf = make_classifier(X_tr.shape[1], seed, use_gnn=use_gnn)
-            clf.train(X_tr, y_tr, epochs=MLP_EPOCHS, batch_size=MLP_BATCH,
-                      lr=MLP_LR, verbose=False)
-            # Predict on test
-            X_te_fps = [reaction_fp_enhanced(r["reaction_smiles"]) for r in rec_te]
-            valid = [i for i, f in enumerate(X_te_fps) if f is not None]
-            if not valid:
-                results[method] = {"error": "all test fingerprints invalid"}
-                continue
-            X_te = np.vstack([X_te_fps[i] for i in valid])
-            scores = clf.predict_proba(X_te)
-            for j, i in enumerate(valid):
-                rec_te[i]["score"] = float(scores[j])
-            # Drop invalid records
-            rec_te = [rec_te[i] for i in valid]
+            if use_gnn and hasattr(clf, "fit_reactions"):
+                train_rxns = [r["reaction_smiles"] for r in rec_tr]
+                test_rxns = [r["reaction_smiles"] for r in rec_te]
+                clf.fit_reactions(train_rxns, y_tr, epochs=MLP_EPOCHS,
+                                  batch_size=MLP_BATCH, lr=MLP_LR, verbose=False)
+                scores = np.asarray(clf.predict_proba_reactions(test_rxns)).flatten()
+                for i, rec in enumerate(rec_te):
+                    if i < len(scores):
+                        rec["score"] = float(scores[i])
+            else:
+                clf.train(X_tr, y_tr, epochs=MLP_EPOCHS, batch_size=MLP_BATCH,
+                          lr=MLP_LR, verbose=False)
+                # Predict on test
+                X_te_fps = [reaction_fp_enhanced(r["reaction_smiles"]) for r in rec_te]
+                valid = [i for i, f in enumerate(X_te_fps) if f is not None]
+                if not valid:
+                    results[method] = {"error": "all test fingerprints invalid"}
+                    continue
+                X_te = np.vstack([X_te_fps[i] for i in valid])
+                scores = clf.predict_proba(X_te)
+                for j, i in enumerate(valid):
+                    rec_te[i]["score"] = float(scores[j])
+                # Drop invalid records
+                rec_te = [rec_te[i] for i in valid]
 
             auprc = auprc_metric(rec_te)
             macro = macro_auprc_metric(rec_te, bin_key="yield_bin")
@@ -507,9 +577,16 @@ def run_split_v2(split_name: str, split_data: Dict, methods: Sequence[str],
                 split_data["test"], base_rule)
             if X_tr is not None and len(X_tr) >= 10 and X_te is not None:
                 clf = make_classifier(X_tr.shape[1], seed, use_gnn=use_gnn)
-                clf.train(X_tr, y_tr, epochs=MLP_EPOCHS, batch_size=MLP_BATCH,
-                          lr=MLP_LR, verbose=False)
-                scores = clf.predict_proba(X_te)
+                if use_gnn and hasattr(clf, "fit_reactions"):
+                    train_rxns = [r["reaction_smiles"] for r in rec_tr]
+                    test_rxns = [r["reaction_smiles"] for r in rec_te]
+                    clf.fit_reactions(train_rxns, y_tr, epochs=MLP_EPOCHS,
+                                      batch_size=MLP_BATCH, lr=MLP_LR, verbose=False)
+                    scores = np.asarray(clf.predict_proba_reactions(test_rxns)).flatten()
+                else:
+                    clf.train(X_tr, y_tr, epochs=MLP_EPOCHS, batch_size=MLP_BATCH,
+                              lr=MLP_LR, verbose=False)
+                    scores = clf.predict_proba(X_te)
                 for i, rec in enumerate(rec_te):
                     if i < len(scores):
                         rec["score"] = float(scores[i])

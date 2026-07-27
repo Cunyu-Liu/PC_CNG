@@ -219,6 +219,21 @@ def build_dataset_enhanced(rows, generator, fp_fn=None):
 
     if not fps_pos:
         return None, np.array([]), []
-    X = np.vstack(fps_pos + fps_neg)
-    y = np.array([1] * len(fps_pos) + [0] * len(fps_neg), dtype=np.float32)
+    # CRITICAL ALIGNMENT FIX: records are appended interleaved (pos, neg, pos,
+    # neg, ...) so X/y MUST use the same interleaved order.  The previous
+    # block-major layout (all positives then all negatives) misaligned X/y
+    # with records, so ``rec["score"] = scores[i]`` in evaluate_method_v2
+    # paired scores with the wrong labels (corrupting the randomized_label
+    # control arm and any per-record downstream analysis).
+    fps_interleaved: List[np.ndarray] = []
+    labels_interleaved: List[int] = []
+    for p_fp, n_fp in zip(fps_pos, fps_neg):
+        fps_interleaved.append(p_fp)
+        labels_interleaved.append(1)
+        fps_interleaved.append(n_fp)
+        labels_interleaved.append(0)
+    X = np.vstack(fps_interleaved)
+    y = np.array(labels_interleaved, dtype=np.float32)
+    assert len(records) == len(y), (
+        f"records/X misalignment: {len(records)} records vs {len(y)} labels")
     return X, y, records

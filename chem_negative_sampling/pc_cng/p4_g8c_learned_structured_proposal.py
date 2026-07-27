@@ -70,6 +70,7 @@ from .learned_graph_edit_decoder import (
     BOND_FEAT_DIM,
     BatchedGraph,
     ReactionGraphData,
+    _build_product_graph,
     collate_graphs,
     featurize_atom_mapped_reaction,
     generate_boundary_negatives,
@@ -85,6 +86,8 @@ from .reaction_center_edit_decoder import (
     ATOM_VOCAB,
     ANCHOR_ATOMIC_NUMS,
     EditCandidateGroup,
+    _candidate_anchor_atoms,
+    _looks_like_transfer_fragment,
     build_edit_candidate_groups,
     move_formed_bond_in_product,
 )
@@ -698,6 +701,12 @@ class StructuredEdit:
     risk: float = 0.0
     uncertainty: float = 0.0
     boundary_value: float = 0.0
+    # Pre-applied edited product SMILES (map-stripped).  Set by the
+    # deterministic exhaustive generator so callers do NOT need to re-apply
+    # the edit via ``_apply_structured_edit`` (which is fragile when the
+    # reaction is unmapped or the product has multiple parts - the graph
+    # atom indices and the re-parsed product mol indices can disagree).
+    applied_product: Optional[str] = None
 
 
 def _strip_atom_maps(smiles: str) -> str:
@@ -794,6 +803,7 @@ def _apply_structured_edit(reaction_smiles: str, edit: StructuredEdit,
 # ---------------------------------------------------------------------------
 
 _MAPPER_CACHE: Optional[Any] = None
+_MAP_RESULT_CACHE: Dict[str, Optional[str]] = {}
 
 
 def _get_mapper() -> Any:
@@ -802,6 +812,21 @@ def _get_mapper() -> Any:
         from .reaction_boundary_generator import RXNMapperAdapter
         _MAPPER_CACHE = RXNMapperAdapter()
     return _MAPPER_CACHE
+
+
+def _map_cached(mapper: Any, reaction_smiles: str) -> Optional[str]:
+    """map_reaction with a process-level result cache (RXNMapper is the
+    runtime bottleneck when enumerating candidates for thousands of
+    reactions; the same reaction is queried by both the union-candidate
+    pool and the main-arm training generator)."""
+    if reaction_smiles in _MAP_RESULT_CACHE:
+        return _MAP_RESULT_CACHE[reaction_smiles]
+    try:
+        mapped = mapper.map_reaction(reaction_smiles)
+    except Exception:
+        mapped = None
+    _MAP_RESULT_CACHE[reaction_smiles] = mapped
+    return mapped
 
 
 def _featurize_safe(reaction_smiles: str,
@@ -817,6 +842,280 @@ def _featurize_safe(reaction_smiles: str,
         return None
 
 
+# ---------------------------------------------------------------------------
+# Deterministic exhaustive proposal generation (v3, 2026-07-27)
+# ---------------------------------------------------------------------------
+#
+# Root cause of the v2 learned-candidate collapse (0.13 valid edits/reaction
+# on author_lab): the sampling decoder (1) forced argmax arguments -> duplicate
+# edits killed by dedup, (2) required atom mapping + a non-empty formed-bond
+# set via ``featurize_atom_mapped_reaction`` -> zero candidates for unmapped
+# USPTO/NI reactions and for reactions without formed bonds, and (3) suffered
+# graph/product atom-index misalignment on multi-part products.
+#
+# The exhaustive generator replaces sampling with deterministic, model-ranked
+# enumeration of the chemically-sensible edit space:
+#   * featurise the PRODUCT graph directly (no mapping / formed-bond
+#     requirement), so any parseable reaction yields model scores;
+#   * enumerate transmutation / bond-order / bond-migration edits on the SAME
+#     RDKit mol used for featurisation (index alignment is trivial);
+#   * keep edits that sanitise and differ from the original product;
+#   * rank by the model's joint score (locus + type + argument logits) and
+#     attach per-locus risk/uncertainty from the risk head.
+#
+# Each returned edit carries ``applied_product`` so callers never re-apply
+# edits through the fragile string round-trip.
+
+# Halogen / chalcogen / pnictogen swaps aligned with the rule generator's
+# ATOM_TRANSMUTATIONS (chemically valence-plausible subset).
+_EXHAUSTIVE_TRANSMUTATIONS: Tuple[Tuple[int, int], ...] = (
+    (17, 35), (35, 17), (53, 35), (53, 17), (9, 17),
+    (7, 8), (8, 7), (8, 16), (16, 8),
+)
+
+# Safety cap: products with more atoms than this are restricted to the
+# model's top-scoring loci before enumeration (bonds are always enumerated;
+# they are cheap).
+_EXHAUSTIVE_MAX_LOCI = 48
+
+
+def _sanitize_edited_mol(rw_mol) -> Optional[str]:
+    """Sanitise an RWMol edit product; return map-stripped canonical SMILES."""
+    try:
+        mol = rw_mol.GetMol()
+        Chem.SanitizeMol(mol)
+        smi = Chem.MolToSmiles(mol, isomericSmiles=True)
+        smi = _strip_atom_maps(smi)
+        return smi if smi and is_valid_smiles(smi) else None
+    except Exception:
+        return None
+
+
+def generate_structured_proposal_exhaustive(
+        model: StructuredProposalModel,
+        reaction_smiles: str,
+        top_k: int = DEFAULT_TOP_K,
+        device: Optional[torch.device] = None,
+        use_validity_mask: bool = True,
+        risk_rerank: bool = False,
+        n_mc: int = 0,
+        map_unmapped: bool = True,
+        require_atom_balance: bool = False,
+        balance_eps: float = 0.011,
+        ) -> List[StructuredEdit]:
+    """Deterministic, model-ranked enumeration of the structured edit space.
+
+    Unlike :func:`generate_structured_proposal` (ancestral sampling), this
+    generator guarantees coverage: every chemically-sensible edit is tried
+    exactly once, valid unique products are kept, and the model only RANKS
+    them.  Works for unmapped reactions and products without formed bonds.
+
+    When ``require_atom_balance`` is set, candidates whose atom-balance
+    score vs the reactants falls more than ``balance_eps`` below the TRUE
+    product's score are rejected.  This enforces stoichiometric
+    constructibility relative to the observed outcome (leaving-group losses
+    are tolerated because the reference is the true product, not exact
+    equality): connectivity edits (bond migration / bond order) pass,
+    foreign-atom transmutations and product swaps do not.  The result is a
+    boundary negative with no composition-mismatch shortcut - the signal a
+    shuffled-parent control exploits.
+    """
+    device = device or next(model.parameters()).device
+    model.eval()
+    if Chem is None:
+        return []
+
+    # --- 1. Parse reaction (map opportunistically for richer features) -----
+    rxn = reaction_smiles
+    if map_unmapped and not has_atom_mapping(rxn):
+        mapped = _map_cached(_get_mapper(), rxn)
+        if mapped:
+            rxn = mapped
+    try:
+        reactants, agents, product = split_reaction(rxn)
+    except ValueError:
+        return []
+    mol = Chem.MolFromSmiles(product) if product else None
+    if mol is None or mol.GetNumAtoms() == 0:
+        return []
+    # Mapped SMILES carry explicit bracket H counts ([CH3], [cH], [nH]).
+    # Left as-is, every valence-changing edit (bond-order change, bond
+    # migration) fails sanitisation because the explicit-H bookkeeping is
+    # stale after the edit.  Reset H bookkeeping and refresh the property
+    # cache so RDKit recomputes implicit Hs both for featurisation and for
+    # post-edit sanitisation.  Atom map numbers are preserved.
+    for _atom in mol.GetAtoms():
+        _atom.SetNoImplicit(False)
+        _atom.SetNumExplicitHs(0)
+    mol.UpdatePropertyCache(strict=False)
+    n_atoms = mol.GetNumAtoms()
+    orig_product = _strip_atom_maps(_product_smiles(reaction_smiles))
+    # Balance reference: the TRUE product's own score vs the ORIGINAL
+    # reactants (string-based; leaving-group loss already priced in).
+    orig_reactants = reaction_smiles.split(">")[0]
+    bal_floor = -1.0
+    if require_atom_balance:
+        bal_floor = atom_balance_score(orig_reactants, orig_product) \
+            - balance_eps
+
+    # --- 2. Featurise the product graph directly ---------------------------
+    map_to_idx = {a.GetAtomMapNum(): a.GetIdx() for a in mol.GetAtoms()
+                  if a.GetAtomMapNum()}
+    atom_features, edge_index, edge_features, atom_map_nums = \
+        _build_product_graph(mol, map_to_idx)
+    graph = ReactionGraphData(
+        atom_features=atom_features, edge_index=edge_index,
+        edge_features=edge_features, atom_map_nums=atom_map_nums,
+        true_anchor_idx=0,
+        candidate_anchor_indices=list(range(n_atoms)),
+        source_id="exhaustive", pair_id="exhaustive|0",
+        mapped_reaction=rxn, reactants=reactants, product=product,
+        fragment_map=0, true_anchor_map=0, atom_map_to_idx=map_to_idx)
+    batch = collate_graphs([graph])
+    batch.atom_features = batch.atom_features.to(device)
+    batch.edge_features = batch.edge_features.to(device)
+    batch.edge_index = batch.edge_index.to(device)
+    batch.batch_idx = batch.batch_idx.to(device)
+    with torch.no_grad():
+        out = model(batch, hard_validity_mask=None)
+
+    locus_logits = out.locus_logits[0][:n_atoms]
+    type_logits = out.type_logits[0]
+    atom_logits = out.arg_logits["atom_logits"][0]
+    bond_logits = out.arg_logits["bond_logits"][0]
+    if use_validity_mask and out.validity_mask.numel() > 0:
+        keep = out.validity_mask[0][:n_atoms]  # [n_atoms, T]
+        keep_log = keep.clamp(min=1e-3).log()
+    else:
+        keep_log = torch.zeros(n_atoms, NUM_EDIT_TYPES,
+                               device=locus_logits.device)
+
+    # Per-locus risk / uncertainty (single graph: expand graph context).
+    with torch.no_grad():
+        graph_ctx = out.graph_emb.expand(n_atoms, -1)
+        locus_embs = out.node_emb[:n_atoms]
+        risks_t, uncs_t = model.risk_head(graph_ctx, locus_embs)
+        if n_mc > 0:
+            risks_t, uncs_t = model.risk_head.mc_estimate(
+                out.graph_emb.expand(n_atoms, -1), locus_embs,
+                n_samples=n_mc)
+    risks = risks_t.detach().cpu().numpy()
+    uncs = uncs_t.detach().cpu().numpy()
+    locus_np = locus_logits.detach().cpu().numpy()
+    type_np = type_logits.detach().cpu().numpy()
+    atom_np = atom_logits.detach().cpu().numpy()
+    bond_np = bond_logits.detach().cpu().numpy()
+    keep_np = keep_log.detach().cpu().numpy()
+
+    anchor_vocab = sorted(ANCHOR_ATOMIC_NUMS)
+    boundary_all = (1.0 - risks) * (1.0 / (1.0 + uncs))
+
+    # --- 3. Locus restriction for very large products ----------------------
+    if n_atoms > _EXHAUSTIVE_MAX_LOCI:
+        top_loci = set(np.argsort(-locus_np)[:_EXHAUSTIVE_MAX_LOCI].tolist())
+    else:
+        top_loci = set(range(n_atoms))
+
+    # --- 4. Enumerate edits on the SAME mol --------------------------------
+    seen_products = {orig_product}
+    scored: List[Tuple[float, float, StructuredEdit]] = []
+
+    def _register(locus: int, edit_type: EditType, prod_smi: Optional[str],
+                  atom_arg: Optional[int] = None,
+                  bond_arg: Optional[int] = None,
+                  migrate_target: Optional[int] = None,
+                  extra_score: float = 0.0) -> None:
+        if prod_smi is None or prod_smi in seen_products:
+            return
+        if require_atom_balance and \
+                atom_balance_score(orig_reactants, prod_smi) < bal_floor:
+            return
+        seen_products.add(prod_smi)
+        t = int(edit_type)
+        joint = float(locus_np[locus]) + float(type_np[t]) + extra_score
+        if t < keep_np.shape[1]:
+            joint += float(keep_np[locus, t])
+        bv = float(boundary_all[locus])
+        scored.append((joint, bv, StructuredEdit(
+            locus=int(locus), edit_type=edit_type, atom_arg=atom_arg,
+            bond_arg=bond_arg, migrate_target=migrate_target,
+            risk=float(risks[locus]), uncertainty=float(uncs[locus]),
+            boundary_value=bv, applied_product=prod_smi)))
+
+    # (a) atom transmutation
+    for atom in mol.GetAtoms():
+        idx = atom.GetIdx()
+        if idx not in top_loci:
+            continue
+        z = atom.GetAtomicNum()
+        for old_z, new_z in _EXHAUSTIVE_TRANSMUTATIONS:
+            if z != old_z:
+                continue
+            rw = Chem.RWMol(mol)
+            rw_atom = rw.GetAtomWithIdx(idx)
+            rw_atom.SetAtomicNum(new_z)
+            rw_atom.SetFormalCharge(0)
+            prod = _sanitize_edited_mol(rw)
+            arg = anchor_vocab.index(new_z) if new_z in anchor_vocab else None
+            extra = float(atom_np[arg]) if arg is not None and \
+                arg < len(atom_np) else 0.0
+            _register(idx, EditType.ATOM_TRANSMUTATION, prod,
+                      atom_arg=arg, extra_score=extra)
+
+    # (b) bond order change (SINGLE <-> DOUBLE, non-aromatic)
+    for bond in mol.GetBonds():
+        if bond.GetIsAromatic():
+            continue
+        bt = bond.GetBondType()
+        if bt == Chem.BondType.SINGLE:
+            target, order_val = Chem.BondType.DOUBLE, 2
+        elif bt == Chem.BondType.DOUBLE:
+            target, order_val = Chem.BondType.SINGLE, 1
+        else:
+            continue
+        b_idx, e_idx = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
+        if b_idx not in top_loci and e_idx not in top_loci:
+            continue
+        locus = b_idx if locus_np[b_idx] >= locus_np[e_idx] else e_idx
+        rw = Chem.RWMol(mol)
+        rw.GetBondWithIdx(bond.GetIdx()).SetBondType(target)
+        prod = _sanitize_edited_mol(rw)
+        barg = BOND_ORDERS.index(order_val) if order_val in BOND_ORDERS else 0
+        extra = float(bond_np[barg]) if barg < len(bond_np) else 0.0
+        _register(locus, EditType.BOND_ORDER_CHANGE, prod,
+                  bond_arg=barg, extra_score=extra)
+
+    # (c) formed-bond migration (substituent relocation -> regioisomer)
+    for bond in mol.GetBonds():
+        for frag_idx, anchor_idx in ((bond.GetBeginAtomIdx(),
+                                      bond.GetEndAtomIdx()),
+                                     (bond.GetEndAtomIdx(),
+                                      bond.GetBeginAtomIdx())):
+            if anchor_idx not in top_loci:
+                continue
+            frag_atom = mol.GetAtomWithIdx(frag_idx)
+            anchor_atom = mol.GetAtomWithIdx(anchor_idx)
+            if not _looks_like_transfer_fragment(frag_atom, anchor_atom):
+                continue
+            targets = _candidate_anchor_atoms(mol, frag_idx, anchor_idx, 5)
+            for tgt_atom in (targets or [])[:8]:
+                tgt_idx = tgt_atom.GetIdx()
+                rw = Chem.RWMol(mol)
+                rw.RemoveBond(frag_idx, anchor_idx)
+                rw.AddBond(frag_idx, tgt_idx, Chem.BondType.SINGLE)
+                prod = _sanitize_edited_mol(rw)
+                _register(anchor_idx, EditType.FORMED_BOND_MIGRATE, prod,
+                          migrate_target=tgt_idx,
+                          extra_score=float(locus_np[tgt_idx]))
+
+    # --- 5. Rank & return ---------------------------------------------------
+    if risk_rerank:
+        scored.sort(key=lambda item: (-item[1], -item[0]))
+    else:
+        scored.sort(key=lambda item: (-item[0], -item[1]))
+    return [edit for _joint, _bv, edit in scored[:top_k]]
+
+
 def generate_structured_proposal(model: StructuredProposalModel,
                                  reaction_smiles: str,
                                  top_k: int = DEFAULT_TOP_K,
@@ -824,7 +1123,9 @@ def generate_structured_proposal(model: StructuredProposalModel,
                                  use_validity_mask: bool = True,
                                  risk_rerank: bool = False,
                                  n_mc: int = 0,
-                                 map_unmapped: bool = False,
+                                 map_unmapped: bool = True,
+                                 exhaustive: bool = True,
+                                 require_atom_balance: bool = True,
                                  ) -> List[StructuredEdit]:
     """Generate up to ``top_k`` structured edits for a single reaction.
 
@@ -832,7 +1133,26 @@ def generate_structured_proposal(model: StructuredProposalModel,
     select atom/bond arguments -> apply constrained edit.  Risk and
     uncertainty are attached to each edit; when ``risk_rerank`` is set the
     edits are re-ranked by boundary_value = utility_proxy - lambda * risk.
+
+    By default (``exhaustive=True``) this delegates to the deterministic
+    enumerator :func:`generate_structured_proposal_exhaustive`, which fixes
+    the v2 sampling-collapse (0.13 valid edits/reaction).  Pass
+    ``exhaustive=False`` to use the legacy ancestral-sampling decoder.
+
+    ``require_atom_balance=True`` (default) restricts the enumerator to
+    stoichiometrically-constructible boundary candidates (relative to the
+    true product's own balance); set False for unrestricted proposals.
+    ``map_unmapped=True`` (default) opportunistically atom-maps unmapped
+    reactions via RXNMapper for richer features; the enumerator also works
+    without mapping (product-graph featurisation), just with a zeroed
+    atom-map feature channel.
     """
+    if exhaustive:
+        return generate_structured_proposal_exhaustive(
+            model, reaction_smiles, top_k=top_k, device=device,
+            use_validity_mask=use_validity_mask, risk_rerank=risk_rerank,
+            n_mc=n_mc, map_unmapped=map_unmapped,
+            require_atom_balance=require_atom_balance)
     device = device or next(model.parameters()).device
     model.eval()
     graph_data = _featurize_safe(reaction_smiles, map_unmapped=map_unmapped)
@@ -978,7 +1298,9 @@ def proposal_to_negatives(reaction_smiles: str,
     original = _strip_atom_maps(_product_smiles(reaction_smiles))
     out = []
     for edit in edits:
-        edited = _apply_structured_edit(reaction_smiles, edit)
+        edited = getattr(edit, "applied_product", None)
+        if not edited:
+            edited = _apply_structured_edit(reaction_smiles, edit)
         if edited and is_valid_smiles(edited) and edited != original:
             out.append(edited)
     return out
