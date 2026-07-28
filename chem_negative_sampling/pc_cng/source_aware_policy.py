@@ -14,10 +14,36 @@ test split separately.
 
 from __future__ import annotations
 
-from typing import Optional, Sequence, Tuple
+import random
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import torch
 from torch import Tensor, nn
+
+
+@dataclass(frozen=True)
+class GateTrainingConfig:
+    """Frozen development configuration for supervised source-policy fitting."""
+
+    epochs: int = 300
+    learning_rate: float = 2e-3
+    target_temperature: float = 0.20
+    entropy_weight: float = 0.02
+    source_dropout: float = 0.10
+    seed: int = 20260729
+
+    def __post_init__(self) -> None:
+        if self.epochs <= 0:
+            raise ValueError("epochs must be positive")
+        if self.learning_rate <= 0:
+            raise ValueError("learning_rate must be positive")
+        if self.target_temperature <= 0:
+            raise ValueError("target_temperature must be positive")
+        if self.entropy_weight < 0:
+            raise ValueError("entropy_weight cannot be negative")
+        if not 0 <= self.source_dropout < 1:
+            raise ValueError("source_dropout must be in [0, 1)")
 
 
 class SourceAwareSoftmaxGate(nn.Module):
@@ -143,3 +169,159 @@ def source_names_from_indices(
     if bool(((indices < 0) | (indices >= len(names))).any()):
         raise ValueError("source index is out of bounds")
     return tuple(names[int(i)] for i in indices.detach().cpu().tolist())
+
+
+def masked_reward_targets(
+    rewards: Tensor,
+    available: Tensor,
+    temperature: float,
+) -> Tensor:
+    """Turn cross-fitted source rewards into a masked soft target.
+
+    ``rewards`` must be out-of-fold or validation-derived.  This helper has
+    no access to test labels and intentionally does not rank sources on a
+    benchmark test set.
+    """
+    if rewards.ndim != 2:
+        raise ValueError("rewards must have shape [batch, n_sources]")
+    if available.shape != rewards.shape:
+        raise ValueError("available must match rewards")
+    if temperature <= 0:
+        raise ValueError("temperature must be positive")
+    mask = available.to(dtype=torch.bool, device=rewards.device)
+    if not bool(mask.any(dim=1).all()):
+        raise ValueError("each reaction must have at least one available source")
+    logits = rewards / float(temperature)
+    logits = logits.masked_fill(~mask, torch.finfo(logits.dtype).min)
+    return torch.softmax(logits, dim=-1)
+
+
+def _drop_available_sources(
+    available: Tensor,
+    dropout: float,
+    generator: torch.Generator,
+) -> Tensor:
+    """Apply source dropout without ever removing every source in a row."""
+    if dropout <= 0:
+        return available
+    keep = torch.rand(
+        available.shape,
+        generator=generator,
+        device="cpu",
+    ).to(available.device) >= dropout
+    dropped = available & keep
+    empty = ~dropped.any(dim=1)
+    if bool(empty.any()):
+        # Preserve the first originally available source for empty rows.
+        first = available.to(torch.int64).argmax(dim=1)
+        rows = torch.nonzero(empty, as_tuple=False).flatten()
+        dropped[rows, first[rows]] = True
+    return dropped
+
+
+def train_source_gate(
+    gate: SourceAwareSoftmaxGate,
+    reaction_features: Tensor,
+    source_features: Tensor,
+    rewards: Tensor,
+    available: Tensor,
+    config: GateTrainingConfig,
+) -> Dict[str, object]:
+    """Fit a source gate from cross-fitted per-reaction source rewards.
+
+    The objective is soft-label cross entropy plus an optional entropy bonus.
+    Source dropout is applied only to the training mask.  The target is
+    recomputed under the same mask, so unavailable sources never receive
+    target mass.  All tensors and the gate must already be on the desired
+    device; Phase-D formal runners are expected to require CUDA.
+    """
+    if reaction_features.ndim != 2 or source_features.ndim != 3:
+        raise ValueError("invalid gate feature ranks")
+    if rewards.shape != available.shape:
+        raise ValueError("rewards and available must have the same shape")
+    if source_features.shape[:2] != rewards.shape:
+        raise ValueError("source feature/source reward dimensions do not match")
+    if reaction_features.shape[0] != rewards.shape[0]:
+        raise ValueError("reaction and reward batch sizes do not match")
+
+    torch.manual_seed(config.seed)
+    random.seed(config.seed)
+    cpu_generator = torch.Generator(device="cpu")
+    cpu_generator.manual_seed(config.seed)
+    optimizer = torch.optim.AdamW(
+        gate.parameters(),
+        lr=config.learning_rate,
+        weight_decay=1e-4,
+    )
+    history: List[Dict[str, float]] = []
+    gate.train()
+    for epoch in range(config.epochs):
+        train_available = _drop_available_sources(
+            available.to(dtype=torch.bool),
+            config.source_dropout,
+            cpu_generator,
+        )
+        target = masked_reward_targets(
+            rewards,
+            train_available,
+            config.target_temperature,
+        )
+        probs = gate(reaction_features, source_features, train_available)
+        log_probs = torch.log(probs.clamp_min(1e-9))
+        cross_entropy = -(target * log_probs).sum(dim=1).mean()
+        entropy = -(probs * log_probs).sum(dim=1).mean()
+        loss = cross_entropy - config.entropy_weight * entropy
+        optimizer.zero_grad()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(gate.parameters(), max_norm=5.0)
+        optimizer.step()
+        if epoch in {0, config.epochs - 1} or (epoch + 1) % 50 == 0:
+            history.append(
+                {
+                    "epoch": float(epoch + 1),
+                    "loss": float(loss.detach().cpu()),
+                    "cross_entropy": float(cross_entropy.detach().cpu()),
+                    "entropy": float(entropy.detach().cpu()),
+                }
+            )
+
+    gate.eval()
+    with torch.no_grad():
+        final_probs = gate(reaction_features, source_features, available)
+        final_target = masked_reward_targets(
+            rewards,
+            available,
+            config.target_temperature,
+        )
+        agreement = float(
+            (
+                final_probs.argmax(dim=1)
+                == final_target.argmax(dim=1)
+            ).float().mean().cpu()
+        )
+        selected = final_probs.argmax(dim=1)
+        counts = torch.bincount(
+            selected.detach().cpu(),
+            minlength=gate.n_sources,
+        )
+        entropy = float(
+            (
+                -(final_probs * torch.log(final_probs.clamp_min(1e-9)))
+                .sum(dim=1)
+                .mean()
+            ).cpu()
+        )
+    return {
+        "history": history,
+        "target_argmax_agreement": agreement,
+        "selection_counts": [int(v) for v in counts.tolist()],
+        "mean_policy_entropy": entropy,
+        "config": {
+            "epochs": config.epochs,
+            "learning_rate": config.learning_rate,
+            "target_temperature": config.target_temperature,
+            "entropy_weight": config.entropy_weight,
+            "source_dropout": config.source_dropout,
+            "seed": config.seed,
+        },
+    }
