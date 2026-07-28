@@ -1,0 +1,24 @@
+{
+  "schema_version": "phase4_union_v2_failed_run_audit_v1",
+  "status": "EXCLUDED_INVALID_CHECKPOINT",
+  "date": "2026-07-29",
+  "reason": "The historical default G8-C checkpoint used a four-action schema and could not load into the Phase C seven-action model. Continuing would have silently changed Union_v2 from learned+rule+shuffled to rule+shuffled.",
+  "observed_error": {
+    "missing_modules": [
+      "reconstruction_locus_pointer",
+      "reconstruction_type_classifier"
+    ],
+    "type_head_shape": "checkpoint 4 actions versus current 7 actions"
+  },
+  "action_taken": [
+    "Stopped only the newly started invalid Union_v2 process",
+    "Preserved its log and author_lab output outside the authoritative result path",
+    "Restarted all eight scenarios with the independently verified Phase C v2 checkpoint",
+    "Added fail-closed checkpoint loading to run_phase4_union_arm",
+    "Added an independent Union_v2 artifact verifier"
+  ],
+  "excluded_artifact_preserved_on_server": "chem_negative_sampling/results/phase4_fixed_testset_v41/logs/author_lab__learned_union_v2__invalid_old_checkpoint_20260729.csv",
+  "authoritative_log": "chem_negative_sampling/results/phase4_fixed_testset_v41/logs/union_v2_phasec_v2_gpu0_20260729.log",
+  "authoritative_checkpoint": "chem_negative_sampling/results/p4_g8c_formal_v2_20260729/model_checkpoint.pt",
+  "claim_policy": "No metric or CSV from the incompatible-checkpoint run may enter Phase 4 comparisons."
+}

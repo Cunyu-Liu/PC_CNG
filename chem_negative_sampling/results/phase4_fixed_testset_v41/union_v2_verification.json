@@ -1,0 +1,163 @@
+{
+  "schema_version": "phase4_union_v2_verification_v1",
+  "verified": true,
+  "claim_scope": "exploratory development arm only",
+  "checks": {
+    "result_arm_is_union_v2": true,
+    "difficulty_match_requested": true,
+    "all_expected_scenarios_present": true,
+    "log_confirms_learned_model_loaded": true,
+    "log_has_no_checkpoint_load_failure": true,
+    "source_mixture_logged_for_all_scenarios": true,
+    "learned_source_selected_in_all_scenarios": true,
+    "checkpoint_exists": true,
+    "all_record_sets_aligned": true,
+    "all_scores_finite": true,
+    "difficulty_metadata_complete": true,
+    "all_scenarios_have_multiple_selected_sources": true
+  },
+  "scenario_audit": {
+    "author_lab": {
+      "union_records_exist": true,
+      "base_records_exist": true,
+      "source_mixture": {
+        "rule_pc_cng": 139,
+        "learned_structured": 357,
+        "shuffled_parent": 4
+      },
+      "n_union_records": 81,
+      "n_base_records": 81,
+      "record_alignment": true,
+      "all_scores_finite": true,
+      "n_train_negative": 500,
+      "matched_fraction": 0.868,
+      "difficulty_metadata_complete": true
+    },
+    "condition_space": {
+      "union_records_exist": true,
+      "base_records_exist": true,
+      "source_mixture": {
+        "learned_structured": 375,
+        "rule_pc_cng": 123,
+        "shuffled_parent": 2
+      },
+      "n_union_records": 136,
+      "n_base_records": 136,
+      "record_alignment": true,
+      "all_scores_finite": true,
+      "n_train_negative": 500,
+      "matched_fraction": 0.86,
+      "difficulty_metadata_complete": true
+    },
+    "ni_coupling": {
+      "union_records_exist": true,
+      "base_records_exist": true,
+      "source_mixture": {
+        "learned_structured": 206,
+        "rule_pc_cng": 255,
+        "shuffled_parent": 39
+      },
+      "n_union_records": 415,
+      "n_base_records": 415,
+      "record_alignment": true,
+      "all_scores_finite": true,
+      "n_train_negative": 500,
+      "matched_fraction": 0.958,
+      "difficulty_metadata_complete": true
+    },
+    "random": {
+      "union_records_exist": true,
+      "base_records_exist": true,
+      "source_mixture": {
+        "rule_pc_cng": 132,
+        "learned_structured": 364,
+        "shuffled_parent": 4
+      },
+      "n_union_records": 327,
+      "n_base_records": 327,
+      "record_alignment": true,
+      "all_scores_finite": true,
+      "n_train_negative": 500,
+      "matched_fraction": 0.876,
+      "difficulty_metadata_complete": true
+    },
+    "reaction_family": {
+      "union_records_exist": true,
+      "base_records_exist": true,
+      "source_mixture": {
+        "learned_structured": 350,
+        "rule_pc_cng": 148,
+        "shuffled_parent": 2
+      },
+      "n_union_records": 144,
+      "n_base_records": 144,
+      "record_alignment": true,
+      "all_scores_finite": true,
+      "n_train_negative": 500,
+      "matched_fraction": 0.864,
+      "difficulty_metadata_complete": true
+    },
+    "scaffold": {
+      "union_records_exist": true,
+      "base_records_exist": true,
+      "source_mixture": {
+        "learned_structured": 345,
+        "rule_pc_cng": 153,
+        "shuffled_parent": 2
+      },
+      "n_union_records": 155,
+      "n_base_records": 155,
+      "record_alignment": true,
+      "all_scores_finite": true,
+      "n_train_negative": 500,
+      "matched_fraction": 0.836,
+      "difficulty_metadata_complete": true
+    },
+    "time": {
+      "union_records_exist": true,
+      "base_records_exist": true,
+      "source_mixture": {
+        "learned_structured": 385,
+        "rule_pc_cng": 110,
+        "shuffled_parent": 5
+      },
+      "n_union_records": 135,
+      "n_base_records": 135,
+      "record_alignment": true,
+      "all_scores_finite": true,
+      "n_train_negative": 500,
+      "matched_fraction": 0.85,
+      "difficulty_metadata_complete": true
+    },
+    "uspto_patent": {
+      "union_records_exist": true,
+      "base_records_exist": true,
+      "source_mixture": {
+        "rule_pc_cng": 184,
+        "learned_structured": 316
+      },
+      "n_union_records": 550,
+      "n_base_records": 550,
+      "record_alignment": true,
+      "all_scores_finite": true,
+      "n_train_negative": 500,
+      "matched_fraction": 0.86,
+      "difficulty_metadata_complete": true
+    }
+  },
+  "checkpoint": {
+    "path": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/results/p4_g8c_formal_v2_20260729/model_checkpoint.pt",
+    "sha256": "549b6371d1eb55be06173bdeed63d589547ede60cc48878b24b60c20ddbe2d44"
+  },
+  "inputs": {
+    "union_result": {
+      "path": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/results/phase4_fixed_testset_v41/union_arm_results.json",
+      "sha256": "765c439cb57db0760806bc46fe2d6ebc1e8fbf743a66e7e07958aacc3f9302fd"
+    },
+    "run_log": {
+      "path": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/results/phase4_fixed_testset_v41/logs/union_v2_phasec_v2_gpu0_20260729.log",
+      "sha256": "38c5ac72ccd1d28e1df581e700a64ff30c66f48b507bef5408470e601340cd50"
+    }
+  },
+  "git_commit_at_verification": "89b5af660374926ac3113019334778f629731342"
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": "phase4_mechanism_continuous_v1",
+  "status": "EXPLORATORY_ONLY_EXIT_NOT_MET",
+  "reason": "Continuous observational associations and uncertainty bands were estimated, but the controlled pools were not exactly matched on family/source/edit-count/scorer-margin and no sealed held-out confirmatory replication exists. The semi-hard inverted-U is not general, and G8-B reports no transfer direction with CI > 0.",
+  "historical_g8a_status": "DEPRECATED_EXPLORATORY_BINNED_ANALYSIS",
+  "observational_association": {
+    "status": "AVAILABLE_EXPLORATORY",
+    "outcome": "within-reaction negative score percentile, not downstream utility",
+    "n_curve_cells_estimated": 15,
+    "n_curve_cells_unavailable": 3,
+    "strong_inverted_u_cells": 2,
+    "replicated_strong_inverted_u_features": []
+  },
+  "controlled_intervention": {
+    "status": "UNSUPPORTED_GENERAL_MECHANISM",
+    "primary_scorer_h3_scenarios": 2,
+    "primary_scorer_n_scenarios": 8,
+    "second_scorer_h3_scenarios": 2,
+    "second_scorer_n_scenarios": 8,
+    "matching_audit": {
+      "validity_matched": true,
+      "candidate_count_per_positive_per_source_matched": true,
+      "family_distribution_exactly_matched": false,
+      "source_distribution_exactly_matched": false,
+      "similarity": "frozen stratification variable, intentionally different",
+      "edit_count": "NOT_MEASURED; historical code used 1-sim as a proxy",
+      "scorer_margin": "NOT_FROZEN_OR_MATCHED_BEFORE_POOL_CONSTRUCTION"
+    }
+  },
+  "held_out_replication": {
+    "status": "NOT_MET",
+    "note": "The second scorer used the same development pools. It is an exploratory robustness check, not sealed confirmation."
+  },
+  "uncertainty_interval": {
+    "status": "MET_FOR_OBSERVATIONAL_CURVES",
+    "method": "reaction-group cluster bootstrap 95% bands",
+    "n_bootstrap": 500
+  },
+  "competing_explanation_ablation": {
+    "status": "PARTIAL",
+    "covered": [
+      "candidate source",
+      "reaction family",
+      "randomized-label null",
+      "formula-preserved versus formula-changed shuffled transfer"
+    ],
+    "missing_or_unusable": [
+      "candidate-level FNR (constant 0.5 in historical table)",
+      "known-positive collision (too sparse for a two-level estimate)",
+      "reaction-centre locality",
+      "true edit count",
+      "edit type in the analysis table",
+      "family support density"
+    ]
+  },
+  "g8b_transfer": {
+    "status": "NO_GO_NEGATIVE_TRANSFER_RETAINED",
+    "directions_with_any_positive_ci": 0,
+    "total_directions": 7
+  },
+  "claim_policy": "Do not claim a causal semi-hard boundary mechanism. Report the continuous curves, null checks, source/family heterogeneity and negative transfer as exploratory evidence."
+}

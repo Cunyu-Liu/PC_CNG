@@ -1,0 +1,10 @@
+{
+  "analysis": "phase4_continuous_mechanism_reanalysis",
+  "seed": 20260729,
+  "n_bootstrap": 500,
+  "n_input_rows": 1316,
+  "n_candidate_groups": 4000,
+  "curve_model": "cubic regression spline with ridge stabilization",
+  "ci": "reaction-group cluster bootstrap percentile 95%",
+  "outcome": "within-reaction negative score percentile"
+}

@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import os
 import random
@@ -349,6 +350,7 @@ def build_union_v2_train(
                         **meta})
     if not fps:
         return None, np.array([]), []
+    local_stats["selected_source_counts"] = dict(src_counts)
     print(f"  [union_v2] train source mixture: {dict(src_counts)}")
     X = np.vstack(fps)
     y = np.array(labels, dtype=np.float32)
@@ -436,6 +438,29 @@ def _scenario_rows(args, scenario: str):
 # Main
 # ---------------------------------------------------------------------------
 
+
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def require_learned_model(
+    model: Any,
+    model_error: Optional[str],
+    checkpoint: Path,
+) -> None:
+    """Refuse to turn a learned/rule/shuffled union into a two-source arm."""
+    if model is None:
+        raise SystemExit(
+            "[union][FATAL] learned source expert is unavailable; refusing "
+            f"to degrade the union intervention. checkpoint={checkpoint} "
+            f"error={model_error}"
+        )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-results", type=Path, required=True,
@@ -479,6 +504,7 @@ def main() -> None:
 
     model, model_err = load_g8c_model(args.checkpoint, device=device)
     print(f"[union] G8-C model {'loaded' if model is not None else model_err}")
+    require_learned_model(model, model_err, args.checkpoint)
 
     scenarios = sorted({f.name.split("__")[0] for f in base_records.glob(
         f"*__{BASE_ARM_FOR_POOLS}__{PRIMARY_POOL}.csv")})
@@ -649,6 +675,11 @@ def main() -> None:
 
     out = {"arm": arm_name, "use_gnn": args.use_gnn,
            "difficulty_match_requested": bool(args.difficulty_match),
+           "learned_checkpoint": {
+               "path": str(args.checkpoint),
+               "sha256": _sha256(args.checkpoint),
+               "load_status": "loaded",
+           },
            "difficulty_definition": {
                "similarity_metric": "tanimoto_morgan_radius2_2048bits",
                "semi_hard_min": DIFFICULTY_SEMI_HARD_MIN,

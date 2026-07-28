@@ -1,0 +1,377 @@
+{
+  "g3_v2_test::chemformer": {
+    "candidate_source": [
+      {
+        "field": "candidate_source",
+        "value": "external_beam",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.7125,
+        "ci_low": 0.6625,
+        "ci_high": 0.7693181818181818
+      },
+      {
+        "field": "candidate_source",
+        "value": "random_corruption",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.1806818181818182,
+        "ci_low": 0.15795454545454546,
+        "ci_high": 0.2034090909090909
+      },
+      {
+        "field": "candidate_source",
+        "value": "random_mismatch",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.7363636363636363,
+        "ci_low": 0.6897727272727273,
+        "ci_high": 0.7790056818181817
+      },
+      {
+        "field": "candidate_source",
+        "value": "rule_pc_cng",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.16022727272727272,
+        "ci_low": 0.13522727272727272,
+        "ci_high": 0.18977272727272726
+      },
+      {
+        "field": "candidate_source",
+        "value": "tanimoto_retrieval",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.5863636363636363,
+        "ci_low": 0.5602272727272727,
+        "ci_high": 0.6136363636363636
+      },
+      {
+        "field": "candidate_source",
+        "value": "template_perturbation",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.6829545454545455,
+        "ci_low": 0.6363068181818182,
+        "ci_high": 0.7318749999999999
+      },
+      {
+        "field": "candidate_source",
+        "value": "unconstrained_edit",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.24659090909090908,
+        "ci_low": 0.2125,
+        "ci_high": 0.28295454545454546
+      }
+    ],
+    "reaction_family": [
+      {
+        "field": "reaction_family",
+        "value": "Alkylation",
+        "n": 63,
+        "n_clusters": 9,
+        "mean_negative_hardness": 0.4513888888888889,
+        "ci_low": 0.44146825396825395,
+        "ci_high": 0.46130952380952384
+      },
+      {
+        "field": "reaction_family",
+        "value": "Cabonylation",
+        "n": 21,
+        "n_clusters": 3,
+        "mean_negative_hardness": 0.46130952380952384,
+        "ci_low": NaN,
+        "ci_high": NaN
+      },
+      {
+        "field": "reaction_family",
+        "value": "Pd coupling",
+        "n": 63,
+        "n_clusters": 9,
+        "mean_negative_hardness": 0.46924603174603174,
+        "ci_low": 0.4573412698412698,
+        "ci_high": 0.48313492063492064
+      },
+      {
+        "field": "reaction_family",
+        "value": "Rh coupling",
+        "n": 14,
+        "n_clusters": 2,
+        "mean_negative_hardness": 0.5089285714285714,
+        "ci_low": NaN,
+        "ci_high": NaN
+      },
+      {
+        "field": "reaction_family",
+        "value": "Untagged",
+        "n": 217,
+        "n_clusters": 31,
+        "mean_negative_hardness": 0.4772465437788018,
+        "ci_low": 0.4680299539170507,
+        "ci_high": 0.4879176267281106
+      }
+    ],
+    "known_positive_collision": [
+      {
+        "field": "known_positive_collision",
+        "value": "0",
+        "n": 384,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.4723307291666667,
+        "ci_low": 0.4654566169507576,
+        "ci_high": 0.4801432291666667
+      }
+    ]
+  },
+  "g3_v2_test::gnn": {
+    "candidate_source": [
+      {
+        "field": "candidate_source",
+        "value": "external_beam",
+        "n": 53,
+        "n_clusters": 53,
+        "mean_negative_hardness": 0.45872641509433965,
+        "ci_low": 0.3702240566037736,
+        "ci_high": 0.5590212264150942
+      },
+      {
+        "field": "candidate_source",
+        "value": "random_corruption",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.438961038961039,
+        "ci_low": 0.373051948051948,
+        "ci_high": 0.49970779220779216
+      },
+      {
+        "field": "candidate_source",
+        "value": "random_mismatch",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.43766233766233764,
+        "ci_low": 0.3487784090909091,
+        "ci_high": 0.5218871753246752
+      },
+      {
+        "field": "candidate_source",
+        "value": "rule_pc_cng",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.4375,
+        "ci_low": 0.3834943181818182,
+        "ci_high": 0.48696022727272725
+      },
+      {
+        "field": "candidate_source",
+        "value": "tanimoto_retrieval",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.7198051948051948,
+        "ci_low": 0.6545373376623377,
+        "ci_high": 0.7723579545454545
+      },
+      {
+        "field": "candidate_source",
+        "value": "template_perturbation",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.48522727272727273,
+        "ci_low": 0.4056574675324675,
+        "ci_high": 0.5711282467532467
+      },
+      {
+        "field": "candidate_source",
+        "value": "unconstrained_edit",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.4337662337662338,
+        "ci_low": 0.36200487012987015,
+        "ci_high": 0.5040219155844156
+      }
+    ],
+    "reaction_family": [
+      {
+        "field": "reaction_family",
+        "value": "Alkylation",
+        "n": 63,
+        "n_clusters": 9,
+        "mean_negative_hardness": 0.49107142857142855,
+        "ci_low": 0.4732142857142857,
+        "ci_high": 0.5029761904761905
+      },
+      {
+        "field": "reaction_family",
+        "value": "Cabonylation",
+        "n": 21,
+        "n_clusters": 3,
+        "mean_negative_hardness": 0.5029761904761905,
+        "ci_low": NaN,
+        "ci_high": NaN
+      },
+      {
+        "field": "reaction_family",
+        "value": "Pd coupling",
+        "n": 63,
+        "n_clusters": 9,
+        "mean_negative_hardness": 0.5079365079365079,
+        "ci_low": 0.49206349206349204,
+        "ci_high": 0.5218253968253969
+      },
+      {
+        "field": "reaction_family",
+        "value": "Rh coupling",
+        "n": 14,
+        "n_clusters": 2,
+        "mean_negative_hardness": 0.4955357142857143,
+        "ci_low": NaN,
+        "ci_high": NaN
+      },
+      {
+        "field": "reaction_family",
+        "value": "Untagged",
+        "n": 215,
+        "n_clusters": 31,
+        "mean_negative_hardness": 0.4786544850498338,
+        "ci_low": 0.46999007936507936,
+        "ci_high": 0.48889341645779283
+      }
+    ],
+    "known_positive_collision": [
+      {
+        "field": "known_positive_collision",
+        "value": "0",
+        "n": 382,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.4866772625280478,
+        "ci_low": 0.47957760226528473,
+        "ci_high": 0.49389997819299997
+      }
+    ]
+  },
+  "g4_v2_test::morgan_mlp": {
+    "candidate_source": [
+      {
+        "field": "candidate_source",
+        "value": "external_beam",
+        "n": 53,
+        "n_clusters": 53,
+        "mean_negative_hardness": 0.3761792452830189,
+        "ci_low": 0.32193396226415094,
+        "ci_high": 0.44221698113207547
+      },
+      {
+        "field": "candidate_source",
+        "value": "random_corruption",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.48425324675324677,
+        "ci_low": 0.4211038961038961,
+        "ci_high": 0.5543060064935066
+      },
+      {
+        "field": "candidate_source",
+        "value": "random_mismatch",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.5571428571428572,
+        "ci_low": 0.4913636363636364,
+        "ci_high": 0.6231696428571429
+      },
+      {
+        "field": "candidate_source",
+        "value": "rule_pc_cng",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.19172077922077924,
+        "ci_low": 0.14902597402597403,
+        "ci_high": 0.2480762987012987
+      },
+      {
+        "field": "candidate_source",
+        "value": "tanimoto_retrieval",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.7435064935064936,
+        "ci_low": 0.6952922077922078,
+        "ci_high": 0.7926420454545454
+      },
+      {
+        "field": "candidate_source",
+        "value": "template_perturbation",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.5686688311688312,
+        "ci_low": 0.4878612012987013,
+        "ci_high": 0.6342532467532467
+      },
+      {
+        "field": "candidate_source",
+        "value": "unconstrained_edit",
+        "n": 55,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.413474025974026,
+        "ci_low": 0.34657467532467534,
+        "ci_high": 0.4778774350649351
+      }
+    ],
+    "reaction_family": [
+      {
+        "field": "reaction_family",
+        "value": "Alkylation",
+        "n": 63,
+        "n_clusters": 9,
+        "mean_negative_hardness": 0.46924603174603174,
+        "ci_low": 0.45034722222222223,
+        "ci_high": 0.48908730158730157
+      },
+      {
+        "field": "reaction_family",
+        "value": "Cabonylation",
+        "n": 21,
+        "n_clusters": 3,
+        "mean_negative_hardness": 0.5148809523809523,
+        "ci_low": NaN,
+        "ci_high": NaN
+      },
+      {
+        "field": "reaction_family",
+        "value": "Pd coupling",
+        "n": 63,
+        "n_clusters": 9,
+        "mean_negative_hardness": 0.4871031746031746,
+        "ci_low": 0.4732142857142857,
+        "ci_high": 0.5000496031746031
+      },
+      {
+        "field": "reaction_family",
+        "value": "Rh coupling",
+        "n": 14,
+        "n_clusters": 2,
+        "mean_negative_hardness": 0.5,
+        "ci_low": NaN,
+        "ci_high": NaN
+      },
+      {
+        "field": "reaction_family",
+        "value": "Untagged",
+        "n": 215,
+        "n_clusters": 31,
+        "mean_negative_hardness": 0.47171926910299006,
+        "ci_low": 0.45963424628769506,
+        "ci_high": 0.48305944538196927
+      }
+    ],
+    "known_positive_collision": [
+      {
+        "field": "known_positive_collision",
+        "value": "0",
+        "n": 382,
+        "n_clusters": 55,
+        "mean_negative_hardness": 0.4759022064323112,
+        "ci_low": 0.4668297697368421,
+        "ci_high": 0.4849662137291739
+      }
+    ]
+  }
+}

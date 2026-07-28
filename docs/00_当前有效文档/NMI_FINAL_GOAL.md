@@ -143,8 +143,8 @@ Phase 4 fixed pools 已用于设计 Union/Union_v2 和 shuffled-parent 修复，
 - H3 semi-hard inverted-U：开发结果不支持，不得通过事后改分箱追求转正。
 - Union：旧 fixed-pool 数值领先属于 exploratory post-hoc evidence。
 - randomized-label null：可用于泄漏检查，不等于 external utility 证据。
-- shuffled-parent：旧 rescore 曾存在训练类不平衡和 train/score feature contract 问题；修复版已独立完成 8/8，最终主分析 alignment 128/128，formula-preserved AUPRC=0.9095、formula-changed AUPRC=0.7795；它不是随机 null，只支持 development-only compatibility-transfer 结论。
-- Union_v2：主恢复目录已完成 8/8；frozen semi-hard 区间为 Morgan radius-2/2048 Tanimoto `[0.40, 0.75]`，matched_fraction=0.866–0.976，fallback_count=12–67；5/8 点估计胜出但 0/8 Holm-confirmed SOTA，不能作为确认性证据。
+- shuffled-parent：旧 rescore 曾存在训练类不平衡和 train/score feature contract 问题；修复版已独立完成 8/8 并同步回 authoritative fixed-pool records，formula-preserved AUPRC=0.9095、formula-changed AUPRC=0.7795；它不是随机 null，只支持 development-only compatibility-transfer 结论。
+- Union_v2：使用 Phase C v2 checkpoint 完成 8/8；frozen semi-hard 区间为 Morgan radius-2/2048 Tanimoto `[0.40, 0.75]`，matched_fraction=0.836–0.958，fallback_count=21–82；5/8 点估计胜出但 0/8 Holm-confirmed SOTA，不能作为确认性证据。
 
 ### v2.0 North-Star Goal
 
@@ -158,7 +158,7 @@ learned structured generator 从唯一成败点降级为 source expert；只有�
 |---|---|---|
 | C11 Phase 4 fixed-pool learned SOTA | `NO_GO_DEVELOPMENT` | 仅开发集；不得外推 |
 | C12 semi-hard inverted-U utility | `UNSUPPORTED_DEVELOPMENT` | 需新盲测 controlled replication |
-| C13 shuffled-real compatibility transfer | `PASS_DEVELOPMENT_ONLY` | 修复版 8/8、final alignment 128/128；formula-preserved=0.9095、changed=0.7795；仅支持 compatibility-transfer prior |
+| C13 shuffled-real compatibility transfer | `PASS_DEVELOPMENT_ONLY` | 修复版 8/8；formula-preserved=0.9095、changed=0.7795；仅支持 compatibility-transfer prior |
 | C14 union source complementarity | `EXPLORATORY_POST_HOC` | fixed pool 已参与方法设计 |
 | C15 randomized-label null control | `PASS_DEVELOPMENT_ONLY` | 仅作泄漏检查 |
 
@@ -166,7 +166,7 @@ learned structured generator 从唯一成败点降级为 source expert；只有�
 
 1. 修复版 shuffled-parent rescore、paired identity check 和 transfer diagnosis 已完成；
 2. 真正按 frozen semi-hard 区间筛选的 Union_v2 已完成 8/8 并记录 matched fraction/fallback；
-3. 最终 analyzer 权威输出为 `/mnt/cunyuliu_pc_cng_phase4_v2_20260728/phase4_fixed_testset_v41_rescorefix_20260728/phase4_v41_aggregation.json`。
+3. 最终 analyzer 权威输出为 `chem_negative_sampling/results/phase4_fixed_testset_v41/phase4_v41_aggregation.json`。
 
 ### 后续执行顺序
 
@@ -298,3 +298,65 @@ commit `1256081` 将 reconstruction/proposal heads 分离，在 Stage 2–4 加�
 该结果不能支持 learned source 优于 rule、random、shuffled 或 union。只有 24 个 holdout reactions 进入 edit 指标，Stage 4 reward-hacking validation 只有 3 个可用 pair，且 expert labels=0。这些限制必须保留。
 
 下一阶段为 Phase D：在 development-only benchmark 上接入 source-aware gate，并在新冻结的 external blind test 前完成方法选择。Phase C holdout 不得再用于 Phase D 调参或 source-superiority 主张。
+
+## Phase 4 completion amendment（2026-07-29）
+
+### 完成范围
+
+- shuffled_parent 8 场景 GPU rescore 已完成并同步回 authoritative fixed-pool CSV；
+- Union_v1 历史汇总已保护，Union_v2 使用 Phase C v2 source-expert checkpoint 在相同 1:1 预算下完成；
+- Union runner 增加 learned checkpoint fail-closed，旧动作空间不兼容时禁止静默退化为两源 arm；
+- 新增 continuous cubic-spline mechanism analysis，使用 reaction-group cluster bootstrap 95% bands；
+- 完成 matching audit、source/family heterogeneity、randomized-label null、formula-preserving transfer 与 G8-B negative-transfer 审计；
+- Phase 4 fixed pools 始终保持 `DEVELOPMENT_SET_USED_FOR_METHOD_DESIGN`。
+
+### 机制结果
+
+| 证据项 | 结果 | 当前状态 |
+|---|---|---|
+| GNN H3 semi-hard > easy & hard | 2/8 场景 | 不支持普遍 inverted-U |
+| EnhancedMLP H3 | 2/8 场景 | 同一 development pool 的 exploratory replication |
+| continuous spline | 15/18 单元可估计 | 只有 2 个单独 interior peaks |
+| replicated inverted-U feature | 0 | 未跨 dataset/scorer 复现 |
+| candidate-level FNR | 历史表为常数 0.5 | 不可用于 driver claim |
+| G8-B full transfer | 0/7 directions with any positive CI | `NO_GO_NEGATIVE_TRANSFER` |
+
+### Matching audit
+
+已匹配：
+
+- RDKit validity；
+- 每正例、每来源的候选预算；
+- 三个 difficulty 训练臂的总训练样本预算；
+- classifier 架构与 optimizer budget。
+
+未匹配或未测量：
+
+- family distribution；
+- source distribution；
+- true edit count；
+- pre-pool scorer margin；
+- reaction-centre locality；
+- family support density；
+- usable candidate-level FNR；
+- sufficient known-positive collision strata。
+
+因此 controlled intervention 仍存在 competing explanations，不能解释为因果边界机制。
+
+### Union_v2 边界
+
+Union_v2 使用 Phase C v2 checkpoint，8 场景均完成 500-negative、1:1 预算训练，semi-hard matched fraction 为 0.836–0.958。它在 5/8 场景数值超过全部单源基线，但 `time` 与 `uspto_patent` 明确落后，且没有任何场景同时显著超过全部预注册比较臂；H1u_v2 为 `0/8 SOTA`。独立 verifier 确认 8 场景记录完全对齐、每场景实际选择 learned source、checkpoint SHA256 固定且没有 silent fallback。
+
+Union_v1/Union_v2 都是在查看 fixed development pool 后设计的。无论开发集数值如何，它们都不能支持 blind confirmatory SOTA。其价值仅在于为 Phase D 的 source-aware policy 提供开发假设与工程数据契约。
+
+### Phase 4 最终判定
+
+`Phase 4 engineering and development analysis = COMPLETE`；`causal mechanism Exit Criterion = NOT MET`；综合状态为：
+
+```text
+EXPLORATORY_ONLY_EXIT_NOT_MET
+```
+
+当前允许的表述是：difficulty、source、family 和 scorer 之间存在显著异质性，synthetic failure knowledge 的迁移也可能为负。当前不允许的表述是：semi-hard negatives 存在已被确认的普遍因果最优区间。
+
+下一阶段为 Phase D development：比较最佳 single source、uniform union、validation-selected global mixture、learned source gate 和 oracle。任何 gate 结构与超参数必须在新的 sealed test 之前冻结；当前 Phase 4 fixed pools 不得再用于 confirmatory headline claim。

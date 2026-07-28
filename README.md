@@ -1,6 +1,6 @@
 # PC-CNG: PhysChem-Constrained Counterfactual Negative Generator
 
-**项目状态**：Phase C G8-C v2 unseen-holdout 核心验证已通过但专家标签仍缺失（2026-07-29）；当前进入 Phase D source-policy development；Phase 4 fixed pools 仍仅作 development-only evidence
+**项目状态**：Phase C G8-C v2 unseen-holdout 核心验证已通过但专家标签仍缺失；Phase 4 工程与开发分析已闭合，机制 Exit Criterion 未满足（2026-07-29）；当前进入 Phase D source-policy development
 **唯一有效目标文档**：[docs/00_当前有效文档/NMI_FINAL_GOAL.md](docs/00_当前有效文档/NMI_FINAL_GOAL.md)
 **Claim 注册表**：[docs/claim_registry.csv](docs/claim_registry.csv)
 **Phase A 状态冻结**：v2.0；H1/H2/H3 历史见 [docs/phase4_hypothesis_history_20260728.md](docs/phase4_hypothesis_history_20260728.md)
@@ -18,11 +18,11 @@ PC-CNG 已完成研究基础设施和若干探索性实验，但当前 Phase 4 f
 | G5   | SAFETY_PARTIAL_GO | 校准改善，仅作风险控制证据 |
 | G6   | FORMAL_NO_GO_SINGLE_SOURCE | v3 formal benchmark 已完成并独立重建；PC-CNG 对 random/template 的 superiority CI 均跨 0，且当前 HTE 仅一个 publication source |
 | G7   | DEFERRED | 待真实专家或实验数据 |
-| G8-A | EXPLORATORY_MECHANISM | 仅探索性分析，非机制证据 |
-| G8-B | RUNNING | 跨家族迁移实验独立判定中；负迁移也必须保留 |
+| G8-A | EXPLORATORY_ONLY_EXIT_NOT_MET | continuous spline 有 reaction-group bootstrap CI，但 inverted-U 未跨 dataset/scorer 复现，且匹配审计不完整 |
+| G8-B | NO_GO_NEGATIVE_TRANSFER | full run 7 directions × 6 methods × 10 seeds，0/7 方向存在 CI 全正的方法 |
 | G8-C | FORMAL_SOURCE_EXPERT_PARTIAL_EXPERT_LABELS_PENDING | v2 unseen holdout 的 edit/validity/coverage/FNR/reward-safety 核心阈值全部通过；专家标签为 0，且未比较其他 source，不能称完整 GO 或 SOTA |
 
-Phase 4 v4.1 的旧 fixed-pool、Union 和 H3 结论均为开发/探索性证据；详见 `docs/phase4_v41_amendment_20260728.md` 和 `docs/NMI_FINAL_GOAL_v2_amendment_20260728.md`。
+Phase 4 v4.1 的 fixed-pool、Union/Union_v2 和 H3 结论均为开发/探索性证据。权威交接见 `docs/phase4_v41_handover.md`：GNN 与 EnhancedMLP 的 H3 都仅 2/8；continuous spline 的 15/18 单元可估计，但没有 feature 跨 dataset/scorer 复现严格 inverted-U；family/source/edit-count/scorer-margin 未完成严格匹配。阶段结论是 **development analysis complete / causal mechanism Exit Criterion not met**。
 
 Phase B 的权威边界见 `docs/phase_b_g6_completion_audit_20260729.md`：五任务共享完整反应上下文编码器、预算匹配、预注册比较和独立重建均已完成；正式结论是 **benchmark engineering PASS / PC-CNG superiority NO-GO**，不得将非劣效或点估计优势表述为外部效用成功。
 
