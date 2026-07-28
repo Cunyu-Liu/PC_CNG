@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -39,6 +41,34 @@ from pc_cng.verify_p4_g6_v3 import (  # noqa: E402
     canonicalize_legacy_json_scalars,
     verify_reconstruction,
 )
+
+
+def test_documented_phase_b_cli_imports_without_repository_parent_path():
+    """The public module entrypoint must work from chem_negative_sampling/.
+
+    The in-process tests add the repository parent to ``sys.path`` and would
+    otherwise hide a broken production import.
+    """
+    package_root = REPO_ROOT / "chem_negative_sampling"
+    environment = dict(os.environ)
+    environment.pop("PYTHONPATH", None)
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import pc_cng.p4_g6_benchmark_v3 as benchmark; "
+                "print(benchmark.FORMAL_SCHEMA_VERSION)"
+            ),
+        ],
+        cwd=package_root,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "g6_v3_formal_20260728"
 
 
 def _record(index: int, *, split: str = "train", yield_value: float = 80.0) -> dict:

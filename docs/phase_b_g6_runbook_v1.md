@@ -68,10 +68,16 @@ On the current server, Conda's `libstdc++` must take precedence while creating
 the PyTorch optimizer.  This is injected per command, never exported globally:
 
 ```bash
+cd /home/cunyuliu/pc_cng_research/chem_negative_sampling
 env CUDA_VISIBLE_DEVICES=<GPU> \
     LD_LIBRARY_PATH=/home/cunyuliu/miniconda3/envs/pc_cng/lib \
     /home/cunyuliu/miniconda3/envs/pc_cng/bin/python -m pc_cng.run_p4_g6_v3 ...
 ```
+
+`pc_cng` and the shared `models` package are both included in the project
+wheel. The documented module entrypoint is regression-tested from the
+`chem_negative_sampling/` working directory without adding the repository
+parent to `PYTHONPATH`.
 
 The formal run must use a fresh, immutable output directory.  The result
 directory must contain `formal_result_v3.json`, `predictions_t5_v3.json`,

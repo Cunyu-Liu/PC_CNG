@@ -30,12 +30,11 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-# ``pc_cng`` is installed as a top-level package on the GPU server whereas
-# the frozen Chemformer implementation lives in the sibling namespace below.
-# Import through the repository package, rather than relying on a transient
-# working-directory ``models`` path, so ``python -m pc_cng.run_p4_g6_v3`` is
-# reproducible from a clean checkout.
-from chem_negative_sampling.models.pretrained_backbone import (
+# ``pc_cng`` and ``models`` are installed as sibling top-level packages from
+# ``chem_negative_sampling``.  Import the backbone through its packaged name
+# so the documented ``python -m pc_cng.run_p4_g6_v3`` entrypoint works both
+# from the source checkout and from a wheel installation.
+from models.pretrained_backbone import (
     DEFAULT_CHECKPOINT_PATH,
     DEFAULT_VOCAB_PATH,
     ChemformerTokenizer,

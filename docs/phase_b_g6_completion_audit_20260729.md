@@ -8,6 +8,15 @@
 
 Phase B completed the task-definition, reaction-context, matched-budget and paired-inference rebuild requested for G6. The primary inference was reconstructed from the frozen prediction artifact by an independent entrypoint and verified as a complete object match after narrowly normalizing the documented legacy `"True"`/`"False"` serialization from commit `a602a41`.
 
+The 2026-07-29 completion re-audit found and repaired one reproducibility gap:
+the formal CLI imported the shared encoder through the repository-parent
+namespace, so the documented module command failed from
+`chem_negative_sampling/`. The canonical import is now the packaged
+`models.pretrained_backbone`, `models*` is included in the wheel, and a
+subprocess regression test runs without adding the repository parent to
+`PYTHONPATH`. This packaging repair does not change the frozen model,
+predictions or statistical result.
+
 This is not an efficacy GO. All three preregistered superiority intervals cross zero.
 
 ## 2. Requirement audit
@@ -30,6 +39,7 @@ This is not an efficacy GO. All three preregistered superiority intervals cross 
 | Type-I and power simulations | familywise type-I = 0.0; power at delta 0.08 = 1.0 over 80 simulations | PASS AS DESIGN CHECK |
 | Independent reconstruction | complete primary inference object verified | PASS |
 | No test-driven baseline selection | comparison order frozen before formal evaluation | PASS |
+| Documented CLI and wheel import | `pc_cng` and shared `models` import from source checkout and wheel | PASS AFTER RE-AUDIT FIX |
 
 `reagent_fraction=0.0` in the available HTE records, despite the model having an explicit reagent channel. This is a data-availability limitation, not evidence that reagent effects were validated. Catalyst availability is 0.5982; solvent 0.9917; temperature and reaction time 1.0.
 

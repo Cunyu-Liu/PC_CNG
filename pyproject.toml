@@ -27,7 +27,7 @@ chem = ["rdkit", "torch", "numpy", "pandas", "scikit-learn"]
 
 [tool.setuptools.packages.find]
 where = ["chem_negative_sampling"]
-include = ["pc_cng*"]
+include = ["pc_cng*", "models*"]
 
 [tool.pytest.ini_options]
 testpaths = ["chem_negative_sampling/tests"]
