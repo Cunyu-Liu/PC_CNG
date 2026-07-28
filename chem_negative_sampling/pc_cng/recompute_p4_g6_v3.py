@@ -6,8 +6,17 @@ import argparse
 import json
 from pathlib import Path
 
+import numpy as np
+
 from pc_cng.p4_g6_benchmark_v3 import validate_formal_analysis_plan
 from pc_cng.p4_g6_inference_v3 import run_preregistered_primary_inference
+
+
+def _json_default(value: object) -> object:
+    """Serialize NumPy scalar results without weakening the result schema."""
+    if isinstance(value, np.generic):
+        return value.item()
+    raise TypeError(f"not JSON serializable: {type(value).__name__}")
 
 
 def main() -> None:
@@ -25,7 +34,9 @@ def main() -> None:
         n_bootstrap=int(plan["n_bootstrap"]),
         n_permutations=int(plan["n_permutations"]),
     )
-    args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+    args.output.write_text(
+        json.dumps(result, indent=2, sort_keys=True, default=_json_default) + "\n"
+    )
     print(args.output)
 
 
