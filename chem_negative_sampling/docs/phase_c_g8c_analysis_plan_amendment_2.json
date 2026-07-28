@@ -1,0 +1,41 @@
+{
+  "phase": "P4-G8C",
+  "amendment": 2,
+  "status": "FROZEN_BEFORE_V2_UNSEEN_HOLDOUT_RUN",
+  "date": "2026-07-29",
+  "v1_result": {
+    "status": "FORMAL_SOURCE_EXPERT_NO_GO",
+    "edit_locus_accuracy": 0.06896551724137931,
+    "edit_type_accuracy": 0.0,
+    "valid_edit_rate": 1.0,
+    "candidate_coverage": 1.0,
+    "calibrated_fnr_ece": 0.11325876501171972,
+    "expert_labels_available": 0
+  },
+  "v2_method": {
+    "separate_reconstruction_and_proposal_heads": true,
+    "real_edit_rehearsal_weight": 0.25,
+    "prevalidated_rehearsal_pool": true,
+    "risk_product_graph_featurizer": true,
+    "risk_full_pool_coverage": true,
+    "risk_class_balanced_bce": true
+  },
+  "v2_holdout": {
+    "reaction_namespace": "phase_c_v2_reaction_holdout_v1",
+    "pair_namespace": "phase_c_v2_pair_holdout_v1",
+    "risk_namespace": "phase_c_v2_risk_holdout_v1",
+    "train_reactions": 582,
+    "holdout_reactions": 137,
+    "train_pairs": 81,
+    "holdout_pairs": 15,
+    "train_risk_examples": 758,
+    "holdout_risk_examples": 165,
+    "holdout_risk_positive": 93,
+    "holdout_risk_negative": 72,
+    "source_validation_excluded": true,
+    "source_test_sealed": true
+  },
+  "thresholds_changed": false,
+  "full_run_configuration_changed": false,
+  "one_shot_rule": "v2 holdout is evaluated once and cannot be reused for tuning"
+}

@@ -40,6 +40,8 @@ from pc_cng.p4_g8c_learned_structured_proposal import (  # noqa: E402
     EditType,
     StructuredProposalModel,
     _state_dict_sha256,
+    _frozen_hash_partition,
+    _featurize_risk_safe,
     compute_action_logp,
     compute_logp,
     train_stage,
@@ -136,6 +138,11 @@ class TestExtractRealEditTargets:
         assert result["actions"] == []
         assert result["locus"] == 0
 
+    def test_risk_featurizer_keeps_parseable_unmapped_outcome(self):
+        graph = _featurize_risk_safe("CC.O>>CCO")
+        assert graph is not None
+        assert graph.atom_features.shape[0] == 3
+
 
 # ---------------------------------------------------------------------------
 # 2. extract_rule_proposals
@@ -203,6 +210,31 @@ class TestBuildCompetingOutcomePairs:
         }
         assert first_map == second_map
         assert {"train", "val"}.issubset(set(first_map.values()))
+
+    def test_v2_holdout_is_order_invariant_and_group_safe(self):
+        rows = [
+            {"group": f"group-{i // 2}", "record": i}
+            for i in range(100)
+        ]
+        train, holdout = _frozen_hash_partition(
+            rows,
+            lambda row: row["group"],
+            namespace="phase_c_v2_test",
+        )
+        train_groups = {row["group"] for row in train}
+        holdout_groups = {row["group"] for row in holdout}
+        assert train_groups.isdisjoint(holdout_groups)
+        reverse_train, reverse_holdout = _frozen_hash_partition(
+            list(reversed(rows)),
+            lambda row: row["group"],
+            namespace="phase_c_v2_test",
+        )
+        assert {row["record"] for row in train} == {
+            row["record"] for row in reverse_train
+        }
+        assert {row["record"] for row in holdout} == {
+            row["record"] for row in reverse_holdout
+        }
 
 
 # ---------------------------------------------------------------------------
@@ -364,6 +396,30 @@ class TestFourStageTraining:
         )
         assert log[-1]["formal_supervision"] is True
         assert "arg_loss" in log[-1]["components"]
+
+    def test_formal_stage3_uses_prevalidated_real_edit_rehearsal(
+            self, tiny_reactions, caches, device):
+        model = StructuredProposalModel(hidden_dim=32, num_heads=2,
+                                        num_layers=1, dropout=0.1)
+        log = train_stage(
+            model, stage=3,
+            train_reactions=tiny_reactions,
+            val_reactions=tiny_reactions[:2],
+            rule_generator=ReactionBoundaryGenerator(),
+            epochs=1, batch_size=4, lr=1e-3,
+            device=device, seed=42,
+            edit_targets_cache=caches["edit_targets"],
+            rule_proposals_cache=caches["rule_proposals"],
+            competing_pairs_cache=caches["competing_pairs"],
+            preference_pairs_cache=caches["preference_pairs"],
+            risk_examples_cache=caches["risk_examples"],
+            formal_run=True,
+        )
+        assert log[-1]["formal_supervision"] is True
+        assert (
+            log[-1]["components"]["reconstruction_rehearsal_loss"]
+            > 0.0
+        )
 
     def test_stage2_imitation(self, tiny_reactions, caches, device):
         model = StructuredProposalModel(hidden_dim=32, num_heads=2,

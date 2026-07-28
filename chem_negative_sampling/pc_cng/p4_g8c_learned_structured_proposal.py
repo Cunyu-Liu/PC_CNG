@@ -500,6 +500,14 @@ class StructuredProposalModel(nn.Module):
         self.transformer = ReactionGraphTransformer(
             hidden_dim, num_heads, num_layers, dropout)
         self.center_encoder = ReactionCenterEncoder(hidden_dim)
+        # Reconstruction and proposal actions have different semantics.
+        # A real product-forming BOND_FORM target must not compete in the same
+        # head with rule-generator NOT_APPLICABLE / counterfactual edit types.
+        self.reconstruction_locus_pointer = EditLocusPointer(hidden_dim)
+        self.reconstruction_type_classifier = EditTypeClassifier(
+            hidden_dim,
+            dropout,
+        )
         self.locus_pointer = EditLocusPointer(hidden_dim)
         self.type_classifier = EditTypeClassifier(hidden_dim, dropout)
         self.arg_decoder = AtomBondArgumentDecoder(hidden_dim)
@@ -555,6 +563,7 @@ class StructuredProposalModel(nn.Module):
                 center_summary: Optional[torch.Tensor] = None,
                 locus_index: Optional[torch.Tensor] = None,
                 hard_validity_mask: Optional[torch.Tensor] = None,
+                action_head: str = "proposal",
                 ) -> StructuredProposalOutput:
         node_emb, graph_emb = self.transformer(batch)
         num_graphs = len(batch.graphs)
@@ -562,12 +571,20 @@ class StructuredProposalModel(nn.Module):
         center_ctx = self.center_encoder(
             node_emb, batch_idx, num_graphs, center_summary)
         graph_ctx = graph_emb + center_ctx
-        locus_logits = self.locus_pointer(
+        if action_head == "reconstruction":
+            locus_pointer = self.reconstruction_locus_pointer
+            type_classifier = self.reconstruction_type_classifier
+        elif action_head == "proposal":
+            locus_pointer = self.locus_pointer
+            type_classifier = self.type_classifier
+        else:
+            raise ValueError(f"unknown action_head={action_head!r}")
+        locus_logits = locus_pointer(
             node_emb, graph_ctx, batch_idx, num_graphs)
         locus_idx = locus_index if locus_index is not None else \
             locus_logits.argmax(dim=-1)
         locus_emb = self._gather_locus_emb(node_emb, batch_idx, num_graphs, locus_idx)
-        type_logits = self.type_classifier(graph_ctx, locus_emb)
+        type_logits = type_classifier(graph_ctx, locus_emb)
         arg_logits = self.arg_decoder(graph_ctx, locus_emb)
         arg_logits["migrate_logits"] = self._migration_logits(
             node_emb,
@@ -2007,10 +2024,7 @@ def _collate_risk_examples(
     graphs: List[ReactionGraphData] = []
     labels: List[float] = []
     for example in examples:
-        graph = _featurize_safe(
-            str(example["reaction_smiles"]),
-            map_unmapped=map_unmapped,
-        )
+        graph = _featurize_risk_safe(str(example["reaction_smiles"]))
         if graph is None:
             continue
         graphs.append(graph)
@@ -2021,6 +2035,52 @@ def _collate_risk_examples(
         _batch_from_graphs(graphs, device),
         torch.tensor(labels, device=device, dtype=torch.float32),
     )
+
+
+def _featurize_risk_safe(
+    reaction_smiles: str,
+) -> Optional[ReactionGraphData]:
+    """Featurize any parseable candidate product for FNR supervision.
+
+    Formal edit reconstruction intentionally requires a mapped reaction with a
+    valid edit grammar.  Candidate-level risk does not: known-positive
+    collisions and measured HTE outcomes without a formed bond are still
+    legitimate risk labels.  This product-graph path prevents silently
+    discarding those labels.
+    """
+    if Chem is None:
+        return None
+    reactants, product = _safe_split(reaction_smiles)
+    molecule = Chem.MolFromSmiles(product) if product else None
+    if molecule is None or molecule.GetNumAtoms() == 0:
+        return None
+    try:
+        map_to_idx = {
+            atom.GetAtomMapNum(): atom.GetIdx()
+            for atom in molecule.GetAtoms()
+            if atom.GetAtomMapNum()
+        }
+        atom_features, edge_index, edge_features, atom_map_nums = (
+            _build_product_graph(molecule, map_to_idx)
+        )
+        return ReactionGraphData(
+            atom_features=atom_features,
+            edge_index=edge_index,
+            edge_features=edge_features,
+            atom_map_nums=atom_map_nums,
+            true_anchor_idx=0,
+            candidate_anchor_indices=list(range(molecule.GetNumAtoms())),
+            source_id="formal_risk",
+            pair_id="formal_risk|0",
+            mapped_reaction=reaction_smiles,
+            reactants=reactants,
+            product=product,
+            fragment_map=0,
+            true_anchor_map=0,
+            atom_map_to_idx=map_to_idx,
+        )
+    except Exception:
+        return None
 
 
 def compute_logp(out: StructuredProposalOutput, loci: torch.Tensor,
@@ -2166,11 +2226,42 @@ def train_stage_formal(
     stage2_loss = Stage2ImitationLoss()
     stage3_loss = Stage3ContrastiveLoss()
     log = log if log is not None else []
-    n_steps = (
-        len(train_reactions)
-        if stage in {1, 2}
-        else len(competing_pairs_cache if stage == 3 else preference_pairs_cache)
+    if stage in {1, 2}:
+        n_steps = len(train_reactions)
+    elif stage == 3:
+        n_steps = max(
+            len(competing_pairs_cache),
+            len(risk_examples_cache),
+        )
+    else:
+        n_steps = len(preference_pairs_cache)
+    risk_positive = sum(
+        int(example["risk_label"]) == 1
+        for example in risk_examples_cache
     )
+    risk_negative = len(risk_examples_cache) - risk_positive
+    rehearsal_pool: List[Tuple[ReactionGraphData, Dict[str, int]]] = []
+    if stage != 1:
+        for reaction in train_reactions:
+            graph = _featurize_safe(
+                str(reaction),
+                map_unmapped=map_unmapped,
+            )
+            if graph is None:
+                continue
+            targets = _real_actions_for_graph(
+                str(reaction),
+                graph,
+                edit_targets_cache,
+                formal_run=True,
+            )
+            if targets:
+                rehearsal_pool.append((graph, targets[0]))
+        if not rehearsal_pool:
+            raise RuntimeError(
+                f"formal G8-C Stage {stage} has no prevalidated real-edit "
+                "rehearsal examples"
+            )
 
     for epoch in range(epochs):
         model.train()
@@ -2214,7 +2305,11 @@ def train_stage_formal(
                     device=device,
                     dtype=torch.long,
                 )
-                output = model(batch, locus_index=loci)
+                output = model(
+                    batch,
+                    locus_index=loci,
+                    action_head="reconstruction",
+                )
                 loss, components = stage1_loss(
                     output,
                     loci,
@@ -2336,9 +2431,23 @@ def train_stage_formal(
                         "formal G8-C Stage 3 could not collate risk supervision"
                     )
                 risk_output = model(risk_batch)
+                per_example_weight = torch.where(
+                    risk_labels > 0.5,
+                    torch.full_like(
+                        risk_labels,
+                        len(risk_examples_cache)
+                        / max(2.0 * risk_positive, 1.0),
+                    ),
+                    torch.full_like(
+                        risk_labels,
+                        len(risk_examples_cache)
+                        / max(2.0 * risk_negative, 1.0),
+                    ),
+                )
                 risk_bce = F.binary_cross_entropy(
                     risk_output.risk,
                     risk_labels,
+                    weight=per_example_weight,
                 )
                 loss = contrastive + risk_bce
                 components["risk_bce"] = float(risk_bce.item())
@@ -2445,6 +2554,73 @@ def train_stage_formal(
                     "max_abs_log_ratio": float(delta.abs().max().item()),
                     "mean_observed_yield_weight": float(yield_weights.mean().item()),
                 }
+
+            if stage != 1:
+                rehearsal_graphs: List[ReactionGraphData] = []
+                rehearsal_targets: List[Dict[str, int]] = []
+                for position, raw_index in enumerate(indices):
+                    graph, target = rehearsal_pool[
+                        (int(raw_index) + epoch + position)
+                        % len(rehearsal_pool)
+                    ]
+                    rehearsal_graphs.append(graph)
+                    rehearsal_targets.append(target)
+                rehearsal_batch = _batch_from_graphs(
+                    rehearsal_graphs,
+                    device,
+                )
+                rehearsal_loci = torch.tensor(
+                    [target["locus"] for target in rehearsal_targets],
+                    device=device,
+                    dtype=torch.long,
+                )
+                rehearsal_types = torch.tensor(
+                    [target["edit_type"] for target in rehearsal_targets],
+                    device=device,
+                    dtype=torch.long,
+                )
+                rehearsal_output = model(
+                    rehearsal_batch,
+                    locus_index=rehearsal_loci,
+                    action_head="reconstruction",
+                )
+                rehearsal_loss, rehearsal_components = stage1_loss(
+                    rehearsal_output,
+                    rehearsal_loci,
+                    rehearsal_types,
+                    {
+                        "atom_logits": torch.tensor(
+                            [
+                                target["atom_target"]
+                                for target in rehearsal_targets
+                            ],
+                            device=device,
+                            dtype=torch.long,
+                        ),
+                        "bond_logits": torch.tensor(
+                            [
+                                target["bond_target"]
+                                for target in rehearsal_targets
+                            ],
+                            device=device,
+                            dtype=torch.long,
+                        ),
+                        "migrate_logits": torch.tensor(
+                            [
+                                target["migrate_target"]
+                                for target in rehearsal_targets
+                            ],
+                            device=device,
+                            dtype=torch.long,
+                        ),
+                    },
+                )
+                loss = loss + 0.25 * rehearsal_loss
+                components["reconstruction_rehearsal_loss"] = float(
+                    rehearsal_loss.item()
+                )
+                for key, value in rehearsal_components.items():
+                    components[f"rehearsal_{key}"] = value
 
             if not torch.isfinite(loss):
                 raise RuntimeError(
@@ -2879,6 +3055,24 @@ def _deterministic_subset(
     return [rows[int(index)] for index in sorted(indices)]
 
 
+def _frozen_hash_partition(
+    rows: Sequence[Any],
+    key_fn,
+    *,
+    namespace: str,
+    holdout_modulus: int = 5,
+) -> Tuple[List[Any], List[Any]]:
+    """Group-safe deterministic train/holdout partition."""
+    train: List[Any] = []
+    holdout: List[Any] = []
+    for row in rows:
+        key = str(key_fn(row))
+        token = f"{namespace}|{key}".encode("utf-8")
+        bucket = int(hashlib.sha256(token).hexdigest()[:8], 16)
+        (holdout if bucket % holdout_modulus == 0 else train).append(row)
+    return train, holdout
+
+
 def _proportion_metric(successes: int, total: int) -> Dict[str, Any]:
     low, high = _wilson_interval(successes, total)
     return {
@@ -2925,7 +3119,7 @@ def evaluate_formal_edit_validation(
             )
             if batch is None:
                 continue
-            output = model(batch)
+            output = model(batch, action_head="reconstruction")
             predicted_loci = output.locus_logits.argmax(-1)
             predicted_types = output.type_logits.argmax(-1)
             for row, reaction in enumerate(successful):
@@ -3502,6 +3696,16 @@ def main() -> None:
     parser.add_argument("--formal-risk-val-limit", type=int, default=2048)
     parser.add_argument("--formal-reward-val-limit", type=int, default=256)
     parser.add_argument(
+        "--formal-partition",
+        choices=("v1_source_split", "v2_unseen_train_holdout"),
+        default="v1_source_split",
+        help=(
+            "v2 excludes the already-consumed source validation split and "
+            "creates a new group-hash holdout from previously unevaluated "
+            "source-training groups"
+        ),
+    )
+    parser.add_argument(
         "--formal-run", action="store_true",
         help="Fail closed unless all real G8-C supervision caches and the "
              "post-Stage-3 reference policy are available; disables pseudo-label fallbacks",
@@ -3588,9 +3792,62 @@ def main() -> None:
 
     if args.formal_run:
         assert g8c_data is not None
-        train_rxns = list(dict.fromkeys(g8c_data["reactions"]["train"]))
-        val_rxns = list(dict.fromkeys(g8c_data["reactions"]["val"]))
+        source_train_reactions = list(
+            dict.fromkeys(g8c_data["reactions"]["train"])
+        )
+        source_val_reactions = list(
+            dict.fromkeys(g8c_data["reactions"]["val"])
+        )
         test_rxns = list(dict.fromkeys(g8c_data["reactions"]["test"]))
+        if args.formal_partition == "v2_unseen_train_holdout":
+            train_rxns, val_rxns = _frozen_hash_partition(
+                source_train_reactions,
+                lambda reaction: reaction,
+                namespace="phase_c_v2_reaction_holdout_v1",
+            )
+            competing_train, competing_val = _frozen_hash_partition(
+                g8c_data["competing_pairs_by_split"]["train"],
+                lambda pair: pair["context_key"],
+                namespace="phase_c_v2_pair_holdout_v1",
+            )
+            preference_train, val_preference_pairs = _frozen_hash_partition(
+                g8c_data["preference_pairs_by_split"]["train"],
+                lambda pair: pair["context_key"],
+                namespace="phase_c_v2_pair_holdout_v1",
+            )
+            risk_train, risk_val = _frozen_hash_partition(
+                g8c_data["risk_supervision"]["by_split"]["train"],
+                lambda row: (
+                    row.get("experimental_group")
+                    or row.get("record_id")
+                    or row["reaction_smiles"]
+                ),
+                namespace="phase_c_v2_risk_holdout_v1",
+            )
+            development_excluded = {
+                "source_validation_reactions": len(source_val_reactions),
+                "v1_validation_competing_pairs": len(
+                    g8c_data["competing_pairs_by_split"]["val"]
+                ),
+                "v1_validation_preference_pairs": len(
+                    g8c_data["preference_pairs_by_split"]["val"]
+                ),
+                "v1_validation_risk_examples": len(
+                    g8c_data["risk_supervision"]["by_split"]["val"]
+                ),
+            }
+        else:
+            train_rxns = source_train_reactions
+            val_rxns = source_val_reactions
+            competing_train = g8c_data["competing_pairs"]
+            competing_val = g8c_data["competing_pairs_by_split"]["val"]
+            preference_train = g8c_data["preference_pairs"]
+            val_preference_pairs = (
+                g8c_data["preference_pairs_by_split"]["val"]
+            )
+            risk_train = g8c_data["risk_supervision"]["by_split"]["train"]
+            risk_val = g8c_data["risk_supervision"]["by_split"]["val"]
+            development_excluded = {}
         if args.limit_train is not None:
             train_rxns = train_rxns[:args.limit_train]
         if args.limit_val is not None:
@@ -3606,27 +3863,19 @@ def main() -> None:
                 "formal G8-C rule cache does not cover the frozen training "
                 f"subset ({len(missing_rule_targets)} missing)"
             )
-        risk_by_split = g8c_data["risk_supervision"]["by_split"]
         risk_train = [
-            row for row in risk_by_split["train"]
-            if _featurize_safe(
-                str(row["reaction_smiles"]),
-                map_unmapped=args.map_unmapped,
-            ) is not None
+            row for row in risk_train
+            if _featurize_risk_safe(str(row["reaction_smiles"])) is not None
         ]
         risk_val = [
-            row for row in risk_by_split["val"]
-            if _featurize_safe(
-                str(row["reaction_smiles"]),
-                map_unmapped=args.map_unmapped,
-            ) is not None
+            row for row in risk_val
+            if _featurize_risk_safe(str(row["reaction_smiles"])) is not None
         ]
         if not risk_train or not risk_val:
             raise RuntimeError(
                 "formal G8-C requires non-empty featurizable train and "
                 "validation risk supervision"
             )
-        val_preference_pairs = g8c_data["preference_pairs_by_split"]["val"]
         if not val_preference_pairs:
             raise RuntimeError(
                 "formal G8-C requires held-out validation preference pairs"
@@ -3635,12 +3884,32 @@ def main() -> None:
             f"[{PHASE}] frozen HTE split: train={len(train_rxns)} "
             f"val={len(val_rxns)} sealed_test={len(test_rxns)} "
             f"risk_train={len(risk_train)} risk_val={len(risk_val)} "
-            f"val_preferences={len(val_preference_pairs)}"
+            f"train_pairs={len(competing_train)} "
+            f"val_preferences={len(val_preference_pairs)} "
+            f"partition={args.formal_partition}"
         )
+        formal_data_audit = {
+            **g8c_data["data_audit"],
+            "formal_partition": args.formal_partition,
+            "n_model_train_reactions": len(train_rxns),
+            "n_model_validation_reactions": len(val_rxns),
+            "n_model_train_competing_pairs": len(competing_train),
+            "n_model_validation_competing_pairs": len(competing_val),
+            "n_model_train_preference_pairs": len(preference_train),
+            "n_model_validation_preference_pairs": len(
+                val_preference_pairs
+            ),
+            "n_model_train_risk_examples": len(risk_train),
+            "n_model_validation_risk_examples": len(risk_val),
+            "development_excluded": development_excluded,
+        }
     else:
         risk_train = []
         risk_val = []
         val_preference_pairs = []
+        competing_train = []
+        preference_train = []
+        formal_data_audit = {}
 
     model = StructuredProposalModel(
         hidden_dim=args.hidden_dim, num_heads=args.num_heads,
@@ -3670,8 +3939,14 @@ def main() -> None:
                 map_unmapped=args.map_unmapped,
                 edit_targets_cache=g8c_data['edit_targets'] if g8c_data else None,
                 rule_proposals_cache=g8c_data['rule_proposals'] if g8c_data else None,
-                competing_pairs_cache=g8c_data['competing_pairs'] if g8c_data else None,
-                preference_pairs_cache=g8c_data['preference_pairs'] if g8c_data else None,
+                competing_pairs_cache=(
+                    competing_train if args.formal_run
+                    else (g8c_data["competing_pairs"] if g8c_data else None)
+                ),
+                preference_pairs_cache=(
+                    preference_train if args.formal_run
+                    else (g8c_data["preference_pairs"] if g8c_data else None)
+                ),
                 risk_examples_cache=risk_train if args.formal_run else None,
                 ref_model=ref_model if st == 4 else None,
                 formal_run=args.formal_run)
@@ -3739,7 +4014,7 @@ def main() -> None:
             "validation_only": True,
             "sealed_test_untouched": True,
             "tiny_self_built_mlp_evaluation": "DISABLED",
-            "data_audit": g8c_data["data_audit"],
+            "data_audit": formal_data_audit,
             "risk_source_availability": (
                 g8c_data["risk_supervision"]["source_availability"]
             ),
@@ -3778,6 +4053,7 @@ def main() -> None:
                 "phase": PHASE,
                 "version": "formal_source_expert_v1",
                 "formal_run": True,
+                "formal_partition": args.formal_partition,
                 "gpu": str(device),
                 "n_train_reactions": len(train_rxns),
                 "n_validation_reactions": len(val_rxns),
