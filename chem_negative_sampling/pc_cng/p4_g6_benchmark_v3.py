@@ -28,6 +28,8 @@ from typing import Any, Iterable, Mapping, Sequence
 import numpy as np
 import torch
 from rdkit import Chem
+from scipy.stats import spearmanr
+from sklearn.metrics import average_precision_score, ndcg_score
 from torch import nn
 import torch.nn.functional as F
 
@@ -59,6 +61,11 @@ CANDIDATE_INTEGRITY_CONTRACT = {
     "selection_order": "lowest source rank then candidate_id among non-colliding candidates",
     "cross_source_duplicates": "retain and report",
     "analysis_status": "CORRECTED_REANALYSIS_TEST_OUTCOMES_PREVIOUSLY_OBSERVED",
+}
+METRIC_IMPLEMENTATION_CONTRACT = {
+    "T1_and_T5_auprc": "sklearn.metrics.average_precision_score with threshold-level tie handling",
+    "T3_spearman": "scipy.stats.spearmanr with average ranks for ties",
+    "T4_ndcg": "sklearn.metrics.ndcg_score with ignore_ties=false",
 }
 SOURCE_ALIASES = {
     "pc_cng": "rule_pc_cng",
@@ -97,6 +104,7 @@ class FormalAnalysisPlan:
             "n_bootstrap": self.n_bootstrap,
             "n_permutations": self.n_permutations,
             "candidate_integrity_contract": dict(CANDIDATE_INTEGRITY_CONTRACT),
+            "metric_implementation_contract": dict(METRIC_IMPLEMENTATION_CONTRACT),
         }
 
 
@@ -121,6 +129,8 @@ def validate_formal_analysis_plan(plan: Mapping[str, Any]) -> None:
         raise ValueError("formal analysis plan source aliases differ from the frozen contract")
     if dict(plan.get("candidate_integrity_contract", {})) != CANDIDATE_INTEGRITY_CONTRACT:
         raise ValueError("formal analysis plan candidate integrity contract differs from the corrected contract")
+    if dict(plan.get("metric_implementation_contract", {})) != METRIC_IMPLEMENTATION_CONTRACT:
+        raise ValueError("formal analysis plan metric implementation contract differs from the corrected contract")
 
 
 def stable_int(value: str) -> int:
@@ -676,38 +686,35 @@ def assert_matched_source_arms(arms: Mapping[str, Sequence[Mapping[str, Any]]]) 
 
 
 def _average_precision(labels: Sequence[int], scores: Sequence[float]) -> float:
-    pairs = sorted(zip(scores, labels), key=lambda x: x[0], reverse=True)
-    positives = sum(int(label) for _, label in pairs)
-    if positives == 0:
+    label_values = np.asarray(labels, dtype=int)
+    score_values = np.asarray(scores, dtype=float)
+    if label_values.size == 0 or int(label_values.sum()) == 0:
         return 0.0
-    hit = 0
-    total = 0.0
-    for rank, (_, label) in enumerate(pairs, start=1):
-        if label:
-            hit += 1
-            total += hit / rank
-    return float(total / positives)
+    return float(average_precision_score(label_values, score_values))
 
 
 def _spearman(x: Sequence[float], y: Sequence[float]) -> float:
     if len(x) < 2:
         return 0.0
-    x_rank = np.argsort(np.argsort(np.asarray(x, dtype=float))).astype(float)
-    y_rank = np.argsort(np.argsort(np.asarray(y, dtype=float))).astype(float)
-    if x_rank.std() == 0 or y_rank.std() == 0:
+    statistic = float(
+        spearmanr(
+            np.asarray(x, dtype=float),
+            np.asarray(y, dtype=float),
+        ).statistic
+    )
+    if not np.isfinite(statistic):
         return 0.0
-    return float(np.corrcoef(x_rank, y_rank)[0, 1])
+    return statistic
 
 
 def _ndcg(yields: Sequence[float], scores: Sequence[float]) -> float:
     if len(yields) < 2:
         return 0.0
-    gains = np.power(2.0, np.asarray(yields, dtype=float) / 100.0) - 1.0
-    predicted = gains[np.argsort(-np.asarray(scores, dtype=float))]
-    ideal = np.sort(gains)[::-1]
-    discount = 1.0 / np.log2(np.arange(len(gains)) + 2.0)
-    denom = float(np.sum(ideal * discount))
-    return float(np.sum(predicted * discount) / denom) if denom > 0 else 0.0
+    relevance = np.asarray(yields, dtype=float).reshape(1, -1)
+    prediction = np.asarray(scores, dtype=float).reshape(1, -1)
+    if float(relevance.max()) <= 0:
+        return 0.0
+    return float(ndcg_score(relevance, prediction, ignore_ties=False))
 
 
 def source_macro_auprc(records: Sequence[Mapping[str, Any]], source_key: str = "source_publication") -> float:

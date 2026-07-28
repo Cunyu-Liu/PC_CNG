@@ -24,6 +24,11 @@
     "cross_source_duplicates": "retain and report",
     "analysis_status": "CORRECTED_REANALYSIS_TEST_OUTCOMES_PREVIOUSLY_OBSERVED"
   },
-  "amendment_reason": "A completion audit of the training manifest found one template candidate identical to its observed parent product. Parent-positive collisions are label-invalid and are excluded before source selection. Cross-source duplicate candidates are retained and reported because independent methods may converge on the same structure.",
+  "metric_implementation_contract": {
+    "T1_and_T5_auprc": "sklearn.metrics.average_precision_score with threshold-level tie handling",
+    "T3_spearman": "scipy.stats.spearmanr with average ranks for ties",
+    "T4_ndcg": "sklearn.metrics.ndcg_score with ignore_ties=false"
+  },
+  "amendment_reason": "A completion audit found one template training candidate identical to its observed parent product and found that the prior custom average-precision, Spearman and NDCG implementations did not use standard tie handling. Parent-positive collisions are label-invalid and are excluded before source selection. Cross-source duplicate candidates are retained and reported because independent methods may converge on the same structure. Primary AUPRC and secondary rank metrics now use standard sklearn/SciPy implementations with explicit tie semantics.",
   "freeze_statement": "This corrected reanalysis plan was frozen after the training-manifest integrity finding and before the corrected GPU run. The original test outcomes had already been observed. The endpoint, thresholds, comparison family, non-inferiority margin, source aliases, seed count and inferential procedure are unchanged. This run is a corrected reanalysis, not a new blind confirmation."
 }

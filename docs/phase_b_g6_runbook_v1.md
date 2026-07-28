@@ -90,6 +90,10 @@ ordered Bonferroni products. Rejection stops after the first non-rejection.
 The regression suite includes a case where the unmodified ordered products
 would decrease.
 
+Primary AUPRC is computed by `sklearn.metrics.average_precision_score`.
+This threshold-based implementation is invariant to record ordering when
+scores are tied; the regression suite checks that invariant explicitly.
+
 The formal run fails closed if any tracked file differs from `HEAD` or if its
 output directory is non-empty. User-owned untracked files do not invalidate
 the tracked-code identity. The run manifest records the exact process argv,

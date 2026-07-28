@@ -11,9 +11,9 @@ import pytest
 import torch
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-# The benchmark is launched as ``pc_cng`` but imports the frozen Chemformer
-# through the repository namespace.  Preserve both paths in the test so this
-# catches the same integration contract as the formal module invocation.
+# Preserve both source-checkout paths for in-process legacy tests. The
+# subprocess test below deliberately removes repository-parent/PYTHONPATH help
+# and exercises the documented package entrypoint.
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "chem_negative_sampling"))
 
@@ -21,8 +21,10 @@ from pc_cng.p4_g6_benchmark_v3 import (  # noqa: E402
     CumulativeLinkHead,
     FormalAnalysisPlan,
     T1_PRIMARY_LOW_YIELD_THRESHOLD,
+    _ndcg,
     assert_matched_source_arms,
     _pair_indices,
+    _spearman,
     load_matched_source_arms,
     normalized_condition_fields,
     partition_context_complete_records,
@@ -168,6 +170,30 @@ def test_single_source_macro_reports_no_cross_publication_replication():
     assert diagnostics["source_publication_slices_total"] == 1.0
     assert diagnostics["source_publication_slices_evaluable"] == 1.0
     assert diagnostics["source_macro_has_cross_publication_replication"] == 0.0
+
+
+def test_primary_auprc_is_tie_order_invariant():
+    records = [
+        {"record_id": "a", "source_publication": "ONE", "label": 1, "score": 0.5},
+        {"record_id": "b", "source_publication": "ONE", "label": 0, "score": 0.5},
+        {"record_id": "c", "source_publication": "ONE", "label": 1, "score": 0.5},
+        {"record_id": "d", "source_publication": "ONE", "label": 0, "score": 0.5},
+    ]
+    expected = 0.5
+    assert source_macro_auprc(records) == pytest.approx(expected)
+    assert source_macro_auprc(list(reversed(records))) == pytest.approx(expected)
+
+
+def test_secondary_rank_metrics_use_standard_tie_handling():
+    assert _spearman([1.0, 1.0, 2.0, 3.0], [1.0, 2.0, 2.0, 3.0]) == pytest.approx(
+        5.0 / 6.0
+    )
+    yields = [100.0, 50.0, 0.0]
+    tied_scores = [0.5, 0.5, 0.5]
+    assert _ndcg(yields, tied_scores) == pytest.approx(
+        _ndcg(list(reversed(yields)), list(reversed(tied_scores)))
+    )
+    assert _ndcg(yields, [3.0, 2.0, 1.0]) == pytest.approx(1.0)
 
 
 def test_smoke_sampling_is_deterministic_and_exercises_both_t5_classes():

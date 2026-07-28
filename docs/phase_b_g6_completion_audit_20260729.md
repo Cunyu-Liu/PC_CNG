@@ -43,7 +43,34 @@ symmetric arm noise. The corrected simulation is explicitly a post-
 implementation design check; it does not retroactively strengthen or
 preregister the efficacy result.
 
+The original primary AUPRC helper sorted tied scores record by record and
+therefore depended on input order. A historical prediction audit showed
+single-seed differences of roughly 0.003--0.004 relative to
+`sklearn.metrics.average_precision_score`, which is material at the observed
+effect scale. The corrected amendment uses sklearn's threshold-level tie
+handling for every primary, bootstrap, permutation and simulation metric call,
+and a regression test requires permutation invariance when scores are tied.
+All earlier AUPRC inference artifacts are deprecated.
+
+The same audit replaced the secondary hand-written Spearman ranks and NDCG
+ordering with `scipy.stats.spearmanr` and
+`sklearn.metrics.ndcg_score(ignore_ties=False)`. These secondary corrections
+cannot rescue or overturn a primary superiority claim, but they prevent
+record-order-dependent diagnostic reporting.
+
 This is not an efficacy GO. All three preregistered superiority intervals cross zero.
+
+Two completion-re-audit attempts were intentionally stopped before result
+acceptance and remain preserved as failed-run evidence:
+
+- `f752be6`: the manifest attempted to hash a non-existent legacy task-head
+  path at finalization;
+- `1615593`: a training-manifest audit found one template candidate identical
+  to its observed parent product.
+
+Neither attempt is a completed scientific result. The authoritative corrected
+reanalysis must originate from a later clean commit, exclude parent-positive
+collisions under the v2 amendment, and pass independent reconstruction.
 
 ## 2. Requirement audit
 
