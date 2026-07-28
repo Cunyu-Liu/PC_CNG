@@ -77,6 +77,17 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _formal_code_hashes() -> dict[str, str]:
+    """Hash every implementation file that defines the formal result."""
+    paths = {
+        "runner": Path(__file__),
+        "benchmark": REPO_ROOT / "chem_negative_sampling/pc_cng/p4_g6_benchmark_v3.py",
+        "inference": REPO_ROOT / "chem_negative_sampling/pc_cng/p4_g6_inference_v3.py",
+        "paired_cluster_inference": REPO_ROOT / "chem_negative_sampling/pc_cng/paired_cluster_inference.py",
+    }
+    return {name: _sha256(path) for name, path in paths.items()}
+
+
 def _git_sha() -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, text=True).strip()
 
@@ -308,13 +319,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "exact_argv": list(getattr(sys, "orig_argv", sys.argv)),
         "command_contract": {"formal_run": args.formal_run, "smoke": args.smoke, "device": str(args.device), "n_seeds": args.n_seeds, "n_bootstrap": args.n_bootstrap, "n_permutations": args.n_permutations},
         "input_hashes": result["input_hashes"],
-        "code_hashes": {
-            "runner": _sha256(Path(__file__)),
-            "benchmark": _sha256(REPO_ROOT / "chem_negative_sampling/pc_cng/p4_g6_benchmark_v3.py"),
-            "inference": _sha256(REPO_ROOT / "chem_negative_sampling/pc_cng/p4_g6_inference_v3.py"),
-            "paired_cluster_inference": _sha256(REPO_ROOT / "chem_negative_sampling/pc_cng/paired_cluster_inference.py"),
-            "task_heads": _sha256(REPO_ROOT / "chem_negative_sampling/pc_cng/p4_g6_task_heads.py"),
-        },
+        "code_hashes": _formal_code_hashes(),
         "output_hashes": {
             "formal_result_v3": _sha256(result_path),
             "predictions_t5_v3": _sha256(prediction_path),

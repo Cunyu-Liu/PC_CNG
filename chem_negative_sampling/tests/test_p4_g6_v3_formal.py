@@ -38,7 +38,7 @@ from pc_cng.p4_g6_inference_v3 import (  # noqa: E402
     simulate_inference_operating_characteristics,
 )
 from pc_cng.paired_cluster_inference import holm_correction  # noqa: E402
-from pc_cng.run_p4_g6_v3 import select_stratified_smoke_records  # noqa: E402
+from pc_cng.run_p4_g6_v3 import _formal_code_hashes, select_stratified_smoke_records  # noqa: E402
 from pc_cng.verify_p4_g6_v3 import (  # noqa: E402
     canonicalize_legacy_json_scalars,
     verify_reconstruction,
@@ -71,6 +71,17 @@ def test_documented_phase_b_cli_imports_without_repository_parent_path():
     )
     assert completed.returncode == 0, completed.stderr
     assert completed.stdout.strip() == "g6_v3_formal_20260728"
+
+
+def test_formal_manifest_code_hash_inputs_exist():
+    hashes = _formal_code_hashes()
+    assert set(hashes) == {
+        "runner",
+        "benchmark",
+        "inference",
+        "paired_cluster_inference",
+    }
+    assert all(len(value) == 64 for value in hashes.values())
 
 
 def _record(index: int, *, split: str = "train", yield_value: float = 80.0) -> dict:
