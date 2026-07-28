@@ -1,0 +1,22 @@
+{
+  "schema_version": "g6_v3_formal_20260728",
+  "primary_endpoint": "T5_condition_feasibility_source_macro_auprc",
+  "t1_low_yield_threshold": 10.0,
+  "t5_feasibility_threshold": 50.0,
+  "ordinal_bin_edges": [0.0, 10.0, 30.0, 50.0, 70.0, "inf"],
+  "primary_comparisons": [
+    "pc_cng_vs_random",
+    "pc_cng_vs_template_rule",
+    "union_vs_pc_cng"
+  ],
+  "noninferiority_margin": 0.02,
+  "source_aliases": {
+    "pc_cng": "rule_pc_cng",
+    "random": "random_mismatch",
+    "template_rule": "template_perturbation"
+  },
+  "n_seeds": 5,
+  "n_bootstrap": 2000,
+  "n_permutations": 10000,
+  "freeze_statement": "This plan was frozen before any G6 v3 test outcome. No test-set baseline selection, threshold changes, source-ratio tuning, or endpoint substitution is allowed."
+}
