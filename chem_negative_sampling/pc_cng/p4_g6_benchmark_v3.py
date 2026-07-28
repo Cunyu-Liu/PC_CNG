@@ -50,6 +50,7 @@ PRIMARY_ENDPOINT = "T5_condition_feasibility_source_macro_auprc"
 T1_PRIMARY_LOW_YIELD_THRESHOLD = 10.0
 T5_FEASIBILITY_THRESHOLD = 50.0
 ORDINAL_BIN_EDGES = (0.0, 10.0, 30.0, 50.0, 70.0, float("inf"))
+FORMAL_MAX_SEQ_LEN = 512
 PRE_REGISTERED_NONINFERIORITY_MARGIN = 0.02
 PRE_REGISTERED_PRIMARY_COMPARISONS = (
     "pc_cng_vs_random",
@@ -89,6 +90,7 @@ class FormalAnalysisPlan:
     n_seeds: int = 5
     n_bootstrap: int = 2000
     n_permutations: int = 10000
+    max_seq_len: int = FORMAL_MAX_SEQ_LEN
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -103,6 +105,7 @@ class FormalAnalysisPlan:
             "n_seeds": self.n_seeds,
             "n_bootstrap": self.n_bootstrap,
             "n_permutations": self.n_permutations,
+            "max_seq_len": self.max_seq_len,
             "candidate_integrity_contract": dict(CANDIDATE_INTEGRITY_CONTRACT),
             "metric_implementation_contract": dict(METRIC_IMPLEMENTATION_CONTRACT),
         }
@@ -116,6 +119,7 @@ def validate_formal_analysis_plan(plan: Mapping[str, Any]) -> None:
         "t1_low_yield_threshold": T1_PRIMARY_LOW_YIELD_THRESHOLD,
         "t5_feasibility_threshold": T5_FEASIBILITY_THRESHOLD,
         "noninferiority_margin": PRE_REGISTERED_NONINFERIORITY_MARGIN,
+        "max_seq_len": FORMAL_MAX_SEQ_LEN,
     }
     for key, expected in required.items():
         if plan.get(key) != expected:
@@ -199,6 +203,54 @@ def validate_reaction_condition_records(records: Sequence[Mapping[str, Any]], *,
     if formal and min(temp, time) < 0.80:
         raise ValueError(f"formal T5 requires >=80% temperature/time coverage, got {availability}")
     return availability
+
+
+def context_token_visibility(
+    records: Sequence[Mapping[str, Any]],
+    tokenizer: ChemformerTokenizer,
+    *,
+    max_seq_len: int,
+) -> dict[str, int]:
+    """Audit whether every reaction-context segment fits without truncation."""
+    any_truncated = 0
+    product_partially_visible = 0
+    product_not_visible = 0
+    max_total_tokens = 0
+    separator_count = 4
+    for record in records:
+        fields = normalized_condition_fields(record)
+        lengths = [
+            len(tokenizer.encode(segment, add_special=False))
+            for segment in (
+                fields["reactants"],
+                fields["catalysts"],
+                fields["solvents"],
+                fields["reagents"],
+                fields["products"],
+            )
+        ]
+        total_tokens = 2 + separator_count + sum(lengths)
+        max_total_tokens = max(max_total_tokens, total_tokens)
+        if total_tokens > max_seq_len:
+            any_truncated += 1
+        product_start = 1 + separator_count + sum(lengths[:4])
+        retained_product = max(
+            0,
+            min(lengths[4], max_seq_len - 1 - product_start),
+        )
+        if retained_product == 0 and lengths[4] > 0:
+            product_not_visible += 1
+        elif retained_product < lengths[4]:
+            product_partially_visible += 1
+    return {
+        "n_records": len(records),
+        "max_seq_len": int(max_seq_len),
+        "max_total_tokens": int(max_total_tokens),
+        "any_truncated": int(any_truncated),
+        "product_partially_visible": int(product_partially_visible),
+        "product_not_visible": int(product_not_visible),
+        "all_segments_fully_visible": int(any_truncated == 0),
+    }
 
 
 def validate_cluster_contract(
@@ -318,7 +370,7 @@ class SharedPretrainedReactionEncoder(nn.Module):
         checkpoint_path: str | Path = DEFAULT_CHECKPOINT_PATH,
         vocab_path: str | Path = DEFAULT_VOCAB_PATH,
         *,
-        max_seq_len: int = 256,
+        max_seq_len: int = FORMAL_MAX_SEQ_LEN,
         device: str | torch.device = "cuda",
         formal: bool = True,
     ) -> None:

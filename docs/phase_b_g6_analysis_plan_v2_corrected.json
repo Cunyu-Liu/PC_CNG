@@ -18,6 +18,7 @@
   "n_seeds": 5,
   "n_bootstrap": 2000,
   "n_permutations": 10000,
+  "max_seq_len": 512,
   "candidate_integrity_contract": {
     "exclude_parent_positive_collisions": true,
     "selection_order": "lowest source rank then candidate_id among non-colliding candidates",
@@ -29,6 +30,6 @@
     "T3_spearman": "scipy.stats.spearmanr with average ranks for ties",
     "T4_ndcg": "sklearn.metrics.ndcg_score with ignore_ties=false"
   },
-  "amendment_reason": "A completion audit found one template training candidate identical to its observed parent product and found that the prior custom average-precision, Spearman and NDCG implementations did not use standard tie handling. Parent-positive collisions are label-invalid and are excluded before source selection. Cross-source duplicate candidates are retained and reported because independent methods may converge on the same structure. Primary AUPRC and secondary rank metrics now use standard sklearn/SciPy implementations with explicit tie semantics.",
+  "amendment_reason": "A completion audit found one template training candidate identical to its observed parent product, found that the prior custom average-precision, Spearman and NDCG implementations did not use standard tie handling, and found that the earlier 256-token setting truncated candidate products. Parent-positive collisions are label-invalid and are excluded before source selection. Cross-source duplicate candidates are retained and reported because independent methods may converge on the same structure. Primary AUPRC and secondary rank metrics now use standard sklearn/SciPy implementations with explicit tie semantics. The checkpoint-native 512-token limit is frozen and formal runs fail if any train-arm, validation or test segment would be truncated.",
   "freeze_statement": "This corrected reanalysis plan was frozen after the training-manifest integrity finding and before the corrected GPU run. The original test outcomes had already been observed. The endpoint, thresholds, comparison family, non-inferiority margin, source aliases, seed count and inferential procedure are unchanged. This run is a corrected reanalysis, not a new blind confirmation."
 }

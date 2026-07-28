@@ -25,6 +25,7 @@ from pc_cng.p4_g6_benchmark_v3 import (  # noqa: E402
     assert_matched_source_arms,
     _pair_indices,
     _spearman,
+    context_token_visibility,
     load_matched_source_arms,
     normalized_condition_fields,
     partition_context_complete_records,
@@ -113,6 +114,10 @@ def test_frozen_plan_rejects_endpoint_or_threshold_changes():
     changed["t1_low_yield_threshold"] = 20.0
     with pytest.raises(ValueError):
         validate_formal_analysis_plan(changed)
+    changed = FormalAnalysisPlan().to_dict()
+    changed["max_seq_len"] = 256
+    with pytest.raises(ValueError):
+        validate_formal_analysis_plan(changed)
 
 
 def test_condition_contract_keeps_all_fields_and_requires_temperature_time():
@@ -125,6 +130,27 @@ def test_condition_contract_keeps_all_fields_and_requires_temperature_time():
     bad["temperature"] = None
     with pytest.raises(ValueError):
         validate_reaction_condition_records([bad] * 10, formal=True)
+
+
+def test_context_visibility_audit_fails_closed_on_truncation():
+    class CharacterTokenizer:
+        @staticmethod
+        def encode(text: str, add_special: bool = False) -> list[int]:
+            assert not add_special
+            return list(range(len(text)))
+
+    record = _record(0)
+    visible = context_token_visibility(
+        [record], CharacterTokenizer(), max_seq_len=64
+    )
+    assert visible["all_segments_fully_visible"] == 1
+    truncated = context_token_visibility(
+        [{**record, "reactants": "C" * 80}],
+        CharacterTokenizer(),
+        max_seq_len=64,
+    )
+    assert truncated["all_segments_fully_visible"] == 0
+    assert truncated["product_not_visible"] == 1
 
 
 def test_missing_context_is_explicitly_excluded_not_zero_filled():

@@ -18,9 +18,11 @@ import torch
 from pc_cng.p4_g6_benchmark_v3 import (
     FORMAL_SCHEMA_VERSION,
     ConditionNormalizer,
+    FORMAL_MAX_SEQ_LEN,
     FormalAnalysisPlan,
     SharedPretrainedReactionEncoder,
     apply_temperature,
+    context_token_visibility,
     evaluate_secondary_metrics,
     fit_temperature_scaler,
     load_matched_source_arms,
@@ -185,6 +187,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("formal run bootstrap count must equal frozen analysis plan")
     if args.formal_run and int(plan_data["n_permutations"]) != args.n_permutations:
         raise ValueError("formal run permutation count must equal frozen analysis plan")
+    if args.formal_run and int(plan_data["max_seq_len"]) != args.max_seq_len:
+        raise ValueError("formal run max sequence length must equal corrected analysis plan")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     exclusion_path = args.output_dir / "excluded_reaction_context_records_v3.json"
@@ -222,6 +226,36 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         device=args.device,
         formal=args.formal_run,
     )
+    context_visibility = {
+        "train_arms": {
+            arm: context_token_visibility(
+                records,
+                encoder.tokenizer,
+                max_seq_len=args.max_seq_len,
+            )
+            for arm, records in arms.items()
+        },
+        "validation": context_token_visibility(
+            validation_records,
+            encoder.tokenizer,
+            max_seq_len=args.max_seq_len,
+        ),
+        "test": context_token_visibility(
+            test_records,
+            encoder.tokenizer,
+            max_seq_len=args.max_seq_len,
+        ),
+    }
+    if args.formal_run:
+        visibility_checks = [
+            *context_visibility["train_arms"].values(),
+            context_visibility["validation"],
+            context_visibility["test"],
+        ]
+        if any(not item["all_segments_fully_visible"] for item in visibility_checks):
+            raise RuntimeError(
+                "formal reaction-context encoding would truncate one or more segments"
+            )
     validation_features = encoder.encode_records(validation_records, normalizer, batch_size=args.encode_batch_size)
     test_features = encoder.encode_records(test_records, normalizer, batch_size=args.encode_batch_size)
     output_predictions: dict[str, dict[int, list[dict[str, Any]]]] = {}
@@ -286,6 +320,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "input_hashes": {"hte_parquet": _sha256(args.hte_parquet), "manifest": _sha256(args.manifest), "analysis_plan": _sha256(args.analysis_plan)},
         "availability": availability,
         "cluster_contract": cluster_contract,
+        "context_token_visibility": context_visibility,
         "context_exclusions": {"n_input": len(raw_records), "n_included": len(all_records), "n_excluded": len(excluded_context_records), "artifact": str(exclusion_path)},
         "arm_audit": arm_audit,
         "n_train_matched_parents": arm_audit["parent_count"],
@@ -322,7 +357,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     _write_json(manifest_path, {
         "schema_version": FORMAL_SCHEMA_VERSION,
         "exact_argv": list(getattr(sys, "orig_argv", sys.argv)),
-        "command_contract": {"formal_run": args.formal_run, "smoke": args.smoke, "device": str(args.device), "n_seeds": args.n_seeds, "n_bootstrap": args.n_bootstrap, "n_permutations": args.n_permutations},
+        "command_contract": {"formal_run": args.formal_run, "smoke": args.smoke, "device": str(args.device), "n_seeds": args.n_seeds, "n_bootstrap": args.n_bootstrap, "n_permutations": args.n_permutations, "max_seq_len": args.max_seq_len},
         "input_hashes": result["input_hashes"],
         "code_hashes": _formal_code_hashes(),
         "output_hashes": {
@@ -358,7 +393,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--train-batch-size", type=int, default=64)
     parser.add_argument("--encode-batch-size", type=int, default=16)
     parser.add_argument("--max-rank-pairs", type=int, default=4096)
-    parser.add_argument("--max-seq-len", type=int, default=256)
+    parser.add_argument("--max-seq-len", type=int, default=FORMAL_MAX_SEQ_LEN)
     return parser
 
 

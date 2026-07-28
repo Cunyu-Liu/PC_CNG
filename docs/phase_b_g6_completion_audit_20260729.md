@@ -58,6 +58,14 @@ ordering with `scipy.stats.spearmanr` and
 cannot rescue or overturn a primary superiority claim, but they prevent
 record-order-dependent diagnostic reporting.
 
+The earlier 256-token context setting truncated 129 of 5,898 test records:
+109 candidate products were only partially visible and 20 were not visible to
+the encoder. The frozen checkpoint natively supports 512 tokens. At 512, the
+maximum complete sequence lengths are 354 (train), 337 (validation) and 382
+(test), so all observed records fit. The corrected runner audits every matched
+train arm as well as validation and test and fails closed unless all segments
+are fully visible.
+
 This is not an efficacy GO. All three preregistered superiority intervals cross zero.
 
 Two completion-re-audit attempts were intentionally stopped before result
