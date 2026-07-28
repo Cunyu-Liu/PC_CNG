@@ -1,0 +1,24 @@
+{
+  "contract_version": "phase-e-v1",
+  "status": "CANDIDATE_METADATA_ONLY",
+  "registered_at_utc": "2026-07-28T20:18:09.063948+00:00",
+  "dataset": {
+    "dataset_id": "jacs2025_pdcn_external",
+    "title": "Developing Pharmaceutically Relevant Pd-Catalyzed C-N Coupling Reactivity Models Leveraging HTE",
+    "source_url": "https://figshare.com/articles/dataset/28215923",
+    "doi": "10.1021/jacs.5c00933",
+    "license": "MIT",
+    "reaction_family": "Buchwald-Hartwig C-N coupling",
+    "provider_checksums": [],
+    "upstream_datasets": [
+      "Ha et al. 2025 dedicated HTE"
+    ]
+  },
+  "rationale": "Primary independent real-HTE candidate for Phase E; metadata only until independent label custody is established.",
+  "labels_downloaded_or_inspected_by_development_team": false,
+  "contamination_audit": {
+    "status": "PASS",
+    "reasons": [],
+    "forbidden_index_sha256": "4793f452a71f3fb3de1772a89144f982e24c6e57da15003c5b8056bbb380c42b"
+  }
+}

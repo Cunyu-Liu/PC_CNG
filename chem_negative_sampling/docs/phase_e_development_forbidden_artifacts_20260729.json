@@ -1,0 +1,49 @@
+{
+  "contract_version": "phase-e-v1",
+  "created_at_utc": "2026-07-28T20:18:09.015599+00:00",
+  "artifacts": [
+    {
+      "dataset_id": "hitea_raw",
+      "path": "/home/cunyuliu/pc_cng_research/external/HiTEA/data/8_SEPT_APPROVED_full_dataset.csv",
+      "size_bytes": 30323356,
+      "sha256": "9d3b35b8606538df7fc8dd9104b6dd43188ddc8dc43e3d9d3972e10a621ef889"
+    },
+    {
+      "dataset_id": "hitea_normalized",
+      "path": "/home/cunyuliu/pc_cng_research/data/processed/hitea_full_normalized.csv",
+      "size_bytes": 28331129,
+      "sha256": "eb7ab6a76e6830e7c95bcfec3c5e1fb5d882b3341ba4c28bda426948ce8a07b6"
+    },
+    {
+      "dataset_id": "regiosqm20",
+      "path": "/home/cunyuliu/pc_cng_research/data/processed/regiosqm20_normalized.csv",
+      "size_bytes": 571745,
+      "sha256": "32bc43589c8b77a332dd8516c68bf4e3256417c2a369bbf2770b2cc5f011208d"
+    },
+    {
+      "dataset_id": "ni_coupling",
+      "path": "/home/cunyuliu/pc_cng_research/data/processed/ni_coupling_supplement.csv",
+      "size_bytes": 548758,
+      "sha256": "9bf956f67a51982911ed861465dd08533212af296e408ea84cfd46f06ce4fefa"
+    },
+    {
+      "dataset_id": "ord_development_cache",
+      "path": "/home/cunyuliu/pc_cng_research/data/processed/ord_normalized.csv",
+      "size_bytes": 2479737,
+      "sha256": "c8c1a89897834de750e9e4a2ebb268c3ea770e5055e3927e190e86b253954a8e"
+    },
+    {
+      "dataset_id": "uspto_development",
+      "path": "/home/cunyuliu/pc_cng_research/data/processed/uspto_openmolecules_train_only.csv",
+      "size_bytes": 172094043,
+      "sha256": "9dd976af4399bcaa5dedd097801445a0d21529f25d8cd3cb4bdcb90b8eb8f14c"
+    },
+    {
+      "dataset_id": "phase4_fixed_manifest",
+      "path": "/home/cunyuliu/pc_cng_research/chem_negative_sampling/results/phase4_fixed_testset_v41/run_manifest.json",
+      "size_bytes": 1424,
+      "sha256": "f535edd65a19f2c8a835c92bb2d961381ed65703e7eee62cb459f0b77a12059d"
+    }
+  ],
+  "index_sha256": "4793f452a71f3fb3de1772a89144f982e24c6e57da15003c5b8056bbb380c42b"
+}
