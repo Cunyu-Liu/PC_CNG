@@ -1,0 +1,37 @@
+{
+  "phase": "P4-G8C",
+  "amendment": 1,
+  "status": "FROZEN_AFTER_ENGINEERING_PILOT_BEFORE_FULL_FORMAL_RUN",
+  "date": "2026-07-29",
+  "unchanged_primary_endpoint": "10-bin ECE on independent risk evaluation partition",
+  "unchanged_fnr_ece_threshold": 0.15,
+  "risk_calibration": {
+    "group_partition": "phase_c_risk_calibration_v1",
+    "calibration_fraction": 0.5,
+    "evaluation_fraction": 0.5,
+    "temperature_grid": {
+      "type": "logspace",
+      "minimum": 0.5,
+      "maximum": 5.0,
+      "count": 91
+    },
+    "selection_metric": "binary NLL",
+    "raw_metrics_also_reported": true
+  },
+  "full_run": {
+    "hidden_dim": 128,
+    "num_heads": 4,
+    "num_layers": 3,
+    "epochs_per_stage": 3,
+    "num_rounds": 1,
+    "batch_size": 16,
+    "top_k": 8,
+    "formal_edit_val_limit": 512,
+    "formal_candidate_val_limit": 128,
+    "formal_risk_val_limit": 2048,
+    "formal_reward_val_limit": 256,
+    "seed": 20260724
+  },
+  "sealed_test_untouched": true,
+  "failure_rule": "do not alter configuration, endpoint or threshold after full metrics are read"
+}

@@ -49,7 +49,6 @@ import statistics
 import sys
 import time
 from dataclasses import dataclass, field
-from enum import IntEnum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -92,9 +91,13 @@ from .reaction_center_edit_decoder import (
     move_formed_bond_in_product,
 )
 from .g8c_data_preparation import (
+    DEFAULT_COLLISION_REVIEW,
+    DEFAULT_EXPERT_FORMS,
+    DEFAULT_HTE_PARQUET,
     extract_real_edit_targets,
     load_g8c_training_data,
 )
+from .g8c_action_schema import EditType, GENERATIVE_EDIT_TYPES, NUM_EDIT_TYPES
 from .atom_mapped_graph_edit import (
     ReactionCenterEdit,
     extract_reaction_center,
@@ -124,18 +127,17 @@ DEFAULT_NUM_LAYERS = 3
 DEFAULT_DROPOUT = 0.1
 DEFAULT_TOP_K = 8
 BOND_ORDERS = (1, 2, 3)  # selectable bond orders for bond_order_change
+FORMAL_VALIDATION_THRESHOLDS = {
+    "edit_locus_accuracy_min": 0.20,
+    "edit_type_accuracy_min": 0.50,
+    "valid_edit_rate_min": 0.95,
+    "candidate_coverage_min": 0.80,
+    "fnr_ece_max": 0.15,
+    "reward_max_abs_log_ratio_max": 5.0,
+    "reward_action_type_entropy_min": 0.50,
+}
 
 
-class EditType(IntEnum):
-    """Discrete edit-action taxonomy used by the edit-type classifier."""
-
-    ATOM_TRANSMUTATION = 0
-    BOND_ORDER_CHANGE = 1
-    FORMED_BOND_MIGRATE = 2
-    NO_EDIT = 3
-
-
-NUM_EDIT_TYPES = len(EditType)
 ARMS = ["rule_pc_cng", "unconstrained_neural",
         "learned_structured", "learned_structured_risk"]
 
@@ -511,9 +513,36 @@ class StructuredProposalModel(nn.Module):
         if locus_index is None:
             # use mean-pooled node embedding as soft locus embedding
             return self._mean_pool(node_emb, batch_idx, num_graphs)
-        locus_index = locus_index.clamp(min=0)
-        gathered = node_emb[locus_index]
-        return gathered
+        sizes = torch.bincount(batch_idx, minlength=num_graphs)
+        offsets = torch.cat(
+            [sizes.new_zeros(1), sizes.cumsum(0)[:-1]]
+        )
+        local = locus_index.to(device=node_emb.device, dtype=torch.long)
+        local = torch.maximum(local, torch.zeros_like(local))
+        local = torch.minimum(local, sizes.clamp(min=1) - 1)
+        return node_emb[offsets + local]
+
+    def _migration_logits(
+        self,
+        node_emb: torch.Tensor,
+        batch_idx: torch.Tensor,
+        query: torch.Tensor,
+        num_graphs: int,
+    ) -> torch.Tensor:
+        sizes = torch.bincount(batch_idx, minlength=num_graphs)
+        max_len = int(sizes.max().item()) if num_graphs else 0
+        logits = node_emb.new_full((num_graphs, max_len), -1e9)
+        order = torch.argsort(batch_idx, stable=True)
+        sorted_batch = batch_idx[order]
+        offsets = torch.arange(
+            len(order),
+            device=node_emb.device,
+        ) - torch.cat([sizes.new_zeros(1), sizes.cumsum(0)[:-1]])[sorted_batch]
+        scores = (
+            node_emb[order] * query[sorted_batch]
+        ).sum(-1) / math.sqrt(self.hidden_dim)
+        logits[sorted_batch, offsets] = scores
+        return logits
 
     def _mean_pool(self, node_emb: torch.Tensor, batch_idx: torch.Tensor,
                    num_graphs: int) -> torch.Tensor:
@@ -540,6 +569,12 @@ class StructuredProposalModel(nn.Module):
         locus_emb = self._gather_locus_emb(node_emb, batch_idx, num_graphs, locus_idx)
         type_logits = self.type_classifier(graph_ctx, locus_emb)
         arg_logits = self.arg_decoder(graph_ctx, locus_emb)
+        arg_logits["migrate_logits"] = self._migration_logits(
+            node_emb,
+            batch_idx,
+            arg_logits["migrate_query"],
+            num_graphs,
+        )
         validity_mask = self.validity_mask(
             node_emb, graph_ctx, batch_idx, num_graphs, hard_validity_mask)
         risk, uncertainty = self.risk_head(graph_ctx, locus_emb)
@@ -585,7 +620,13 @@ class Stage1ReconstructionLoss(nn.Module):
                 logits = out.arg_logits.get(key)
                 if logits is None or tgt is None:
                     continue
-                arg_total = arg_total + F.cross_entropy(logits, tgt.clamp(min=0))
+                if not bool((tgt != -100).any()):
+                    continue
+                arg_total = arg_total + F.cross_entropy(
+                    logits,
+                    tgt,
+                    ignore_index=-100,
+                )
             total = total + self.arg_w * arg_total
             comps["arg_loss"] = float(arg_total.item())
         return total, comps
@@ -604,12 +645,18 @@ class Stage2ImitationLoss(nn.Module):
     def forward(self, out: StructuredProposalOutput,
                 rule_locus_probs: torch.Tensor,
                 rule_type_probs: torch.Tensor,
+                locus_supervision_mask: Optional[torch.Tensor] = None,
                 ) -> Tuple[torch.Tensor, Dict[str, float]]:
         log_locus = F.log_softmax(out.locus_logits, dim=-1)
         log_type = F.log_softmax(out.type_logits, dim=-1)
         locus_kl = (rule_locus_probs *
                     (rule_locus_probs.clamp(min=1e-9).log() - log_locus))
-        locus_kl = locus_kl.sum(-1).mean()
+        locus_per_example = locus_kl.sum(-1)
+        if locus_supervision_mask is None:
+            locus_kl = locus_per_example.mean()
+        else:
+            mask = locus_supervision_mask.float()
+            locus_kl = (locus_per_example * mask).sum() / mask.sum().clamp(min=1)
         type_kl = (rule_type_probs *
                    (rule_type_probs.clamp(min=1e-9).log() - log_type))
         type_kl = type_kl.sum(-1).mean()
@@ -733,6 +780,8 @@ def _apply_structured_edit(reaction_smiles: str, edit: StructuredEdit,
     """
     if edit.edit_type == EditType.NO_EDIT:
         return _strip_atom_maps(_product_smiles(reaction_smiles))
+    if edit.edit_type in {EditType.NOT_APPLICABLE, EditType.BOND_FORM}:
+        return None
     if Chem is None:
         return None
     reactants, product = _safe_split(reaction_smiles)
@@ -768,6 +817,26 @@ def _apply_structured_edit(reaction_smiles: str, edit: StructuredEdit,
                   3: Chem.BondType.TRIPLE}.get(new_order, Chem.BondType.SINGLE)
             rw.GetBondWithIdx(target.GetIdx()).SetBondType(bo)
             edited = _strip_atom_maps(Chem.MolToSmiles(rw.GetMol()))
+            return edited if edited and is_valid_smiles(edited) else None
+        if edit.edit_type == EditType.BOND_BREAK:
+            if edit.locus >= mol.GetNumAtoms():
+                return None
+            atom = mol.GetAtomWithIdx(int(edit.locus))
+            bonds = list(atom.GetBonds())
+            if edit.migrate_target is not None:
+                bonds = [
+                    bond for bond in bonds
+                    if bond.GetOtherAtomIdx(int(edit.locus))
+                    == int(edit.migrate_target)
+                ]
+            if not bonds:
+                return None
+            target = bonds[0]
+            rw = Chem.RWMol(mol)
+            rw.RemoveBond(target.GetBeginAtomIdx(), target.GetEndAtomIdx())
+            edited_mol = rw.GetMol()
+            Chem.SanitizeMol(edited_mol)
+            edited = _strip_atom_maps(Chem.MolToSmiles(edited_mol))
             return edited if edited and is_valid_smiles(edited) else None
         if edit.edit_type == EditType.FORMED_BOND_MIGRATE:
             # Direct RDKit bond migration: move bond from locus to migrate_target
@@ -1011,6 +1080,7 @@ def generate_structured_proposal_exhaustive(
     type_logits = out.type_logits[0]
     atom_logits = out.arg_logits["atom_logits"][0]
     bond_logits = out.arg_logits["bond_logits"][0]
+    migrate_logits = out.arg_logits["migrate_logits"][0][:n_atoms]
     if use_validity_mask and out.validity_mask.numel() > 0:
         keep = out.validity_mask[0][:n_atoms]  # [n_atoms, T]
         keep_log = keep.clamp(min=1e-3).log()
@@ -1033,6 +1103,7 @@ def generate_structured_proposal_exhaustive(
     type_np = type_logits.detach().cpu().numpy()
     atom_np = atom_logits.detach().cpu().numpy()
     bond_np = bond_logits.detach().cpu().numpy()
+    migrate_np = migrate_logits.detach().cpu().numpy()
     keep_np = keep_log.detach().cpu().numpy()
 
     anchor_vocab = sorted(ANCHOR_ATOMIC_NUMS)
@@ -1138,7 +1209,29 @@ def generate_structured_proposal_exhaustive(
                 prod = _sanitize_edited_mol(rw)
                 _register(anchor_idx, EditType.FORMED_BOND_MIGRATE, prod,
                           migrate_target=tgt_idx,
-                          extra_score=float(locus_np[tgt_idx]))
+                          extra_score=float(migrate_np[tgt_idx]))
+
+    # (d) bond break (explicit Stage-1 grammar action)
+    for bond in mol.GetBonds():
+        left, right = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
+        if left not in top_loci and right not in top_loci:
+            continue
+        locus, partner = (
+            (left, right)
+            if locus_np[left] >= locus_np[right]
+            else (right, left)
+        )
+        rw = Chem.RWMol(mol)
+        rw.RemoveBond(left, right)
+        prod = _sanitize_edited_mol(rw)
+        extra = float(migrate_np[partner]) if partner < len(migrate_np) else 0.0
+        _register(
+            locus,
+            EditType.BOND_BREAK,
+            prod,
+            migrate_target=partner,
+            extra_score=extra,
+        )
 
     # --- 5. Rank & return ---------------------------------------------------
     if risk_rerank:
@@ -1762,20 +1855,172 @@ def _collate_reactions(reactions: Sequence[str], device: torch.device,
     return batch, successful_rxns
 
 
-def _extract_targets(reaction: str) -> Tuple[int, int]:
-    """Heuristic supervision targets for stage 1 (locus, edit type).
+def _target_for_graph(
+    target: Dict[str, Any],
+    graph: ReactionGraphData,
+    *,
+    formal_run: bool,
+) -> Optional[Dict[str, int]]:
+    edit_type = int(target["edit_type"])
+    locus_map = int(target.get("locus_map", target.get("locus", 0)))
+    partner_map = int(target.get("partner_map", 0))
+    type_only = edit_type in {
+        int(EditType.NO_EDIT),
+        int(EditType.NOT_APPLICABLE),
+    }
+    locus = graph.atom_map_to_idx.get(locus_map)
+    if locus is None and not type_only:
+        if formal_run:
+            return None
+        locus = 0
+    partner = graph.atom_map_to_idx.get(partner_map, -100)
+    atom_target = -100
+    atomic_num = int(target.get("atom_target_atomic_num", -100))
+    anchor_vocab = sorted(ANCHOR_ATOMIC_NUMS)
+    if atomic_num in anchor_vocab:
+        atom_target = anchor_vocab.index(atomic_num)
+    return {
+        "locus": int(locus or 0),
+        "locus_supervised": int(not type_only and locus is not None),
+        "edit_type": edit_type,
+        "atom_target": int(atom_target),
+        "bond_target": int(target.get("bond_order_index", -100)),
+        "migrate_target": int(partner),
+    }
 
-    Uses the first formed-bond atom as the locus and ATOM_TRANSMUTATION as
-    the default edit type when a reaction center is extractable; otherwise
-    NO_EDIT at locus 0.
-    """
-    try:
-        center = extract_reaction_center(reaction)
-        if center and getattr(center, "formed_bonds", None):
-            return int(center.formed_bonds[0][0]), int(EditType.FORMED_BOND_MIGRATE)
-    except Exception:
-        pass
-    return 0, int(EditType.NO_EDIT)
+
+def _real_actions_for_graph(
+    reaction: str,
+    graph: ReactionGraphData,
+    edit_targets_cache: Dict[str, Dict[str, Any]],
+    *,
+    formal_run: bool,
+) -> List[Dict[str, int]]:
+    cached = edit_targets_cache.get(reaction)
+    if cached is None or not cached.get("valid_for_formal", False):
+        return []
+    actions = cached.get("actions") or []
+    converted = [
+        _target_for_graph(action, graph, formal_run=formal_run)
+        for action in actions
+    ]
+    return [target for target in converted if target is not None]
+
+
+def _rule_distribution_for_graph(
+    reaction: str,
+    graph: ReactionGraphData,
+    rule_proposals_cache: Dict[str, List[Dict[str, Any]]],
+    *,
+    formal_run: bool,
+) -> Optional[Dict[str, Any]]:
+    proposals = rule_proposals_cache.get(reaction)
+    if not proposals:
+        return None
+    converted = [
+        _target_for_graph(proposal, graph, formal_run=formal_run)
+        for proposal in proposals
+    ]
+    usable = [
+        (proposal, target)
+        for proposal, target in zip(proposals, converted)
+        if target is not None
+    ]
+    if not usable:
+        return None
+    weights = np.asarray(
+        [max(float(proposal.get("hard_score", 0.0)), 1e-6)
+         for proposal, _ in usable],
+        dtype=np.float64,
+    )
+    weights = weights / weights.sum()
+    return {"items": usable, "weights": weights}
+
+
+def _collate_reaction_pairs(
+    pairs: Sequence[Dict[str, Any]],
+    preferred_key: str,
+    competing_key: str,
+    device: torch.device,
+    *,
+    map_unmapped: bool,
+) -> Tuple[Optional[BatchedGraph], List[Dict[str, Any]], int]:
+    kept: List[Dict[str, Any]] = []
+    preferred_graphs: List[ReactionGraphData] = []
+    competing_graphs: List[ReactionGraphData] = []
+    for pair in pairs:
+        preferred = _featurize_safe(
+            str(pair[preferred_key]),
+            map_unmapped=map_unmapped,
+        )
+        competing = _featurize_safe(
+            str(pair[competing_key]),
+            map_unmapped=map_unmapped,
+        )
+        if preferred is None or competing is None:
+            continue
+        preferred_graphs.append(preferred)
+        competing_graphs.append(competing)
+        kept.append(pair)
+    if not kept:
+        return None, [], 0
+    batch = collate_graphs([*preferred_graphs, *competing_graphs])
+    batch.atom_features = batch.atom_features.to(device)
+    batch.edge_features = batch.edge_features.to(device)
+    batch.edge_index = batch.edge_index.to(device)
+    batch.batch_idx = batch.batch_idx.to(device)
+    return batch, kept, len(kept)
+
+
+def _batch_from_graphs(
+    graphs: Sequence[ReactionGraphData],
+    device: torch.device,
+) -> BatchedGraph:
+    batch = collate_graphs(list(graphs))
+    batch.atom_features = batch.atom_features.to(device)
+    batch.edge_features = batch.edge_features.to(device)
+    batch.edge_index = batch.edge_index.to(device)
+    batch.batch_idx = batch.batch_idx.to(device)
+    return batch
+
+
+def _primary_real_target(
+    reaction: str,
+    graph: ReactionGraphData,
+    edit_targets_cache: Dict[str, Dict[str, Any]],
+) -> Optional[Dict[str, int]]:
+    targets = _real_actions_for_graph(
+        reaction,
+        graph,
+        edit_targets_cache,
+        formal_run=True,
+    )
+    return targets[0] if targets else None
+
+
+def _collate_risk_examples(
+    examples: Sequence[Dict[str, Any]],
+    device: torch.device,
+    *,
+    map_unmapped: bool,
+) -> Tuple[Optional[BatchedGraph], torch.Tensor]:
+    graphs: List[ReactionGraphData] = []
+    labels: List[float] = []
+    for example in examples:
+        graph = _featurize_safe(
+            str(example["reaction_smiles"]),
+            map_unmapped=map_unmapped,
+        )
+        if graph is None:
+            continue
+        graphs.append(graph)
+        labels.append(float(example["risk_label"]))
+    if not graphs:
+        return None, torch.empty(0, device=device)
+    return (
+        _batch_from_graphs(graphs, device),
+        torch.tensor(labels, device=device, dtype=torch.float32),
+    )
 
 
 def compute_logp(out: StructuredProposalOutput, loci: torch.Tensor,
@@ -1793,6 +2038,58 @@ def compute_logp(out: StructuredProposalOutput, loci: torch.Tensor,
     type_logp = F.log_softmax(type_logits, dim=-1).gather(
         -1, types.clamp(min=0).unsqueeze(-1)).squeeze(-1)
     return locus_logp + type_logp
+
+
+def compute_action_logp(
+    out: StructuredProposalOutput,
+    targets: Sequence[Dict[str, int]],
+    *,
+    graph_offset: int = 0,
+) -> torch.Tensor:
+    """Log-probability of the complete supervised structured action.
+
+    Unlike the legacy ``compute_logp`` helper, this includes the real action
+    argument whenever one is observed: atom identity, bond order or partner
+    atom.  Missing arguments are explicitly ignored instead of replaced by a
+    pseudo-target.
+    """
+    if not targets:
+        return out.locus_logits.new_empty(0)
+    loci = torch.tensor(
+        [target["locus"] for target in targets],
+        device=out.locus_logits.device,
+        dtype=torch.long,
+    )
+    types = torch.tensor(
+        [target["edit_type"] for target in targets],
+        device=out.type_logits.device,
+        dtype=torch.long,
+    )
+    total = compute_logp(out, loci, types, graph_offset=graph_offset)
+    for row, target in enumerate(targets):
+        edit_type = EditType(int(target["edit_type"]))
+        if edit_type == EditType.ATOM_TRANSMUTATION:
+            key, argument = "atom_logits", int(target["atom_target"])
+        elif edit_type == EditType.BOND_ORDER_CHANGE:
+            key, argument = "bond_logits", int(target["bond_target"])
+        elif edit_type in {
+            EditType.BOND_FORM,
+            EditType.BOND_BREAK,
+            EditType.FORMED_BOND_MIGRATE,
+        }:
+            key, argument = "migrate_logits", int(target["migrate_target"])
+        else:
+            continue
+        if argument < 0:
+            continue
+        logits = out.arg_logits[key][graph_offset + row]
+        if argument >= logits.shape[-1]:
+            raise RuntimeError(
+                f"formal action argument {argument} exceeds {key} width "
+                f"{logits.shape[-1]}"
+            )
+        total[row] = total[row] + F.log_softmax(logits, dim=-1)[argument]
+    return total
 
 
 def _resolve_targets(reaction: str,
@@ -1818,6 +2115,372 @@ def _resolve_targets(reaction: str,
     return int(t["locus"]), int(t["edit_type"])
 
 
+def train_stage_formal(
+    model: StructuredProposalModel,
+    stage: int,
+    train_reactions: Sequence[str],
+    *,
+    epochs: int,
+    batch_size: int,
+    lr: float,
+    device: torch.device,
+    seed: int,
+    log: Optional[List[dict]],
+    map_unmapped: bool,
+    edit_targets_cache: Dict[str, Dict[str, Any]],
+    rule_proposals_cache: Dict[str, List[Dict[str, Any]]],
+    competing_pairs_cache: List[Dict[str, Any]],
+    preference_pairs_cache: List[Dict[str, Any]],
+    risk_examples_cache: List[Dict[str, Any]],
+    ref_model: Optional[StructuredProposalModel],
+) -> List[dict]:
+    """Fail-closed formal training with no pseudo-label fallback branches."""
+    required: Dict[int, Any] = {
+        1: edit_targets_cache,
+        2: rule_proposals_cache,
+        3: competing_pairs_cache,
+        4: preference_pairs_cache,
+    }
+    if stage not in required or not required[stage]:
+        raise RuntimeError(
+            f"formal G8-C stage {stage} requires non-empty real supervision cache"
+        )
+    if stage == 3 and not risk_examples_cache:
+        raise RuntimeError(
+            "formal G8-C Stage 3 requires candidate-level risk supervision"
+        )
+    if stage == 4 and ref_model is None:
+        raise RuntimeError(
+            "formal G8-C Stage 4 requires a frozen post-Stage-3 reference model"
+        )
+
+    set_seed(seed)
+    model.to(device)
+    if ref_model is not None:
+        ref_model.to(device)
+        ref_model.eval()
+        for parameter in ref_model.parameters():
+            parameter.requires_grad_(False)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    stage1_loss = Stage1ReconstructionLoss()
+    stage2_loss = Stage2ImitationLoss()
+    stage3_loss = Stage3ContrastiveLoss()
+    log = log if log is not None else []
+    n_steps = (
+        len(train_reactions)
+        if stage in {1, 2}
+        else len(competing_pairs_cache if stage == 3 else preference_pairs_cache)
+    )
+
+    for epoch in range(epochs):
+        model.train()
+        order = np.random.RandomState(seed + epoch).permutation(n_steps)
+        epoch_loss = 0.0
+        n_batches = 0
+        component_totals: Dict[str, float] = {}
+        for start in range(0, n_steps, batch_size):
+            indices = order[start:start + batch_size]
+            optimizer.zero_grad()
+
+            if stage == 1:
+                graphs: List[ReactionGraphData] = []
+                targets: List[Dict[str, int]] = []
+                for index in indices:
+                    reaction = str(train_reactions[int(index)])
+                    graph = _featurize_safe(
+                        reaction,
+                        map_unmapped=map_unmapped,
+                    )
+                    if graph is None:
+                        continue
+                    for target in _real_actions_for_graph(
+                        reaction,
+                        graph,
+                        edit_targets_cache,
+                        formal_run=True,
+                    ):
+                        graphs.append(graph)
+                        targets.append(target)
+                if not graphs:
+                    continue
+                batch = _batch_from_graphs(graphs, device)
+                loci = torch.tensor(
+                    [target["locus"] for target in targets],
+                    device=device,
+                    dtype=torch.long,
+                )
+                types = torch.tensor(
+                    [target["edit_type"] for target in targets],
+                    device=device,
+                    dtype=torch.long,
+                )
+                output = model(batch, locus_index=loci)
+                loss, components = stage1_loss(
+                    output,
+                    loci,
+                    types,
+                    {
+                        "atom_logits": torch.tensor(
+                            [target["atom_target"] for target in targets],
+                            device=device,
+                            dtype=torch.long,
+                        ),
+                        "bond_logits": torch.tensor(
+                            [target["bond_target"] for target in targets],
+                            device=device,
+                            dtype=torch.long,
+                        ),
+                        "migrate_logits": torch.tensor(
+                            [target["migrate_target"] for target in targets],
+                            device=device,
+                            dtype=torch.long,
+                        ),
+                    },
+                )
+
+            elif stage == 2:
+                reactions = [str(train_reactions[int(index)]) for index in indices]
+                batch, successful = _collate_reactions(
+                    reactions,
+                    device,
+                    map_unmapped=map_unmapped,
+                )
+                if batch is None:
+                    continue
+                distributions = [
+                    _rule_distribution_for_graph(
+                        reaction,
+                        graph,
+                        rule_proposals_cache,
+                        formal_run=True,
+                    )
+                    for reaction, graph in zip(successful, batch.graphs)
+                ]
+                if any(distribution is None for distribution in distributions):
+                    raise RuntimeError(
+                        "formal G8-C Stage 2 has an unresolvable rule target"
+                    )
+                max_locus = max(graph.atom_features.shape[0] for graph in batch.graphs)
+                locus_probs = torch.zeros(
+                    (len(distributions), max_locus),
+                    device=device,
+                )
+                type_probs = torch.zeros(
+                    (len(distributions), NUM_EDIT_TYPES),
+                    device=device,
+                )
+                locus_mask = torch.zeros(len(distributions), device=device)
+                chosen_loci: List[int] = []
+                for row, distribution in enumerate(distributions):
+                    assert distribution is not None
+                    for weight, (_proposal, target) in zip(
+                        distribution["weights"],
+                        distribution["items"],
+                    ):
+                        type_probs[row, target["edit_type"]] += float(weight)
+                        if target["locus_supervised"]:
+                            locus_probs[row, target["locus"]] += float(weight)
+                            locus_mask[row] = 1.0
+                    chosen_loci.append(
+                        int(locus_probs[row].argmax().item())
+                        if locus_mask[row] else 0
+                    )
+                output = model(
+                    batch,
+                    locus_index=torch.tensor(
+                        chosen_loci,
+                        device=device,
+                        dtype=torch.long,
+                    ),
+                )
+                loss, components = stage2_loss(
+                    output,
+                    locus_probs,
+                    type_probs,
+                    locus_mask,
+                )
+
+            elif stage == 3:
+                pairs = [
+                    competing_pairs_cache[int(index) % len(competing_pairs_cache)]
+                    for index in indices
+                ]
+                batch, kept_pairs, pair_count = _collate_reaction_pairs(
+                    pairs,
+                    "reaction_smiles",
+                    "competing_reaction_smiles",
+                    device,
+                    map_unmapped=map_unmapped,
+                )
+                if batch is None or pair_count == 0:
+                    continue
+                output = model(batch)
+                positive_mask = torch.cat(
+                    [
+                        torch.ones(pair_count, device=device),
+                        torch.zeros(pair_count, device=device),
+                    ]
+                )
+                contrastive, components = stage3_loss(output, positive_mask)
+                risk_rows = [
+                    risk_examples_cache[int(index) % len(risk_examples_cache)]
+                    for index in indices
+                ]
+                risk_batch, risk_labels = _collate_risk_examples(
+                    risk_rows,
+                    device,
+                    map_unmapped=map_unmapped,
+                )
+                if risk_batch is None:
+                    raise RuntimeError(
+                        "formal G8-C Stage 3 could not collate risk supervision"
+                    )
+                risk_output = model(risk_batch)
+                risk_bce = F.binary_cross_entropy(
+                    risk_output.risk,
+                    risk_labels,
+                )
+                loss = contrastive + risk_bce
+                components["risk_bce"] = float(risk_bce.item())
+                components["same_context_pairs"] = float(len(kept_pairs))
+
+            else:
+                pairs = [
+                    preference_pairs_cache[int(index) % len(preference_pairs_cache)]
+                    for index in indices
+                ]
+                batch, kept_pairs, pair_count = _collate_reaction_pairs(
+                    pairs,
+                    "preferred_reaction",
+                    "dispreferred_reaction",
+                    device,
+                    map_unmapped=map_unmapped,
+                )
+                if batch is None or pair_count == 0:
+                    continue
+                preferred_targets: List[Dict[str, int]] = []
+                dispreferred_targets: List[Dict[str, int]] = []
+                for row, pair in enumerate(kept_pairs):
+                    preferred_target = _primary_real_target(
+                        str(pair["preferred_reaction"]),
+                        batch.graphs[row],
+                        edit_targets_cache,
+                    )
+                    dispreferred_target = _primary_real_target(
+                        str(pair["dispreferred_reaction"]),
+                        batch.graphs[pair_count + row],
+                        edit_targets_cache,
+                    )
+                    if preferred_target is None or dispreferred_target is None:
+                        raise RuntimeError(
+                            "formal G8-C Stage 4 preference lacks a real action target"
+                        )
+                    preferred_targets.append(preferred_target)
+                    dispreferred_targets.append(dispreferred_target)
+                pref_loci = torch.tensor(
+                    [target["locus"] for target in preferred_targets],
+                    device=device,
+                    dtype=torch.long,
+                )
+                pref_types = torch.tensor(
+                    [target["edit_type"] for target in preferred_targets],
+                    device=device,
+                    dtype=torch.long,
+                )
+                disp_loci = torch.tensor(
+                    [target["locus"] for target in dispreferred_targets],
+                    device=device,
+                    dtype=torch.long,
+                )
+                disp_types = torch.tensor(
+                    [target["edit_type"] for target in dispreferred_targets],
+                    device=device,
+                    dtype=torch.long,
+                )
+                all_loci = torch.cat([pref_loci, disp_loci])
+                policy_output = model(batch, locus_index=all_loci)
+                with torch.no_grad():
+                    reference_output = ref_model(batch, locus_index=all_loci)
+                policy_pref = compute_action_logp(
+                    policy_output,
+                    preferred_targets,
+                )
+                policy_disp = compute_action_logp(
+                    policy_output,
+                    dispreferred_targets,
+                    graph_offset=pair_count,
+                )
+                reference_pref = compute_action_logp(
+                    reference_output,
+                    preferred_targets,
+                )
+                reference_disp = compute_action_logp(
+                    reference_output,
+                    dispreferred_targets,
+                    graph_offset=pair_count,
+                )
+                delta = (
+                    policy_pref - policy_disp
+                    - reference_pref + reference_disp
+                )
+                yield_weights = torch.tensor(
+                    [
+                        0.5 + min(
+                            abs(
+                                float(pair.get("preferred_yield", 0.0))
+                                - float(pair.get("dispreferred_yield", 0.0))
+                            ) / 100.0,
+                            1.0,
+                        )
+                        for pair in kept_pairs
+                    ],
+                    device=device,
+                    dtype=torch.float32,
+                )
+                loss = ((delta - 0.5).pow(2) * yield_weights).mean()
+                components = {
+                    "dpo_loss": float(loss.item()),
+                    "preference_acc": float((delta > 0).float().mean().item()),
+                    "delta_mean": float(delta.mean().item()),
+                    "max_abs_log_ratio": float(delta.abs().max().item()),
+                    "mean_observed_yield_weight": float(yield_weights.mean().item()),
+                }
+
+            if not torch.isfinite(loss):
+                raise RuntimeError(
+                    f"formal G8-C Stage {stage} produced a non-finite loss"
+                )
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
+            epoch_loss += float(loss.item())
+            n_batches += 1
+            for key, value in components.items():
+                component_totals[key] = component_totals.get(key, 0.0) + float(value)
+
+        if n_batches == 0:
+            raise RuntimeError(
+                f"formal G8-C Stage {stage} produced zero trainable batches"
+            )
+        entry = {
+            "stage": stage,
+            "epoch": epoch,
+            "train_loss": epoch_loss / n_batches,
+            "n_batches": n_batches,
+            "formal_supervision": True,
+            "components": {
+                key: value / n_batches
+                for key, value in component_totals.items()
+            },
+        }
+        log.append(entry)
+        print(
+            f"[{PHASE}] formal stage={stage} epoch={epoch} "
+            f"train_loss={entry['train_loss']:.4f} batches={n_batches}"
+        )
+    return log
+
+
 # REAL-DATA train_stage (phase-2 fix)
 def train_stage(model: StructuredProposalModel, stage: int,
                 train_reactions: Sequence[str],
@@ -1831,6 +2494,7 @@ def train_stage(model: StructuredProposalModel, stage: int,
                 rule_proposals_cache: Optional[Dict[str, List[Dict[str, Any]]]] = None,
                 competing_pairs_cache: Optional[List[Dict[str, Any]]] = None,
                 preference_pairs_cache: Optional[List[Dict[str, Any]]] = None,
+                risk_examples_cache: Optional[List[Dict[str, Any]]] = None,
                 ref_model: Optional[StructuredProposalModel] = None,
                 formal_run: bool = False) -> List[dict]:
     """Run a single training stage.  Returns the per-epoch log entries.
@@ -1846,18 +2510,34 @@ def train_stage(model: StructuredProposalModel, stage: int,
     collation cannot silently turn into pseudo-supervision.
     """
     if formal_run:
-        required = {
-            1: edit_targets_cache,
-            2: edit_targets_cache,
-            3: competing_pairs_cache,
-            4: preference_pairs_cache,
-        }
-        if required.get(stage) is None or not required[stage]:
-            raise RuntimeError(
-                f"formal G8-C stage {stage} requires non-empty real supervision cache")
-        if stage == 4 and ref_model is None:
-            raise RuntimeError(
-                "formal G8-C Stage 4 requires a frozen post-Stage-3 reference model")
+        if edit_targets_cache is None:
+            raise RuntimeError("formal G8-C requires an edit-target cache")
+        if rule_proposals_cache is None:
+            raise RuntimeError("formal G8-C requires a rule-proposal cache")
+        if competing_pairs_cache is None:
+            raise RuntimeError("formal G8-C requires a competing-pair cache")
+        if preference_pairs_cache is None:
+            raise RuntimeError("formal G8-C requires a preference-pair cache")
+        if risk_examples_cache is None:
+            raise RuntimeError("formal G8-C requires a risk-supervision cache")
+        return train_stage_formal(
+            model,
+            stage,
+            train_reactions,
+            epochs=epochs,
+            batch_size=batch_size,
+            lr=lr,
+            device=device,
+            seed=seed,
+            log=log,
+            map_unmapped=map_unmapped,
+            edit_targets_cache=edit_targets_cache,
+            rule_proposals_cache=rule_proposals_cache,
+            competing_pairs_cache=competing_pairs_cache,
+            preference_pairs_cache=preference_pairs_cache,
+            risk_examples_cache=risk_examples_cache,
+            ref_model=ref_model,
+        )
 
     set_seed(seed)
     model.to(device)
@@ -2155,6 +2835,553 @@ def train_stage(model: StructuredProposalModel, stage: int,
 
 
 # ---------------------------------------------------------------------------
+# Formal validation (real supervision only; no self-built tiny MLP)
+# ---------------------------------------------------------------------------
+
+def _state_dict_sha256(model: nn.Module) -> str:
+    digest = hashlib.sha256()
+    for name, tensor in sorted(model.state_dict().items()):
+        digest.update(name.encode("utf-8"))
+        digest.update(tensor.detach().cpu().contiguous().numpy().tobytes())
+    return digest.hexdigest()
+
+
+def _wilson_interval(successes: int, total: int) -> Tuple[float, float]:
+    if total <= 0:
+        return 0.0, 0.0
+    z = 1.959963984540054
+    proportion = successes / total
+    denominator = 1.0 + z * z / total
+    centre = proportion + z * z / (2.0 * total)
+    half = z * math.sqrt(
+        proportion * (1.0 - proportion) / total
+        + z * z / (4.0 * total * total)
+    )
+    return (
+        float((centre - half) / denominator),
+        float((centre + half) / denominator),
+    )
+
+
+def _deterministic_subset(
+    rows: Sequence[Any],
+    limit: Optional[int],
+    seed: int,
+) -> List[Any]:
+    rows = list(rows)
+    if limit is None or len(rows) <= limit:
+        return rows
+    indices = np.random.RandomState(seed).choice(
+        len(rows),
+        size=limit,
+        replace=False,
+    )
+    return [rows[int(index)] for index in sorted(indices)]
+
+
+def _proportion_metric(successes: int, total: int) -> Dict[str, Any]:
+    low, high = _wilson_interval(successes, total)
+    return {
+        "value": float(successes / total) if total else 0.0,
+        "successes": int(successes),
+        "n": int(total),
+        "ci_method": "Wilson 95%",
+        "ci_low": low,
+        "ci_high": high,
+    }
+
+
+def evaluate_formal_edit_validation(
+    model: StructuredProposalModel,
+    reactions: Sequence[str],
+    edit_targets_cache: Dict[str, Dict[str, Any]],
+    *,
+    device: torch.device,
+    batch_size: int,
+    limit: Optional[int],
+    seed: int,
+    map_unmapped: bool,
+) -> Dict[str, Any]:
+    eligible = [
+        reaction
+        for reaction in dict.fromkeys(reactions)
+        if edit_targets_cache.get(reaction, {}).get("valid_for_formal")
+        and edit_targets_cache.get(reaction, {}).get("actions")
+    ]
+    selected = _deterministic_subset(eligible, limit, seed)
+    if not selected:
+        raise RuntimeError("formal edit validation has no eligible real targets")
+
+    locus_success = type_success = joint_success = 0
+    locus_total = type_total = joint_total = 0
+    argument_success = argument_total = 0
+    model.eval()
+    with torch.no_grad():
+        for start in range(0, len(selected), batch_size):
+            batch, successful = _collate_reactions(
+                selected[start:start + batch_size],
+                device,
+                map_unmapped=map_unmapped,
+            )
+            if batch is None:
+                continue
+            output = model(batch)
+            predicted_loci = output.locus_logits.argmax(-1)
+            predicted_types = output.type_logits.argmax(-1)
+            for row, reaction in enumerate(successful):
+                targets = _real_actions_for_graph(
+                    reaction,
+                    batch.graphs[row],
+                    edit_targets_cache,
+                    formal_run=True,
+                )
+                if not targets:
+                    continue
+                pred_locus = int(predicted_loci[row].item())
+                pred_type = int(predicted_types[row].item())
+                locus_total += 1
+                type_total += 1
+                joint_total += 1
+                locus_success += int(
+                    any(pred_locus == target["locus"] for target in targets)
+                )
+                type_success += int(
+                    any(pred_type == target["edit_type"] for target in targets)
+                )
+                matching = [
+                    target for target in targets
+                    if pred_locus == target["locus"]
+                    and pred_type == target["edit_type"]
+                ]
+                joint_success += int(bool(matching))
+                if not matching:
+                    continue
+                target = matching[0]
+                edit_type = EditType(pred_type)
+                if edit_type == EditType.ATOM_TRANSMUTATION:
+                    key, expected = "atom_logits", target["atom_target"]
+                elif edit_type == EditType.BOND_ORDER_CHANGE:
+                    key, expected = "bond_logits", target["bond_target"]
+                elif edit_type in {
+                    EditType.BOND_FORM,
+                    EditType.BOND_BREAK,
+                    EditType.FORMED_BOND_MIGRATE,
+                }:
+                    key, expected = "migrate_logits", target["migrate_target"]
+                else:
+                    continue
+                if expected < 0:
+                    continue
+                argument_total += 1
+                prediction = int(output.arg_logits[key][row].argmax().item())
+                argument_success += int(prediction == expected)
+
+    if min(locus_total, type_total, joint_total) <= 0:
+        raise RuntimeError("formal edit validation produced no scored reactions")
+    return {
+        "split": "validation",
+        "selection": "deterministic_seeded_subset_before_metric_computation",
+        "seed": seed,
+        "n_eligible": len(eligible),
+        "n_selected": len(selected),
+        "edit_locus_accuracy": _proportion_metric(locus_success, locus_total),
+        "edit_type_accuracy": _proportion_metric(type_success, type_total),
+        "joint_locus_type_accuracy": _proportion_metric(
+            joint_success,
+            joint_total,
+        ),
+        "argument_accuracy_given_joint_match": _proportion_metric(
+            argument_success,
+            argument_total,
+        ),
+        "selected_reactions": selected,
+    }
+
+
+def evaluate_formal_candidate_generation(
+    model: StructuredProposalModel,
+    reactions: Sequence[str],
+    *,
+    device: torch.device,
+    top_k: int,
+    limit: Optional[int],
+    seed: int,
+    map_unmapped: bool,
+) -> Dict[str, Any]:
+    selected = _deterministic_subset(
+        list(dict.fromkeys(reactions)),
+        limit,
+        seed,
+    )
+    if not selected:
+        raise RuntimeError("formal candidate validation has no reactions")
+    covered = 0
+    generated = 0
+    valid = 0
+    for reaction in selected:
+        edits = generate_structured_proposal_exhaustive(
+            model,
+            reaction,
+            top_k=top_k,
+            device=device,
+            use_validity_mask=True,
+            risk_rerank=True,
+            n_mc=0,
+            map_unmapped=map_unmapped,
+            require_atom_balance=True,
+            balance_dist_slack=2,
+        )
+        negatives = proposal_to_negatives(reaction, edits)
+        generated += len(edits)
+        valid += len(negatives)
+        covered += int(bool(negatives))
+    return {
+        "split": "validation",
+        "selection": "deterministic_seeded_subset_before_generation",
+        "seed": seed,
+        "top_k_budget": top_k,
+        "n_reactions": len(selected),
+        "n_generated_candidates": generated,
+        "valid_edit_rate": _proportion_metric(valid, generated),
+        "candidate_coverage": _proportion_metric(covered, len(selected)),
+        "atom_balance_contract": "candidate_distance<=true_product_distance+2",
+    }
+
+
+def _expected_calibration_error(
+    labels: np.ndarray,
+    probabilities: np.ndarray,
+    n_bins: int = 10,
+) -> float:
+    edges = np.linspace(0.0, 1.0, n_bins + 1)
+    total = max(len(labels), 1)
+    ece = 0.0
+    for index in range(n_bins):
+        if index == n_bins - 1:
+            mask = (
+                (probabilities >= edges[index])
+                & (probabilities <= edges[index + 1])
+            )
+        else:
+            mask = (
+                (probabilities >= edges[index])
+                & (probabilities < edges[index + 1])
+            )
+        if not bool(mask.any()):
+            continue
+        ece += (
+            float(mask.sum()) / total
+            * abs(float(probabilities[mask].mean()) - float(labels[mask].mean()))
+        )
+    return float(ece)
+
+
+def evaluate_formal_risk_validation(
+    model: StructuredProposalModel,
+    examples: Sequence[Dict[str, Any]],
+    *,
+    device: torch.device,
+    batch_size: int,
+    limit: Optional[int],
+    seed: int,
+    map_unmapped: bool,
+) -> Dict[str, Any]:
+    selected = _deterministic_subset(examples, limit, seed)
+    labels: List[float] = []
+    probabilities: List[float] = []
+    sources: List[str] = []
+    groups: List[str] = []
+    model.eval()
+    with torch.no_grad():
+        for start in range(0, len(selected), batch_size):
+            rows = selected[start:start + batch_size]
+            batch, batch_labels = _collate_risk_examples(
+                rows,
+                device,
+                map_unmapped=map_unmapped,
+            )
+            if batch is None:
+                continue
+            output = model(batch)
+            probabilities.extend(output.risk.detach().cpu().tolist())
+            labels.extend(batch_labels.detach().cpu().tolist())
+            # Formal main prefilters unfeaturizable examples; keep source and
+            # experimental-group provenance aligned with predictions.
+            sources.extend([str(row["risk_source"]) for row in rows])
+            groups.extend([
+                str(
+                    row.get("experimental_group")
+                    or row.get("record_id")
+                    or row["reaction_smiles"]
+                )
+                for row in rows
+            ])
+    label_array = np.asarray(labels, dtype=np.float64)
+    probability_array = np.asarray(probabilities, dtype=np.float64)
+    if len(label_array) == 0 or len(np.unique(label_array)) < 2:
+        raise RuntimeError(
+            "formal FNR validation requires featurizable examples from both classes"
+        )
+    if not (
+        len(label_array)
+        == len(probability_array)
+        == len(sources)
+        == len(groups)
+    ):
+        raise RuntimeError("formal FNR validation provenance alignment failed")
+
+    calibration_mask = np.asarray([
+        int(hashlib.sha256(
+            f"phase_c_risk_calibration_v1|{group}".encode("utf-8")
+        ).hexdigest()[:8], 16) % 2 == 0
+        for group in groups
+    ])
+    evaluation_mask = ~calibration_mask
+    if (
+        calibration_mask.sum() == 0
+        or evaluation_mask.sum() == 0
+        or len(np.unique(label_array[calibration_mask])) < 2
+        or len(np.unique(label_array[evaluation_mask])) < 2
+    ):
+        raise RuntimeError(
+            "formal FNR calibration/evaluation group split lacks both classes"
+        )
+    clipped = np.clip(probability_array, 1e-6, 1.0 - 1e-6)
+    logits = np.log(clipped / (1.0 - clipped))
+    temperatures = np.geomspace(0.5, 5.0, 91)
+
+    def _nll(temp: float) -> float:
+        calibrated = 1.0 / (
+            1.0 + np.exp(-logits[calibration_mask] / temp)
+        )
+        labels_cal = label_array[calibration_mask]
+        return float(-np.mean(
+            labels_cal * np.log(np.clip(calibrated, 1e-9, 1.0))
+            + (1.0 - labels_cal)
+            * np.log(np.clip(1.0 - calibrated, 1e-9, 1.0))
+        ))
+
+    calibration_losses = np.asarray([_nll(float(t)) for t in temperatures])
+    temperature = float(temperatures[int(calibration_losses.argmin())])
+    evaluation_labels = label_array[evaluation_mask]
+    raw_evaluation = probability_array[evaluation_mask]
+    calibrated_evaluation = 1.0 / (
+        1.0 + np.exp(-logits[evaluation_mask] / temperature)
+    )
+    evaluation_sources = [
+        source
+        for source, include in zip(sources, evaluation_mask.tolist())
+        if include
+    ]
+    source_counts = {
+        source: evaluation_sources.count(source)
+        for source in sorted(set(evaluation_sources))
+    }
+    return {
+        "split": "validation",
+        "selection": (
+            "deterministic_seeded_subset_then_frozen_experimental_group_"
+            "calibration_evaluation_partition"
+        ),
+        "seed": seed,
+        "n_selected": len(label_array),
+        "n_calibration": int(calibration_mask.sum()),
+        "n_evaluation": int(evaluation_mask.sum()),
+        "evaluation_class_balance": float(evaluation_labels.mean()),
+        "source_counts": source_counts,
+        "temperature_scaling": {
+            "partition": "phase_c_risk_calibration_v1",
+            "grid": "91 log-spaced values from 0.5 to 5.0",
+            "selected_temperature": temperature,
+            "calibration_nll": float(calibration_losses.min()),
+        },
+        "raw_ece_10_bin": _expected_calibration_error(
+            evaluation_labels,
+            raw_evaluation,
+        ),
+        "ece_10_bin": _expected_calibration_error(
+            evaluation_labels,
+            calibrated_evaluation,
+        ),
+        "raw_brier": float(
+            np.mean((raw_evaluation - evaluation_labels) ** 2)
+        ),
+        "brier": float(
+            np.mean((calibrated_evaluation - evaluation_labels) ** 2)
+        ),
+        "auprc": _auprc(evaluation_labels, calibrated_evaluation),
+    }
+
+
+def evaluate_formal_reward_hacking(
+    model: StructuredProposalModel,
+    reference_model: StructuredProposalModel,
+    pairs: Sequence[Dict[str, Any]],
+    edit_targets_cache: Dict[str, Dict[str, Any]],
+    *,
+    device: torch.device,
+    batch_size: int,
+    limit: Optional[int],
+    seed: int,
+    map_unmapped: bool,
+    reference_hash_before: str,
+) -> Dict[str, Any]:
+    selected = _deterministic_subset(pairs, limit, seed)
+    deltas: List[float] = []
+    entropies: List[float] = []
+    model.eval()
+    reference_model.eval()
+    with torch.no_grad():
+        for start in range(0, len(selected), batch_size):
+            batch, kept, pair_count = _collate_reaction_pairs(
+                selected[start:start + batch_size],
+                "preferred_reaction",
+                "dispreferred_reaction",
+                device,
+                map_unmapped=map_unmapped,
+            )
+            if batch is None:
+                continue
+            preferred_targets: List[Dict[str, int]] = []
+            dispreferred_targets: List[Dict[str, int]] = []
+            for row, pair in enumerate(kept):
+                preferred = _primary_real_target(
+                    str(pair["preferred_reaction"]),
+                    batch.graphs[row],
+                    edit_targets_cache,
+                )
+                dispreferred = _primary_real_target(
+                    str(pair["dispreferred_reaction"]),
+                    batch.graphs[pair_count + row],
+                    edit_targets_cache,
+                )
+                if preferred is None or dispreferred is None:
+                    continue
+                preferred_targets.append(preferred)
+                dispreferred_targets.append(dispreferred)
+            if len(preferred_targets) != pair_count:
+                continue
+            all_loci = torch.tensor(
+                [
+                    *[target["locus"] for target in preferred_targets],
+                    *[target["locus"] for target in dispreferred_targets],
+                ],
+                device=device,
+                dtype=torch.long,
+            )
+            policy = model(batch, locus_index=all_loci)
+            reference = reference_model(batch, locus_index=all_loci)
+            policy_delta = (
+                compute_action_logp(policy, preferred_targets)
+                - compute_action_logp(
+                    policy,
+                    dispreferred_targets,
+                    graph_offset=pair_count,
+                )
+            )
+            reference_delta = (
+                compute_action_logp(reference, preferred_targets)
+                - compute_action_logp(
+                    reference,
+                    dispreferred_targets,
+                    graph_offset=pair_count,
+                )
+            )
+            deltas.extend((policy_delta - reference_delta).cpu().tolist())
+            type_probabilities = F.softmax(policy.type_logits, dim=-1)
+            entropy = -(
+                type_probabilities
+                * type_probabilities.clamp(min=1e-9).log()
+            ).sum(-1)
+            entropies.extend(entropy.cpu().tolist())
+    if not deltas:
+        raise RuntimeError("formal reward-hacking validation has no usable pairs")
+    reference_hash_after = _state_dict_sha256(reference_model)
+    return {
+        "split": "validation",
+        "n_pairs": len(deltas),
+        "mean_log_ratio": float(np.mean(deltas)),
+        "max_abs_log_ratio": float(np.max(np.abs(deltas))),
+        "preference_accuracy": float(np.mean(np.asarray(deltas) > 0.0)),
+        "mean_action_type_entropy": float(np.mean(entropies)),
+        "reference_hash_before": reference_hash_before,
+        "reference_hash_after": reference_hash_after,
+        "reference_frozen": reference_hash_before == reference_hash_after,
+    }
+
+
+def compute_formal_validation_verdict(
+    edit_metrics: Dict[str, Any],
+    candidate_metrics: Dict[str, Any],
+    risk_metrics: Dict[str, Any],
+    reward_metrics: Dict[str, Any],
+    risk_source_availability: Dict[str, int],
+) -> Dict[str, Any]:
+    thresholds = dict(FORMAL_VALIDATION_THRESHOLDS)
+    checks = {
+        "edit_locus_accuracy": (
+            edit_metrics["edit_locus_accuracy"]["value"]
+            >= thresholds["edit_locus_accuracy_min"]
+        ),
+        "edit_type_accuracy": (
+            edit_metrics["edit_type_accuracy"]["value"]
+            >= thresholds["edit_type_accuracy_min"]
+        ),
+        "valid_edit_rate": (
+            candidate_metrics["valid_edit_rate"]["value"]
+            >= thresholds["valid_edit_rate_min"]
+        ),
+        "candidate_coverage": (
+            candidate_metrics["candidate_coverage"]["value"]
+            >= thresholds["candidate_coverage_min"]
+        ),
+        "fnr_calibration": (
+            risk_metrics["ece_10_bin"] <= thresholds["fnr_ece_max"]
+        ),
+        "reward_log_ratio_bounded": (
+            reward_metrics["max_abs_log_ratio"]
+            <= thresholds["reward_max_abs_log_ratio_max"]
+        ),
+        "reward_policy_not_collapsed": (
+            reward_metrics["mean_action_type_entropy"]
+            >= thresholds["reward_action_type_entropy_min"]
+        ),
+        "reference_frozen": bool(reward_metrics["reference_frozen"]),
+        "known_positive_collision_supervision": (
+            risk_source_availability.get("known_positive_collision", 0) > 0
+        ),
+        "observed_competing_product_supervision": (
+            risk_source_availability.get("observed_competing_product", 0) > 0
+        ),
+        "heldout_hte_outcome_supervision": (
+            risk_source_availability.get("heldout_hte_outcome", 0) > 0
+        ),
+    }
+    expert_available = risk_source_availability.get("expert_label", 0) > 0
+    core_pass = all(checks.values())
+    if core_pass and expert_available:
+        status = "FORMAL_SOURCE_EXPERT_PASS"
+    elif core_pass:
+        status = "FORMAL_SOURCE_EXPERT_PARTIAL_EXPERT_LABELS_PENDING"
+    else:
+        status = "FORMAL_SOURCE_EXPERT_NO_GO"
+    return {
+        "status": status,
+        "core_validation_pass": core_pass,
+        "expert_labels_available": expert_available,
+        "checks": checks,
+        "thresholds": thresholds,
+        "claim_boundary": (
+            "credible source-expert validation only; no superiority claim "
+            "against other negative sources"
+        ),
+        "formal_evaluation_contract": (
+            "real validation supervision only; tiny self-built MLP disabled"
+        ),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
 
@@ -2226,9 +3453,26 @@ def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(
         description=f"{PHASE} learned structured proposal")
-    parser.add_argument("--train-data", type=Path, required=True)
-    parser.add_argument("--val-data", type=Path, required=True)
-    parser.add_argument("--test-data", type=Path, required=True)
+    parser.add_argument("--train-data", type=Path, default=None)
+    parser.add_argument("--val-data", type=Path, default=None)
+    parser.add_argument("--test-data", type=Path, default=None)
+    parser.add_argument(
+        "--hte-parquet",
+        type=Path,
+        default=Path(DEFAULT_HTE_PARQUET),
+    )
+    parser.add_argument(
+        "--collision-review",
+        type=Path,
+        default=Path(DEFAULT_COLLISION_REVIEW),
+    )
+    parser.add_argument(
+        "--expert-form",
+        action="append",
+        dest="expert_forms",
+        default=None,
+        help="Completed expert-review CSV; repeat for multiple reviewers",
+    )
     parser.add_argument("--rule-proposals", type=Path, default=None)
     parser.add_argument("--risk-path", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path,
@@ -2253,6 +3497,10 @@ def main() -> None:
     parser.add_argument("--map-unmapped", action="store_true",
                         help="Use RXNMapper for unmapped reactions")
     parser.add_argument("--n-bootstrap", type=int, default=N_BOOTSTRAP)
+    parser.add_argument("--formal-edit-val-limit", type=int, default=512)
+    parser.add_argument("--formal-candidate-val-limit", type=int, default=128)
+    parser.add_argument("--formal-risk-val-limit", type=int, default=2048)
+    parser.add_argument("--formal-reward-val-limit", type=int, default=256)
     parser.add_argument(
         "--formal-run", action="store_true",
         help="Fail closed unless all real G8-C supervision caches and the "
@@ -2262,13 +3510,30 @@ def main() -> None:
 
     if args.formal_run and args.smoke:
         raise ValueError("--formal-run cannot be combined with --smoke")
+    if args.formal_run and args.stage != 0:
+        raise ValueError(
+            "--formal-run must execute the frozen Stage 1->2->3->4 sequence"
+        )
+    if not args.formal_run and (
+        args.train_data is None
+        or args.val_data is None
+        or args.test_data is None
+    ):
+        raise ValueError(
+            "exploratory mode requires --train-data, --val-data and --test-data"
+        )
 
     t0 = time.time()
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
     raw_dir = output_dir / "raw_predictions"
-    raw_dir.mkdir(parents=True, exist_ok=True)
+    if not args.formal_run:
+        raw_dir.mkdir(parents=True, exist_ok=True)
     device = _device(args.gpu)
+    if args.formal_run and device.type != "cuda":
+        raise RuntimeError(
+            "formal G8-C training requires an explicitly selected CUDA GPU"
+        )
     set_seed(args.seed)
 
     print(f"[{PHASE}] Loading data ...")
@@ -2288,15 +3553,20 @@ def main() -> None:
     g8c_data = None
     try:
         g8c_data = load_g8c_training_data(
+            hte_parquet_path=str(args.hte_parquet),
             generator=rule_generator,
             use_rule_generator=not args.smoke,
-            max_rule_reactions=args.limit_train if args.smoke else None,
+            max_rule_reactions=args.limit_train,
+            formal=args.formal_run,
+            collision_review_path=str(args.collision_review),
+            expert_form_paths=tuple(args.expert_forms or DEFAULT_EXPERT_FORMS),
         )
         print(f"[{PHASE}] g8c data loaded: "
               f"edit_targets={len(g8c_data['edit_targets'])} "
               f"rule_proposals={len(g8c_data['rule_proposals'])} "
               f"competing_pairs={len(g8c_data['competing_pairs'])} "
-              f"preference_pairs={len(g8c_data['preference_pairs'])}")
+              f"preference_pairs={len(g8c_data['preference_pairs'])} "
+              f"risk_train={len(g8c_data['risk_supervision']['by_split']['train'])}")
         if args.formal_run:
             required_keys = (
                 "edit_targets", "rule_proposals",
@@ -2316,7 +3586,61 @@ def main() -> None:
               "falling back to per-batch target extraction")
         g8c_data = None
 
-
+    if args.formal_run:
+        assert g8c_data is not None
+        train_rxns = list(dict.fromkeys(g8c_data["reactions"]["train"]))
+        val_rxns = list(dict.fromkeys(g8c_data["reactions"]["val"]))
+        test_rxns = list(dict.fromkeys(g8c_data["reactions"]["test"]))
+        if args.limit_train is not None:
+            train_rxns = train_rxns[:args.limit_train]
+        if args.limit_val is not None:
+            val_rxns = val_rxns[:args.limit_val]
+        if args.limit_test is not None:
+            test_rxns = test_rxns[:args.limit_test]
+        missing_rule_targets = [
+            reaction for reaction in train_rxns
+            if reaction not in g8c_data["rule_proposals"]
+        ]
+        if missing_rule_targets:
+            raise RuntimeError(
+                "formal G8-C rule cache does not cover the frozen training "
+                f"subset ({len(missing_rule_targets)} missing)"
+            )
+        risk_by_split = g8c_data["risk_supervision"]["by_split"]
+        risk_train = [
+            row for row in risk_by_split["train"]
+            if _featurize_safe(
+                str(row["reaction_smiles"]),
+                map_unmapped=args.map_unmapped,
+            ) is not None
+        ]
+        risk_val = [
+            row for row in risk_by_split["val"]
+            if _featurize_safe(
+                str(row["reaction_smiles"]),
+                map_unmapped=args.map_unmapped,
+            ) is not None
+        ]
+        if not risk_train or not risk_val:
+            raise RuntimeError(
+                "formal G8-C requires non-empty featurizable train and "
+                "validation risk supervision"
+            )
+        val_preference_pairs = g8c_data["preference_pairs_by_split"]["val"]
+        if not val_preference_pairs:
+            raise RuntimeError(
+                "formal G8-C requires held-out validation preference pairs"
+            )
+        print(
+            f"[{PHASE}] frozen HTE split: train={len(train_rxns)} "
+            f"val={len(val_rxns)} sealed_test={len(test_rxns)} "
+            f"risk_train={len(risk_train)} risk_val={len(risk_val)} "
+            f"val_preferences={len(val_preference_pairs)}"
+        )
+    else:
+        risk_train = []
+        risk_val = []
+        val_preference_pairs = []
 
     model = StructuredProposalModel(
         hidden_dim=args.hidden_dim, num_heads=args.num_heads,
@@ -2329,6 +3653,7 @@ def main() -> None:
     # has completed in the current round.  Snapshotting before the stage
     # loop would incorrectly use the pre-reconstruction policy.
     ref_model = None
+    reference_hash_before = ""
     for rnd in range(n_rounds):
         for st in stages:
             if st == 4:
@@ -2337,6 +3662,7 @@ def main() -> None:
                 ref_model.eval()
                 for p in ref_model.parameters():
                     p.requires_grad_(False)
+                reference_hash_before = _state_dict_sha256(ref_model)
             log = train_stage(
                 model, st, train_rxns, val_rxns, rule_generator,
                 epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
@@ -2346,8 +3672,165 @@ def main() -> None:
                 rule_proposals_cache=g8c_data['rule_proposals'] if g8c_data else None,
                 competing_pairs_cache=g8c_data['competing_pairs'] if g8c_data else None,
                 preference_pairs_cache=g8c_data['preference_pairs'] if g8c_data else None,
+                risk_examples_cache=risk_train if args.formal_run else None,
                 ref_model=ref_model if st == 4 else None,
                 formal_run=args.formal_run)
+            if args.formal_run and st == 4:
+                assert ref_model is not None
+                if _state_dict_sha256(ref_model) != reference_hash_before:
+                    raise RuntimeError(
+                        "formal Stage-4 mutated the frozen reference policy"
+                    )
+
+    if args.formal_run:
+        assert g8c_data is not None
+        assert ref_model is not None
+        edit_validation = evaluate_formal_edit_validation(
+            model,
+            val_rxns,
+            g8c_data["edit_targets"],
+            device=device,
+            batch_size=args.batch_size,
+            limit=args.formal_edit_val_limit,
+            seed=args.seed + 11,
+            map_unmapped=args.map_unmapped,
+        )
+        candidate_validation = evaluate_formal_candidate_generation(
+            model,
+            val_rxns,
+            device=device,
+            top_k=args.top_k,
+            limit=args.formal_candidate_val_limit,
+            seed=args.seed + 23,
+            map_unmapped=args.map_unmapped,
+        )
+        risk_validation = evaluate_formal_risk_validation(
+            model,
+            risk_val,
+            device=device,
+            batch_size=args.batch_size,
+            limit=args.formal_risk_val_limit,
+            seed=args.seed + 37,
+            map_unmapped=args.map_unmapped,
+        )
+        reward_validation = evaluate_formal_reward_hacking(
+            model,
+            ref_model,
+            val_preference_pairs,
+            g8c_data["edit_targets"],
+            device=device,
+            batch_size=args.batch_size,
+            limit=args.formal_reward_val_limit,
+            seed=args.seed + 41,
+            map_unmapped=args.map_unmapped,
+            reference_hash_before=reference_hash_before,
+        )
+        verdict = compute_formal_validation_verdict(
+            edit_validation,
+            candidate_validation,
+            risk_validation,
+            reward_validation,
+            g8c_data["risk_supervision"]["source_availability"],
+        )
+        formal_result = {
+            "phase": PHASE,
+            "version": "formal_source_expert_v1",
+            "status": verdict["status"],
+            "validation_only": True,
+            "sealed_test_untouched": True,
+            "tiny_self_built_mlp_evaluation": "DISABLED",
+            "data_audit": g8c_data["data_audit"],
+            "risk_source_availability": (
+                g8c_data["risk_supervision"]["source_availability"]
+            ),
+            "edit_validation": edit_validation,
+            "candidate_validation": candidate_validation,
+            "risk_validation": risk_validation,
+            "reward_hacking_validation": reward_validation,
+            "verdict": verdict,
+            "elapsed_sec": round(time.time() - t0, 2),
+        }
+        with open(output_dir / "formal_validation.json", "w") as handle:
+            json.dump(formal_result, handle, indent=2)
+        with open(output_dir / "go_no_go.json", "w") as handle:
+            json.dump({
+                "phase": PHASE,
+                "status": verdict["status"],
+                "claim_boundary": verdict["claim_boundary"],
+                "core_validation_pass": verdict["core_validation_pass"],
+                "expert_labels_available": verdict["expert_labels_available"],
+                "formal_validation_artifact": "formal_validation.json",
+                "sealed_test_untouched": True,
+            }, handle, indent=2)
+        torch.save({
+            "state_dict": model.state_dict(),
+            "hidden_dim": model.hidden_dim,
+            "architecture": "StructuredProposalModel",
+            "action_schema": {
+                name: int(member) for name, member in EditType.__members__.items()
+            },
+            "formal_validation_status": verdict["status"],
+        }, str(output_dir / "model_checkpoint.pt"))
+        with open(output_dir / "train_log.json", "w") as handle:
+            json.dump(log, handle, indent=2)
+        with open(output_dir / "run_manifest.json", "w") as handle:
+            json.dump({
+                "phase": PHASE,
+                "version": "formal_source_expert_v1",
+                "formal_run": True,
+                "gpu": str(device),
+                "n_train_reactions": len(train_rxns),
+                "n_validation_reactions": len(val_rxns),
+                "n_sealed_test_reactions_not_evaluated": len(test_rxns),
+                "hidden_dim": args.hidden_dim,
+                "num_heads": args.num_heads,
+                "num_rounds": n_rounds,
+                "stages": [
+                    "real_edit_reconstruction",
+                    "actual_rule_action_imitation",
+                    "same_context_competing_outcomes",
+                    "risk_adjusted_real_action_preference_optimization",
+                ],
+                "formal_validation_thresholds": FORMAL_VALIDATION_THRESHOLDS,
+                "seed": args.seed,
+                "reference_hash": reference_hash_before,
+            }, handle, indent=2)
+        with open(output_dir / "environment.json", "w") as handle:
+            json.dump({
+                "python": sys.version.split()[0],
+                "platform": platform.platform(),
+                "torch": torch.__version__,
+                "numpy": np.__version__,
+                "cuda_device": str(device),
+                "cuda_name": torch.cuda.get_device_name(device),
+            }, handle, indent=2)
+        hashes = {}
+        for path in [
+            args.hte_parquet,
+            args.collision_review,
+            *[Path(path) for path in (args.expert_forms or DEFAULT_EXPERT_FORMS)],
+        ]:
+            if path and Path(path).exists():
+                digest = hashlib.sha256()
+                with open(path, "rb") as handle:
+                    for chunk in iter(lambda: handle.read(8192), b""):
+                        digest.update(chunk)
+                hashes[str(path)] = digest.hexdigest()
+        with open(output_dir / "input_hashes.json", "w") as handle:
+            json.dump(hashes, handle, indent=2)
+        with open(output_dir / "commands.log", "w") as handle:
+            handle.write(" ".join(sys.argv) + "\n")
+        print(f"\n[{PHASE}] formal_status={verdict['status']}")
+        print(
+            f"[{PHASE}] edit_locus="
+            f"{edit_validation['edit_locus_accuracy']['value']:.4f} "
+            f"edit_type={edit_validation['edit_type_accuracy']['value']:.4f} "
+            f"valid={candidate_validation['valid_edit_rate']['value']:.4f} "
+            f"coverage={candidate_validation['candidate_coverage']['value']:.4f} "
+            f"fnr_ece={risk_validation['ece_10_bin']:.4f}"
+        )
+        print(f"[{PHASE}] outputs in {output_dir}")
+        return
 
     # Comparison arms
     eval_rxns = test_rxns[: min(len(test_rxns), 50 if not args.smoke else 8)]

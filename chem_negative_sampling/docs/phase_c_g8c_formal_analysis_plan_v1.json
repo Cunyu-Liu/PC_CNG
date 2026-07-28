@@ -1,0 +1,33 @@
+{
+  "phase": "P4-G8C",
+  "version": "formal_source_expert_v1",
+  "status": "FROZEN_BEFORE_GPU_FORMAL_VALIDATION",
+  "frozen_date": "2026-07-29",
+  "claim_scope": "credible source expert only; no source-superiority claim",
+  "data": {
+    "hte": "data/processed/p4_hte_normalized.parquet",
+    "pair_partition": "context_hash_80_20_v1",
+    "sealed_test_untouched": true
+  },
+  "formal_training": {
+    "gpu_required": true,
+    "stage_order": [1, 2, 3, 4],
+    "fail_closed": true,
+    "batch_halves_fallback": false,
+    "zero_reference_fallback": false,
+    "reference_snapshot": "after_stage_3",
+    "complete_action_log_probability": true
+  },
+  "thresholds": {
+    "edit_locus_accuracy_min": 0.2,
+    "edit_type_accuracy_min": 0.5,
+    "valid_edit_rate_min": 0.95,
+    "candidate_coverage_min": 0.8,
+    "fnr_ece_max": 0.15,
+    "reward_max_abs_log_ratio_max": 5.0,
+    "reward_action_type_entropy_min": 0.5,
+    "reference_frozen_required": true
+  },
+  "expert_label_rule": "missing expert labels are reported, never synthesized",
+  "legacy_tiny_mlp_formal_evaluation": "DISABLED"
+}

@@ -23,15 +23,13 @@ import pandas as pd
 import pytest
 import torch
 
-# Force CPU for tests.
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
-
 # Ensure the pc_cng package is importable.
 _CNS_ROOT = Path(__file__).resolve().parents[1]
 if str(_CNS_ROOT) not in sys.path:
     sys.path.insert(0, str(_CNS_ROOT))
 
 from pc_cng.g8c_data_preparation import (  # noqa: E402
+    assign_formal_pair_partition,
     build_competing_outcome_pairs,
     build_preference_pairs,
     extract_real_edit_targets,
@@ -41,6 +39,8 @@ from pc_cng.g8c_data_preparation import (  # noqa: E402
 from pc_cng.p4_g8c_learned_structured_proposal import (  # noqa: E402
     EditType,
     StructuredProposalModel,
+    _state_dict_sha256,
+    compute_action_logp,
     compute_logp,
     train_stage,
 )
@@ -119,17 +119,21 @@ class TestExtractRealEditTargets:
         result = extract_real_edit_targets(SAMPLE_RXN)
         assert result["mapped"] is True
         assert len(result["formed_bonds"]) > 0
-        # The formed bond (10, 12) -> FORMED_BOND_MIGRATE.
-        assert result["edit_type"] == int(EditType.FORMED_BOND_MIGRATE)
+        # A real newly formed bond is reconstruction target BOND_FORM.  It is
+        # distinct from the generative FORMED_BOND_MIGRATE operation.
+        assert result["edit_type"] == int(EditType.BOND_FORM)
+        assert result["actions"][0]["partner_map"] > 0
 
     def test_locus_is_reacting_atom(self):
         result = extract_real_edit_targets(SAMPLE_RXN)
         assert result["locus"] in result["reacting_atoms"]
 
-    def test_unmapped_reaction_returns_no_edit(self):
+    def test_unmapped_reaction_is_not_applicable(self):
         result = extract_real_edit_targets("CC.O>>CCO")
         assert result["mapped"] is False
-        assert result["edit_type"] == int(EditType.NO_EDIT)
+        assert result["edit_type"] == int(EditType.NOT_APPLICABLE)
+        assert result["valid_for_formal"] is False
+        assert result["actions"] == []
         assert result["locus"] == 0
 
 
@@ -150,7 +154,8 @@ class TestExtractRuleProposals:
         valid_types = {int(EditType.ATOM_TRANSMUTATION),
                        int(EditType.BOND_ORDER_CHANGE),
                        int(EditType.FORMED_BOND_MIGRATE),
-                       int(EditType.NO_EDIT)}
+                       int(EditType.NO_EDIT),
+                       int(EditType.NOT_APPLICABLE)}
         for p in proposals:
             assert p["edit_type"] in valid_types
 
@@ -182,6 +187,22 @@ class TestBuildCompetingOutcomePairs:
 
     def test_empty_df_returns_empty(self):
         assert build_competing_outcome_pairs(pd.DataFrame()) == []
+
+    def test_context_partition_is_deterministic_and_group_safe(self):
+        pairs = [
+            {"context_key": f"context-{i}", "split": "train"}
+            for i in range(100)
+        ]
+        first = assign_formal_pair_partition(pairs)
+        second = assign_formal_pair_partition(list(reversed(pairs)))
+        first_map = {
+            pair["context_key"]: pair["formal_split"] for pair in first
+        }
+        second_map = {
+            pair["context_key"]: pair["formal_split"] for pair in second
+        }
+        assert first_map == second_map
+        assert {"train", "val"}.issubset(set(first_map.values()))
 
 
 # ---------------------------------------------------------------------------
@@ -215,7 +236,7 @@ class TestFourStageTraining:
 
     @pytest.fixture(scope="class")
     def device(self):
-        return torch.device("cpu")
+        return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     @pytest.fixture(scope="class")
     def tiny_reactions(self, small_hite_df):
@@ -279,6 +300,18 @@ class TestFourStageTraining:
             "rule_proposals": rule_proposals,
             "competing_pairs": competing,
             "preference_pairs": preference,
+            "risk_examples": [
+                {
+                    "reaction_smiles": tiny_reactions[0],
+                    "risk_label": 1,
+                    "risk_source": "known_positive_collision",
+                },
+                {
+                    "reaction_smiles": tiny_reactions[-1],
+                    "risk_label": 0,
+                    "risk_source": "heldout_hte_outcome",
+                },
+            ],
         }
 
     def test_stage1_reconstruction(self, tiny_reactions, caches, device):
@@ -300,7 +333,7 @@ class TestFourStageTraining:
         """Formal mode must never silently re-create pseudo supervision."""
         model = StructuredProposalModel(hidden_dim=32, num_heads=2,
                                         num_layers=1, dropout=0.1)
-        with pytest.raises(RuntimeError, match="requires non-empty real supervision cache"):
+        with pytest.raises(RuntimeError, match="requires an edit-target cache"):
             train_stage(
                 model, stage=3,
                 train_reactions=tiny_reactions,
@@ -310,6 +343,27 @@ class TestFourStageTraining:
                 device=device, seed=42,
                 formal_run=True,
             )
+
+    def test_formal_stage1_uses_joint_real_action_supervision(
+            self, tiny_reactions, caches, device):
+        model = StructuredProposalModel(hidden_dim=32, num_heads=2,
+                                        num_layers=1, dropout=0.1)
+        log = train_stage(
+            model, stage=1,
+            train_reactions=tiny_reactions,
+            val_reactions=tiny_reactions[:2],
+            rule_generator=ReactionBoundaryGenerator(),
+            epochs=1, batch_size=4, lr=1e-3,
+            device=device, seed=42,
+            edit_targets_cache=caches["edit_targets"],
+            rule_proposals_cache=caches["rule_proposals"],
+            competing_pairs_cache=caches["competing_pairs"],
+            preference_pairs_cache=caches["preference_pairs"],
+            risk_examples_cache=caches["risk_examples"],
+            formal_run=True,
+        )
+        assert log[-1]["formal_supervision"] is True
+        assert "arg_loss" in log[-1]["components"]
 
     def test_stage2_imitation(self, tiny_reactions, caches, device):
         model = StructuredProposalModel(hidden_dim=32, num_heads=2,
@@ -385,3 +439,38 @@ class TestFourStageTraining:
         logp = compute_logp(out, loci, types)
         assert logp.shape == (len(success),)
         assert torch.isfinite(logp).all()
+
+    def test_complete_action_logp_and_reference_hash(
+            self, tiny_reactions, caches, device):
+        from pc_cng.p4_g8c_learned_structured_proposal import (
+            _collate_reactions,
+            _primary_real_target,
+        )
+        model = StructuredProposalModel(hidden_dim=32, num_heads=2,
+                                        num_layers=1, dropout=0.1).to(device)
+        batch, success = _collate_reactions(
+            tiny_reactions[:2], device, map_unmapped=False)
+        if batch is None:
+            pytest.skip("featurization failed on tiny set")
+        targets = [
+            _primary_real_target(
+                reaction,
+                graph,
+                caches["edit_targets"],
+            )
+            for reaction, graph in zip(success, batch.graphs)
+        ]
+        if any(target is None for target in targets):
+            pytest.skip("no complete real targets")
+        loci = torch.tensor(
+            [target["locus"] for target in targets],
+            dtype=torch.long,
+            device=device,
+        )
+        output = model(batch, locus_index=loci)
+        before = _state_dict_sha256(model)
+        logp = compute_action_logp(output, targets)
+        after = _state_dict_sha256(model)
+        assert logp.shape == (len(targets),)
+        assert torch.isfinite(logp).all()
+        assert before == after
