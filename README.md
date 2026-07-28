@@ -3,10 +3,11 @@
 **项目状态**：Phase 4 evidence-driven method redesign（2026-07-28）；修复版 shuffled-parent 与 Union v2 已完成 8/8，最终分析已审计；第二 scorer 仅作 development-pool exploratory replication
 **唯一有效目标文档**：[docs/00_当前有效文档/NMI_FINAL_GOAL.md](docs/00_当前有效文档/NMI_FINAL_GOAL.md)
 **Claim 注册表**：[docs/claim_registry.csv](docs/claim_registry.csv)
+**Phase A 状态冻结**：v2.0；H1/H2/H3 历史见 [docs/phase4_hypothesis_history_20260728.md](docs/phase4_hypothesis_history_20260728.md)
 
 ## 当前阶段
 
-PC-CNG 已完成研究基础设施和若干探索性实验，但当前 Phase 4 fixed pools 已用于方法设计，统一视为 development-only。距离 Nature Machine Intelligence 仍需一次核心方法重建 + 一次冻结后的外部盲测 + 一条可信外部验证证据链。
+PC-CNG 已完成研究基础设施和若干探索性实验，但当前 Phase 4 fixed pools 已用于方法设计，统一视为 `DEVELOPMENT_SET_USED_FOR_METHOD_DESIGN`。Union、Union_v2、source-aware gate 及其组合臂均为 exploratory/post-hoc；旧 G8-C tiny utility gate 为 `DEPRECATED_INVALID_EVALUATION`。距离 Nature Machine Intelligence 仍需一次核心方法重建 + 一次冻结后的外部盲测 + 一条可信外部验证证据链。
 
 当前所有 Gate 已按 NMI 审计标准重新判定（见 NMI_FINAL_GOAL.md §三）：
 

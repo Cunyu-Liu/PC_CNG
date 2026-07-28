@@ -1,10 +1,10 @@
 # PC-CNG → Nature Machine Intelligence：唯一有效目标文档
 
-> **文档版本**：v1.0（Phase 0 证据冻结）
+> **文档版本**：v2.0（Phase A 状态重冻结）
 > **创建日期**：2026-07-24
 > **审计依据**：`pccng 的分阶段提示词 2.md` §一/§二/§三
 > **核心原则**：不为了让 Gate 变绿而调指标；只接受能够经受独立审稿、复现和外部验证的证据。
-> **文档地位**：本文件是 PC-CNG 项目当前唯一有效的目标与状态文档。自此日期起，`docs/00_当前有效文档/` 下其他历史规划文档（`顶刊论文核心思想与从0到1落地方案.md`、`P4_GOAL_20260721.md` 等）仅作历史参考，不再驱动当前决策。新增决策以 amendment 形式追加至本文件 §八。
+> **文档地位**：本文件是 PC-CNG 项目当前唯一有效的目标与状态文档。v1.0 的原始目标和 H1/H2/H3 定义保留为历史基线；当前状态以本文 v2.0 状态冻结段、`docs/phase4_hypothesis_history_20260728.md` 和 `docs/claim_registry.csv` 为准。其他历史规划文档仅作历史参考，不再驱动当前决策。
 
 ---
 
@@ -174,3 +174,40 @@ learned structured generator 从唯一成败点降级为 source expert；只有�
 2. 新建 sealed test split，冻结 gate、endpoint 和统计方案；
 3. 完成 G7 专家 pilot 或 prospective experiment；
 4. 仅当外部盲测与可信性闭环通过后启动 manuscript。
+
+---
+
+## 十、Phase A：状态重冻结 v2.0（2026-07-28）
+
+### 当前唯一有效状态
+
+- 当前阶段：`Phase 4 evidence-driven method redesign`。
+- Phase 4 fixed pools、Union、Union_v2、shuffled-parent 修复和第二 scorer 均已看过或参与方法设计，统一标记为 `DEVELOPMENT_SET_USED_FOR_METHOD_DESIGN`。
+- 旧 G8-C tiny self-built utility gate 统一标记为 `DEPRECATED_INVALID_EVALUATION`，不再作为 learned generator 的科学效用证据。
+- 任何通过查看 fixed pool 后新增的 Union、Union_v2、source-gate 或组合 arm 均为 `EXPLORATORY_POST_HOC`，不能称为 sealed confirmatory SOTA。
+- `claim_registry.csv` 是 headline claim 的唯一索引；每个 claim 必须同时给出 endpoint、split、代码入口、artifact、统计方法和 limitation。
+
+### H1/H2/H3 不覆盖原则
+
+原始 H1/H2/H3 定义、后续 amendment、判定结果和证据污染边界保存在 `docs/phase4_hypothesis_history_20260728.md`。本 v2.0 只记录当前解释，不删除或改写原假设：
+
+| 假设 | 当前状态 | 当前可支持的最强表述 |
+|---|---|---|
+| H1 learned structured SOTA | `NO_GO_DEVELOPMENT` | learned 在 fixed development pool 上不支持普遍优于主要单一来源 |
+| H2 shuffled-parent hard/null control | `NOT_A_NULL_CONTROL` | repaired shuffled-parent 保留 compatibility-transfer prior；randomized-label 才是 literal null |
+| H3 semi-hard inverted-U | `UNSUPPORTED_DEVELOPMENT` | fixed pool 仅 2/8 场景满足；RegioSQM20 单场景 replication 不足以泛化机制 |
+
+### 外部复制边界
+
+RegioSQM20 的 GNN 和 EnhancedMLP 各完成一个既有 split 的外部 scenario。结果只能作为独立 replication/exploratory robustness evidence：没有证明 learned SOTA，没有恢复一般 inverted-U 主张，也没有运行外部 randomized-label null arm。
+
+### Phase A Exit Criterion
+
+- [x] 唯一有效 NMI goal 已升级为 v2.0，并保留 v1 历史内容。
+- [x] README 当前阶段为 `Phase 4 evidence-driven method redesign`。
+- [x] C11–C15 已登记，并分别标注 development-only、unsupported 或 exploratory 边界。
+- [x] fixed Phase 4 pool、旧 G8-C utility gate 和 post-hoc arms 已显式标注。
+- [x] 原始 H1/H2/H3 与后续判定历史已保存，不覆盖原定义。
+- [x] 当前文档不在已看过的 pool 上宣称新方法 confirmatory SOTA。
+
+Phase A 完成不等于 Phase 4 scientific exit；sealed source-gate evaluation、candidate-level driver analysis、专家/前瞻验证仍是后续独立门槛。
