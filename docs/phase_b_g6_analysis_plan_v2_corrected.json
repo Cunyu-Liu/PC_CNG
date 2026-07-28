@@ -1,0 +1,29 @@
+{
+  "schema_version": "g6_v3_corrected_reanalysis_20260729",
+  "primary_endpoint": "T5_condition_feasibility_source_macro_auprc",
+  "t1_low_yield_threshold": 10.0,
+  "t5_feasibility_threshold": 50.0,
+  "ordinal_bin_edges": [0.0, 10.0, 30.0, 50.0, 70.0, "inf"],
+  "primary_comparisons": [
+    "pc_cng_vs_random",
+    "pc_cng_vs_template_rule",
+    "union_vs_pc_cng"
+  ],
+  "noninferiority_margin": 0.02,
+  "source_aliases": {
+    "pc_cng": "rule_pc_cng",
+    "random": "random_mismatch",
+    "template_rule": "template_perturbation"
+  },
+  "n_seeds": 5,
+  "n_bootstrap": 2000,
+  "n_permutations": 10000,
+  "candidate_integrity_contract": {
+    "exclude_parent_positive_collisions": true,
+    "selection_order": "lowest source rank then candidate_id among non-colliding candidates",
+    "cross_source_duplicates": "retain and report",
+    "analysis_status": "CORRECTED_REANALYSIS_TEST_OUTCOMES_PREVIOUSLY_OBSERVED"
+  },
+  "amendment_reason": "A completion audit of the training manifest found one template candidate identical to its observed parent product. Parent-positive collisions are label-invalid and are excluded before source selection. Cross-source duplicate candidates are retained and reported because independent methods may converge on the same structure.",
+  "freeze_statement": "This corrected reanalysis plan was frozen after the training-manifest integrity finding and before the corrected GPU run. The original test outcomes had already been observed. The endpoint, thresholds, comparison family, non-inferiority margin, source aliases, seed count and inferential procedure are unchanged. This run is a corrected reanalysis, not a new blind confirmation."
+}

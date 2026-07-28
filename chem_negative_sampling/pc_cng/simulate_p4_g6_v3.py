@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pre-run operating-characteristic simulation for the frozen G6 v3 plan."""
+"""Operating-characteristic design check for the frozen G6 v3 inference."""
 from __future__ import annotations
 
 import argparse
@@ -24,8 +24,10 @@ def main() -> None:
         seed=args.seed,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
-    print(json.dumps(result, indent=2, sort_keys=True))
+    args.output.write_text(
+        json.dumps(result, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    )
+    print(json.dumps(result, indent=2, sort_keys=True, allow_nan=False))
 
 
 if __name__ == "__main__":

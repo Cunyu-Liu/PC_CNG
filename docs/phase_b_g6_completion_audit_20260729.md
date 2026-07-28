@@ -26,6 +26,23 @@ independent-reconstruction writers reject any remaining NaN/Inf value. The
 five-seed frozen formal result has finite between-seed variance and is
 numerically unchanged.
 
+The re-audit also found that the Holm step-down rejection decisions were
+correct, but the reported adjusted p-values omitted the required cumulative
+maximum of the ordered Bonferroni products. The implementation and regression
+test now follow the standard definition. The old artifact remains preserved
+as historical evidence; a new GPU formal run from the same frozen inputs is
+required before the corrected adjusted p-values become authoritative. This
+correction does not change any rejection decision or the scientific NO-GO.
+
+The original v3 no-signal operating-characteristic generator also gave both
+arms identical predictions at `delta=0`. Its reported family-wise type-I error
+of zero was therefore tautological rather than a useful calibration check.
+The completion re-audit replaces it with exchangeable, non-identical paired
+predictions that share label and cluster signal but receive independent
+symmetric arm noise. The corrected simulation is explicitly a post-
+implementation design check; it does not retroactively strengthen or
+preregister the efficacy result.
+
 This is not an efficacy GO. All three preregistered superiority intervals cross zero.
 
 ## 2. Requirement audit
@@ -38,19 +55,34 @@ This is not an efficacy GO. All three preregistered superiority intervals cross 
 | T4 true ranking model | within-plate pair construction and pairwise ranking loss | PASS |
 | T5 explicit conditions | catalyst, solvent, reagent, temperature and time fields encoded | PASS WITH DATA LIMITATION |
 | Shared pretrained encoder | frozen Chemformer checkpoint shared across T1–T5 on CUDA | PASS |
+| Pretrained checkpoint provenance | immutable checkpoint hash and conversion metadata | PASS WITH CORPUS-PROVENANCE GAP |
 | Product-only Morgan only weak baseline | excluded from v3 formal main model | PASS |
 | Matched source arms | 76 common parents; each source arm 76 positive + 76 negative | PASS |
+| Split independence | zero record, experimental-group or plate overlap across train/val/test | PASS |
 | One preregistered primary endpoint | real-HTE condition-feasibility source-macro AUPRC | PASS WITH SINGLE-SOURCE LIMITATION |
 | Paired cluster bootstrap | same clusters resampled for challenger and baseline | PASS |
 | Hierarchical seed×cluster inference | seed and cluster uncertainty aggregated in frozen procedure | PASS |
 | Paired permutation + Holm | frozen three-comparison family | PASS |
-| Effect and non-inferiority | raw delta, paired CI and margin 0.02 recorded | PASS |
+| Effect and non-inferiority | raw delta, paired CI and margin 0.02 recorded | PASS WITH RATIONALE NEEDED |
 | Type-I and power simulations | familywise type-I = 0.0; power at delta 0.08 = 1.0 over 80 simulations | PASS AS DESIGN CHECK |
 | Independent reconstruction | complete primary inference object verified | PASS |
 | No test-driven baseline selection | comparison order frozen before formal evaluation | PASS |
 | Documented CLI and wheel import | `pc_cng` and shared `models` import from source checkout and wheel | PASS AFTER RE-AUDIT FIX |
 
 `reagent_fraction=0.0` in the available HTE records, despite the model having an explicit reagent channel. This is a data-availability limitation, not evidence that reagent effects were validated. Catalyst availability is 0.5982; solvent 0.9917; temperature and reaction time 1.0.
+
+The 0.02 non-inferiority margin was frozen before test evaluation, but the
+current analysis plan does not give a domain or decision-theoretic rationale
+for why a two-point AUPRC loss is scientifically acceptable. Non-inferiority
+is therefore secondary and should not be a headline claim until that rationale
+is supplied independently of the observed test result.
+
+The checkpoint conversion summaries record the source file, tensor count,
+hyperparameter keys and sanitized output, but do not identify the original
+pretraining corpus version, license, split manifest or a reaction-level overlap
+audit against the HTE test set. The checkpoint hash makes this run repeatable,
+but those missing provenance fields remain reviewer-facing inputs before an
+external-generalization claim can be manuscript-eligible.
 
 The legacy v2 sanity suite also contained an invalid AUPRC power generator: it shifted every score by the same constant while the baseline ranking was already perfectly separated. A constant shift cannot change AUPRC, so the old coverage/power assertions necessarily reported zero. The repaired tests use a location metric for CI coverage and an overlapping, label-directional score shift for AUPRC power; the effect grid is deliberately unsaturated.
 

@@ -27,6 +27,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
 import torch
+from rdkit import Chem
 from torch import nn
 import torch.nn.functional as F
 
@@ -42,7 +43,7 @@ from models.pretrained_backbone import (
 )
 
 
-FORMAL_SCHEMA_VERSION = "g6_v3_formal_20260728"
+FORMAL_SCHEMA_VERSION = "g6_v3_corrected_reanalysis_20260729"
 PRIMARY_ENDPOINT = "T5_condition_feasibility_source_macro_auprc"
 T1_PRIMARY_LOW_YIELD_THRESHOLD = 10.0
 T5_FEASIBILITY_THRESHOLD = 50.0
@@ -53,6 +54,12 @@ PRE_REGISTERED_PRIMARY_COMPARISONS = (
     "pc_cng_vs_template_rule",
     "union_vs_pc_cng",
 )
+CANDIDATE_INTEGRITY_CONTRACT = {
+    "exclude_parent_positive_collisions": True,
+    "selection_order": "lowest source rank then candidate_id among non-colliding candidates",
+    "cross_source_duplicates": "retain and report",
+    "analysis_status": "CORRECTED_REANALYSIS_TEST_OUTCOMES_PREVIOUSLY_OBSERVED",
+}
 SOURCE_ALIASES = {
     "pc_cng": "rule_pc_cng",
     "random": "random_mismatch",
@@ -89,6 +96,7 @@ class FormalAnalysisPlan:
             "n_seeds": self.n_seeds,
             "n_bootstrap": self.n_bootstrap,
             "n_permutations": self.n_permutations,
+            "candidate_integrity_contract": dict(CANDIDATE_INTEGRITY_CONTRACT),
         }
 
 
@@ -111,6 +119,8 @@ def validate_formal_analysis_plan(plan: Mapping[str, Any]) -> None:
     aliases = plan.get("source_aliases", {})
     if dict(aliases) != SOURCE_ALIASES:
         raise ValueError("formal analysis plan source aliases differ from the frozen contract")
+    if dict(plan.get("candidate_integrity_contract", {})) != CANDIDATE_INTEGRITY_CONTRACT:
+        raise ValueError("formal analysis plan candidate integrity contract differs from the corrected contract")
 
 
 def stable_int(value: str) -> int:
@@ -123,6 +133,19 @@ def _text(value: Any) -> str:
     if isinstance(value, (list, tuple)):
         return ".".join(str(v).strip() for v in value if str(v).strip())
     return str(value).strip()
+
+
+def _canonical_structure(smiles: Any) -> str:
+    """Canonicalize a product for label-integrity checks, removing atom maps."""
+    text = _text(smiles)
+    if not text:
+        return ""
+    molecule = Chem.MolFromSmiles(text)
+    if molecule is None:
+        return text
+    for atom in molecule.GetAtoms():
+        atom.SetAtomMapNum(0)
+    return Chem.MolToSmiles(molecule, canonical=True)
 
 
 def normalized_condition_fields(record: Mapping[str, Any]) -> dict[str, str]:
@@ -513,6 +536,17 @@ def load_matched_source_arms(
         manifest = json.load(handle)
     contexts = {str(r.get("record_id")): dict(r) for r in hte_records if r.get("split") == "train"}
     available: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+    integrity_audit: dict[str, Any] = {
+        "parent_positive_collisions_skipped_by_source": {
+            source: 0 for source in SOURCE_ALIASES
+        },
+        "empty_candidates_skipped_by_source": {
+            source: 0 for source in SOURCE_ALIASES
+        },
+        "parents_without_noncolliding_candidate_by_source": {
+            source: 0 for source in SOURCE_ALIASES
+        },
+    }
     for group in manifest.get("groups", []):
         if group.get("split") != "train":
             continue
@@ -520,14 +554,37 @@ def load_matched_source_arms(
         parent = contexts.get(parent_id)
         if parent is None or float(parent.get("measured_yield", 0.0)) < positive_threshold:
             continue
+        positive_structure = _canonical_structure(parent.get("products", ""))
         by_source: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
         for candidate in group.get("candidates", []):
             by_source[str(candidate.get("candidate_source", ""))].append(candidate)
         for arm_source, manifest_source in SOURCE_ALIASES.items():
-            candidates = by_source.get(manifest_source, [])
-            if not candidates:
+            candidates = sorted(
+                by_source.get(manifest_source, []),
+                key=lambda c: (
+                    int(c.get("candidate_source_rank", 0)),
+                    str(c.get("candidate_id", "")),
+                ),
+            )
+            eligible: list[Mapping[str, Any]] = []
+            for candidate in candidates:
+                candidate_product = str(
+                    candidate.get("canonical_smiles")
+                    or candidate.get("candidate_smiles")
+                    or ""
+                )
+                candidate_structure = _canonical_structure(candidate_product)
+                if not candidate_structure:
+                    integrity_audit["empty_candidates_skipped_by_source"][arm_source] += 1
+                    continue
+                if candidate_structure == positive_structure:
+                    integrity_audit["parent_positive_collisions_skipped_by_source"][arm_source] += 1
+                    continue
+                eligible.append(candidate)
+            if not eligible:
+                integrity_audit["parents_without_noncolliding_candidate_by_source"][arm_source] += 1
                 continue
-            chosen = sorted(candidates, key=lambda c: (int(c.get("candidate_source_rank", 0)), str(c.get("candidate_id", ""))))[0]
+            chosen = eligible[0]
             record = dict(parent)
             record.update({
                 "candidate_id": str(chosen.get("candidate_id", "")),
@@ -558,7 +615,26 @@ def load_matched_source_arms(
         union_negatives.append(available[parent][source])
     arms["union"] = list(positives) + union_negatives
     audit = assert_matched_source_arms(arms)
-    audit.update({"n_matched_parents": len(common), "source_aliases": dict(SOURCE_ALIASES), "positive_threshold": positive_threshold})
+    chosen_by_parent = {
+        parent: {
+            source: _canonical_structure(available[parent][source]["products"])
+            for source in SOURCE_ALIASES
+        }
+        for parent in common
+    }
+    integrity_audit["cross_source_duplicate_parent_count"] = sum(
+        len(set(products.values())) < len(products)
+        for products in chosen_by_parent.values()
+    )
+    integrity_audit["candidate_integrity_contract"] = dict(
+        CANDIDATE_INTEGRITY_CONTRACT
+    )
+    audit.update({
+        "n_matched_parents": len(common),
+        "source_aliases": dict(SOURCE_ALIASES),
+        "positive_threshold": positive_threshold,
+        "candidate_integrity": integrity_audit,
+    })
     return arms, audit
 
 
@@ -578,6 +654,18 @@ def assert_matched_source_arms(arms: Mapping[str, Sequence[Mapping[str, Any]]]) 
         neg_parent = {str(r.get("parent_record_id")) for r in negatives}
         if pos_parent != neg_parent or len(positives) != len(negatives):
             raise AssertionError(f"{arm} violates one-positive/one-negative matched budget")
+        positives_by_parent = {
+            str(record.get("parent_record_id")): _canonical_structure(
+                record.get("products", "")
+            )
+            for record in positives
+        }
+        for negative in negatives:
+            parent_id = str(negative.get("parent_record_id"))
+            if _canonical_structure(negative.get("products", "")) == positives_by_parent[parent_id]:
+                raise AssertionError(
+                    f"{arm} contains a parent-positive collision for {parent_id}"
+                )
         parent_sets[arm] = pos_parent
         counts[arm] = {"n_positive": len(positives), "n_negative": len(negatives), "n_total": len(records)}
     reference = parent_sets[comparison_arms[0]]

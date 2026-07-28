@@ -85,16 +85,31 @@ variance cannot be estimated, such as a one-seed integration smoke, the
 standardized seed effect is `null`; it must never be serialized as
 `Infinity`, `NaN` or another non-standard JSON token.
 
+Holm adjusted p-values use the standard step-down cumulative maximum of the
+ordered Bonferroni products. Rejection stops after the first non-rejection.
+The regression suite includes a case where the unmodified ordered products
+would decrease.
+
+The formal run fails closed if any tracked file differs from `HEAD` or if its
+output directory is non-empty. User-owned untracked files do not invalidate
+the tracked-code identity. The run manifest records the exact process argv,
+input, code and output hashes, git commit, runtime versions, CUDA device and
+the clean-tracked-worktree check.
+
 The formal run must use a fresh, immutable output directory.  The result
 directory must contain `formal_result_v3.json`, `predictions_t5_v3.json`,
 `run_manifest_v3.json` and `excluded_reaction_context_records_v3.json`.
 Use `pc_cng.recompute_p4_g6_v3` to reconstruct the primary inference from the
 predictions and frozen analysis plan in a separate command.
 
-Before the formal run, retain the simulation artifact from
-`pc_cng.simulate_p4_g6_v3`.  It reports family-wise type-I error for the three
-Holm-corrected comparisons and power for the first frozen comparison; it is a
-design check, never a PC-CNG efficacy result.
+Retain the simulation artifact from `pc_cng.simulate_p4_g6_v3`. It reports
+family-wise type-I error for the three Holm-corrected comparisons using an
+exchangeable but non-identical paired null, and power for the first frozen
+comparison at 0.02, 0.04 and 0.08 synthetic deltas. Binomial rates are
+accompanied by 95% Wilson intervals. It is an implementation design check,
+never a PC-CNG efficacy result. A simulation rerun performed during completion
+re-audit does not retroactively preregister or strengthen the already executed
+efficacy test.
 
 ## Stop rules
 

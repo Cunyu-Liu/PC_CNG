@@ -33,6 +33,7 @@ from pc_cng.p4_g6_benchmark_v3 import (  # noqa: E402
     validate_reaction_condition_records,
 )
 from pc_cng.p4_g6_inference_v3 import (  # noqa: E402
+    _toy_predictions,
     effect_size_by_seed,
     run_preregistered_primary_inference,
     simulate_inference_operating_characteristics,
@@ -70,7 +71,7 @@ def test_documented_phase_b_cli_imports_without_repository_parent_path():
         check=False,
     )
     assert completed.returncode == 0, completed.stderr
-    assert completed.stdout.strip() == "g6_v3_formal_20260728"
+    assert completed.stdout.strip() == "g6_v3_corrected_reanalysis_20260729"
 
 
 def test_formal_manifest_code_hash_inputs_exist():
@@ -200,6 +201,29 @@ def test_operating_characteristics_reports_familywise_type_i_error():
     )
     assert "familywise_type_i_error" in result
     assert 0.0 <= result["familywise_type_i_error"] <= 1.0
+    assert set(result["power_by_delta"]) == {"0.02", "0.04", "0.08"}
+    assert len(result["familywise_type_i_error_ci95"]) == 2
+
+
+def test_no_signal_simulation_is_exchangeable_but_not_identical():
+    challenger, baseline = _toy_predictions(
+        0.0, seed=22, n_clusters=4, n_per_cluster=8
+    )
+    paired_scores = [
+        (left["score"], right["score"])
+        for item_seed in challenger
+        for left, right in zip(challenger[item_seed], baseline[item_seed])
+    ]
+    assert any(left != right for left, right in paired_scores)
+    assert abs(
+        np.mean(
+            [
+                source_macro_auprc(challenger[item_seed])
+                - source_macro_auprc(baseline[item_seed])
+                for item_seed in challenger
+            ]
+        )
+    ) < 0.10
 
 
 def test_legacy_numpy_boolean_strings_are_normalized_narrowly():
@@ -258,6 +282,13 @@ def test_matched_source_arms_share_parents_and_budget(tmp_path: Path):
     for index in range(24):
         candidates = []
         for rank, source in enumerate(("rule_pc_cng", "random_mismatch", "template_perturbation")):
+            if index == 0 and source == "template_perturbation":
+                candidates.append({
+                    "candidate_id": "c0_template_positive_collision",
+                    "candidate_source": source,
+                    "candidate_source_rank": -1,
+                    "canonical_smiles": records[index]["products"],
+                })
             candidates.append({"candidate_id": f"c{index}_{source}", "candidate_source": source, "candidate_source_rank": rank, "canonical_smiles": f"CC{index % 5}O"})
         groups.append({"split": "train", "source_reaction_id": f"R{index}", "candidates": candidates})
     manifest = tmp_path / "manifest.json"
@@ -266,6 +297,38 @@ def test_matched_source_arms_share_parents_and_budget(tmp_path: Path):
     assert audit["budget_matched"]
     assert audit["parent_count"] == 24
     assert assert_matched_source_arms(arms)["counts"]["pc_cng"]["n_positive"] == 24
+    assert audit["candidate_integrity"]["parent_positive_collisions_skipped_by_source"]["template_rule"] == 1
+    selected = [
+        row
+        for row in arms["template_rule"]
+        if row.get("synthetic_negative") and row["parent_record_id"] == "R0"
+    ]
+    assert [row["candidate_id"] for row in selected] == ["c0_template_perturbation"]
+
+
+def test_matched_source_contract_rejects_parent_positive_collisions():
+    positive = {
+        **_record(0),
+        "parent_record_id": "R0",
+        "synthetic_negative": False,
+    }
+    safe_negative = {
+        **positive,
+        "products": "CCN",
+        "synthetic_negative": True,
+    }
+    collided_negative = {
+        **positive,
+        "synthetic_negative": True,
+    }
+    arms = {
+        "pc_cng": [positive, safe_negative],
+        "random": [positive, safe_negative],
+        "template_rule": [positive, collided_negative],
+        "union": [positive, safe_negative],
+    }
+    with pytest.raises(AssertionError, match="parent-positive collision"):
+        assert_matched_source_arms(arms)
 
 
 def _scored(seed: int, improvement: float) -> tuple[list[dict], list[dict]]:

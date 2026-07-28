@@ -189,6 +189,13 @@ def run_preregistered_primary_inference(
 
 
 def _toy_predictions(delta: float, *, seed: int, n_clusters: int = 16, n_per_cluster: int = 12) -> tuple[dict[int, list[dict]], dict[int, list[dict]]]:
+    """Generate paired predictions with an exchangeable, non-degenerate null.
+
+    Both arms share the same label signal and cluster-level difficulty, but
+    receive independent symmetric score noise. At ``delta=0`` neither arm has
+    an expected advantage while their predictions are not identical. A
+    positive delta adds label-directional separation to the challenger only.
+    """
     rng = np.random.default_rng(seed)
     challenger: dict[int, list[dict]] = {}
     baseline: dict[int, list[dict]] = {}
@@ -196,10 +203,25 @@ def _toy_predictions(delta: float, *, seed: int, n_clusters: int = 16, n_per_clu
         left: list[dict] = []
         right: list[dict] = []
         for cluster in range(n_clusters):
+            cluster_shift = rng.normal(0, 0.06)
             for index in range(n_per_cluster):
                 label = int(rng.random() < 0.5)
-                base_score = float(np.clip(0.5 + (0.20 if label else -0.20) + rng.normal(0, 0.22), 0, 1))
-                improved = float(np.clip(base_score + (delta if label else -delta), 0, 1))
+                shared_score = (
+                    0.5
+                    + (0.20 if label else -0.20)
+                    + cluster_shift
+                    + rng.normal(0, 0.16)
+                )
+                base_score = float(np.clip(shared_score + rng.normal(0, 0.07), 0, 1))
+                improved = float(
+                    np.clip(
+                        shared_score
+                        + rng.normal(0, 0.07)
+                        + (delta if label else -delta),
+                        0,
+                        1,
+                    )
+                )
                 metadata = {"record_id": f"{item_seed}_{cluster}_{index}", "label": label, "experimental_group": f"c{cluster}", "source_publication": "toy"}
                 right.append({**metadata, "score": base_score})
                 left.append({**metadata, "score": improved})
@@ -214,33 +236,76 @@ def simulate_inference_operating_characteristics(
     n_bootstrap: int = 300,
     n_permutations: int = 500,
     seed: int = 20260728,
-) -> dict[str, float]:
+) -> dict[str, Any]:
     """Estimate type-I error and power on paired cluster toy data.
 
     This is a pre-run statistical calibration check, not evidence about PC-CNG.
     """
+    effect_deltas = (0.02, 0.04, 0.08)
     null_rejections = 0
-    effect_rejections = 0
+    effect_rejections = {delta: 0 for delta in effect_deltas}
     for simulation in range(n_simulations):
         null_ch, null_bl = _toy_predictions(0.0, seed=seed + simulation)
-        effect_ch, effect_bl = _toy_predictions(0.08, seed=seed + 10000 + simulation)
         null = run_preregistered_primary_inference(
             {"pc_cng": null_ch, "random": null_bl, "template_rule": null_bl, "union": null_ch},
             n_bootstrap=n_bootstrap, n_permutations=n_permutations, seed=seed + simulation,
-        )
-        effect = run_preregistered_primary_inference(
-            {"pc_cng": effect_ch, "random": effect_bl, "template_rule": effect_bl, "union": effect_ch},
-            n_bootstrap=n_bootstrap, n_permutations=n_permutations, seed=seed + 10000 + simulation,
         )
         # The null operating characteristic is family-wise: any rejected Holm
         # comparison is a false positive under the complete null, not merely
         # the first comparison in the reporting order.
         null_rejections += int(any(item["holm"]["rejected"] for item in null["comparisons"]))
-        effect_rejections += int(effect["comparisons"][0]["superiority_confirmed"])
+        for effect_index, delta in enumerate(effect_deltas):
+            effect_ch, effect_bl = _toy_predictions(
+                delta,
+                seed=seed + (effect_index + 1) * 10000 + simulation,
+            )
+            effect = run_preregistered_primary_inference(
+                {
+                    "pc_cng": effect_ch,
+                    "random": effect_bl,
+                    "template_rule": effect_bl,
+                    "union": effect_ch,
+                },
+                n_bootstrap=n_bootstrap,
+                n_permutations=n_permutations,
+                seed=seed + (effect_index + 1) * 10000 + simulation,
+            )
+            effect_rejections[delta] += int(
+                effect["comparisons"][0]["superiority_confirmed"]
+            )
+
+    def wilson_interval(successes: int) -> list[float]:
+        proportion = successes / n_simulations
+        z = 1.959963984540054
+        denominator = 1.0 + z**2 / n_simulations
+        centre = (proportion + z**2 / (2.0 * n_simulations)) / denominator
+        radius = (
+            z
+            * np.sqrt(
+                proportion * (1.0 - proportion) / n_simulations
+                + z**2 / (4.0 * n_simulations**2)
+            )
+            / denominator
+        )
+        return [float(max(0.0, centre - radius)), float(min(1.0, centre + radius))]
+
+    type_i_error = null_rejections / n_simulations
+    power_by_delta = {
+        f"{delta:.2f}": effect_rejections[delta] / n_simulations
+        for delta in effect_deltas
+    }
     return {
         "n_simulations": float(n_simulations),
-        "familywise_type_i_error": null_rejections / n_simulations,
-        "power_at_delta_0p08": effect_rejections / n_simulations,
-        "calibration_pass": float(null_rejections / n_simulations <= 0.10),
-        "power_pass": float(effect_rejections / n_simulations >= 0.70),
+        "familywise_type_i_error": type_i_error,
+        "familywise_type_i_error_ci95": wilson_interval(null_rejections),
+        "power_by_delta": power_by_delta,
+        "power_ci95_by_delta": {
+            f"{delta:.2f}": wilson_interval(effect_rejections[delta])
+            for delta in effect_deltas
+        },
+        "power_at_delta_0p08": power_by_delta["0.08"],
+        "calibration_pass": float(type_i_error <= 0.10),
+        "power_pass": float(power_by_delta["0.08"] >= 0.70),
+        "null_design": "exchangeable non-identical paired predictions with shared signal and symmetric arm noise",
+        "interpretation": "post-implementation design check only; not PC-CNG efficacy evidence",
     }

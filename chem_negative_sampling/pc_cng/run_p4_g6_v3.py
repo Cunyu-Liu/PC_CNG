@@ -275,7 +275,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     _write_json(prediction_path, {arm: {str(seed): rows for seed, rows in values.items()} for arm, values in output_predictions.items()})
     result = {
         "schema_version": FORMAL_SCHEMA_VERSION,
-        "scientific_status": "FORMAL" if args.formal_run else "SMOKE_NOT_SCIENTIFIC",
+        "scientific_status": (
+            plan_data["candidate_integrity_contract"]["analysis_status"]
+            if args.formal_run
+            else "SMOKE_NOT_SCIENTIFIC"
+        ),
+        "confirmatory_blind_test": False if args.formal_run else None,
         "analysis_plan": plan_data,
         "git_commit": _git_sha(),
         "input_hashes": {"hte_parquet": _sha256(args.hte_parquet), "manifest": _sha256(args.manifest), "analysis_plan": _sha256(args.analysis_plan)},
@@ -336,7 +341,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--hte-parquet", type=Path, default=REPO_ROOT / "data/processed/p4_hte_normalized.parquet")
     parser.add_argument("--manifest", type=Path, default=REPO_ROOT / "data/p4/manifests/hte_feasibility_v2.json")
-    parser.add_argument("--analysis-plan", type=Path, default=REPO_ROOT / "docs/phase_b_g6_analysis_plan_v1.json")
+    parser.add_argument("--analysis-plan", type=Path, default=REPO_ROOT / "docs/phase_b_g6_analysis_plan_v2_corrected.json")
     parser.add_argument("--checkpoint", type=Path, default=REPO_ROOT / "models/reaction_lm/chemformer_pretrained_hf/model_sanitized.ckpt")
     parser.add_argument("--vocab", type=Path, default=REPO_ROOT / "external/reaction_lm/Chemformer/bart_vocab.json")
     parser.add_argument("--output-dir", type=Path, required=True)

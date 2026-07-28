@@ -56,8 +56,14 @@ def verify_reconstruction(
     analysis_plan: dict[str, Any],
 ) -> dict[str, Any]:
     validate_formal_analysis_plan(analysis_plan)
-    if formal_result.get("scientific_status") != "FORMAL":
-        raise AssertionError("formal result does not carry scientific_status=FORMAL")
+    accepted_statuses = {
+        "FORMAL",
+        "CORRECTED_REANALYSIS_TEST_OUTCOMES_PREVIOUSLY_OBSERVED",
+    }
+    if formal_result.get("scientific_status") not in accepted_statuses:
+        raise AssertionError(
+            "formal result does not carry an accepted formal/reanalysis status"
+        )
     embedded_plan = formal_result.get("analysis_plan")
     if embedded_plan != analysis_plan:
         raise AssertionError("formal result analysis plan differs from frozen plan")
