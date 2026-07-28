@@ -77,7 +77,13 @@ env CUDA_VISIBLE_DEVICES=<GPU> \
 `pc_cng` and the shared `models` package are both included in the project
 wheel. The documented module entrypoint is regression-tested from the
 `chem_negative_sampling/` working directory without adding the repository
-parent to `PYTHONPATH`.
+parent to `PYTHONPATH`. Install the `chem` extra for the formal runner; it
+includes the direct Parquet dependency `pyarrow`.
+
+All new result writers use strict JSON (`allow_nan=False`). When between-seed
+variance cannot be estimated, such as a one-seed integration smoke, the
+standardized seed effect is `null`; it must never be serialized as
+`Infinity`, `NaN` or another non-standard JSON token.
 
 The formal run must use a fresh, immutable output directory.  The result
 directory must contain `formal_result_v3.json`, `predictions_t5_v3.json`,

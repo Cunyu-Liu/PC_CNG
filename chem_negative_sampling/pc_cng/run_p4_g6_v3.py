@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -80,6 +81,21 @@ def _git_sha() -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, text=True).strip()
 
 
+def _tracked_worktree_clean() -> bool:
+    """Check tracked files only, preserving unrelated user-owned untracked files."""
+    unstaged = subprocess.run(
+        ["git", "diff", "--quiet"],
+        cwd=REPO_ROOT,
+        check=False,
+    ).returncode
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        cwd=REPO_ROOT,
+        check=False,
+    ).returncode
+    return unstaged == 0 and staged == 0
+
+
 def _json_default(value: object) -> object:
     """Preserve JSON scalar types for NumPy results in formal artifacts."""
     if isinstance(value, np.generic):
@@ -89,7 +105,14 @@ def _json_default(value: object) -> object:
 
 def _write_json(path: Path, value: Any) -> None:
     path.write_text(
-        json.dumps(value, indent=2, sort_keys=True, default=_json_default) + "\n"
+        json.dumps(
+            value,
+            indent=2,
+            sort_keys=True,
+            default=_json_default,
+            allow_nan=False,
+        )
+        + "\n"
     )
 
 
@@ -139,6 +162,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("formal-run and smoke are mutually exclusive")
     if args.formal_run and (not torch.cuda.is_available() or not str(args.device).startswith("cuda")):
         raise RuntimeError("formal G6 v3 runs require CUDA; CPU fallback is forbidden")
+    if args.formal_run and not _tracked_worktree_clean():
+        raise RuntimeError("formal G6 v3 runs require a clean tracked worktree")
+    if args.formal_run and args.output_dir.exists() and any(args.output_dir.iterdir()):
+        raise FileExistsError("formal G6 v3 output directory must be new or empty")
     plan_data = json.loads(args.analysis_plan.read_text())
     validate_formal_analysis_plan(plan_data)
     if args.formal_run and int(plan_data["n_seeds"]) != args.n_seeds:
@@ -149,9 +176,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("formal run permutation count must equal frozen analysis plan")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    exclusion_path = args.output_dir / "excluded_reaction_context_records_v3.json"
     raw_records = load_hte_records(args.hte_parquet)
     all_records, excluded_context_records = partition_context_complete_records(raw_records)
-    _write_json(args.output_dir / "excluded_reaction_context_records_v3.json", {
+    _write_json(exclusion_path, {
         "reason": "records without complete reactants/products cannot be represented by the formal reaction-conditioned encoder",
         "n_input": len(raw_records),
         "n_included": len(all_records),
@@ -242,7 +270,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "input_hashes": {"hte_parquet": _sha256(args.hte_parquet), "manifest": _sha256(args.manifest), "analysis_plan": _sha256(args.analysis_plan)},
         "availability": availability,
         "cluster_contract": cluster_contract,
-        "context_exclusions": {"n_input": len(raw_records), "n_included": len(all_records), "n_excluded": len(excluded_context_records), "artifact": str(args.output_dir / "excluded_reaction_context_records_v3.json")},
+        "context_exclusions": {"n_input": len(raw_records), "n_included": len(all_records), "n_excluded": len(excluded_context_records), "artifact": str(exclusion_path)},
         "arm_audit": arm_audit,
         "n_train_matched_parents": arm_audit["parent_count"],
         "n_validation": len(validation_records),
@@ -251,7 +279,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "runtime": {
             "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES", ""),
             "ld_library_path": os.environ.get("LD_LIBRARY_PATH", ""),
-            "python_executable": os.sys.executable,
+            "python_executable": sys.executable,
+            "python_version": sys.version,
+            "torch_version": torch.__version__,
+            "torch_cuda_version": torch.version.cuda,
+            "cuda_device_name": (
+                torch.cuda.get_device_name(torch.device(args.device))
+                if torch.cuda.is_available() and str(args.device).startswith("cuda")
+                else None
+            ),
         },
         "metrics_by_arm_seed": all_metrics,
         "calibration_by_arm_seed": calibration_by_arm_seed,
@@ -264,12 +300,29 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "prediction_artifact": str(prediction_path),
         "no_test_driven_baseline_selection": True,
     }
-    _write_json(args.output_dir / "formal_result_v3.json", result)
-    _write_json(args.output_dir / "run_manifest_v3.json", {
+    result_path = args.output_dir / "formal_result_v3.json"
+    manifest_path = args.output_dir / "run_manifest_v3.json"
+    _write_json(result_path, result)
+    _write_json(manifest_path, {
         "schema_version": FORMAL_SCHEMA_VERSION,
+        "exact_argv": list(getattr(sys, "orig_argv", sys.argv)),
         "command_contract": {"formal_run": args.formal_run, "smoke": args.smoke, "device": str(args.device), "n_seeds": args.n_seeds, "n_bootstrap": args.n_bootstrap, "n_permutations": args.n_permutations},
         "input_hashes": result["input_hashes"],
+        "code_hashes": {
+            "runner": _sha256(Path(__file__)),
+            "benchmark": _sha256(REPO_ROOT / "chem_negative_sampling/pc_cng/p4_g6_benchmark_v3.py"),
+            "inference": _sha256(REPO_ROOT / "chem_negative_sampling/pc_cng/p4_g6_inference_v3.py"),
+            "paired_cluster_inference": _sha256(REPO_ROOT / "chem_negative_sampling/pc_cng/paired_cluster_inference.py"),
+            "task_heads": _sha256(REPO_ROOT / "chem_negative_sampling/pc_cng/p4_g6_task_heads.py"),
+        },
+        "output_hashes": {
+            "formal_result_v3": _sha256(result_path),
+            "predictions_t5_v3": _sha256(prediction_path),
+            "excluded_reaction_context_records_v3": _sha256(exclusion_path),
+        },
         "git_commit": result["git_commit"],
+        "tracked_worktree_clean": _tracked_worktree_clean(),
+        "runtime": result["runtime"],
     })
     return result
 
@@ -306,4 +359,5 @@ if __name__ == "__main__":
         {"status": result["scientific_status"], "primary": result["primary_inference"]},
         indent=2,
         default=_json_default,
+        allow_nan=False,
     ))

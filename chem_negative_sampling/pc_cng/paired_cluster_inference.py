@@ -218,19 +218,27 @@ def holm_correction(p_values: list[float], alpha: float = 0.05) -> list[dict]:
     n = len(p_values)
     indexed = sorted(enumerate(p_values), key=lambda x: x[1])
     results = []
-    rejected_any = True
+    continue_rejecting = True
+    cumulative_adjusted = 0.0
     for rank, (idx, p) in enumerate(indexed):
-        adjusted_p = min(1.0, p * (n - rank))
-        # Step-down: once we fail to reject, all subsequent also fail
-        if rejected_any and adjusted_p <= alpha:
-            rejected = True
-        else:
-            rejected = False
-            rejected_any = False
+        multiplier = n - rank
+        # Standard Holm adjusted p-values are the cumulative maximum of the
+        # ordered Bonferroni products. Without this step, adjusted p-values can
+        # decrease as the raw p-values increase even if rejection decisions
+        # happen to remain correct.
+        cumulative_adjusted = max(
+            cumulative_adjusted,
+            min(1.0, float(p) * multiplier),
+        )
+        rejected = bool(
+            continue_rejecting and float(p) <= alpha / multiplier
+        )
+        if not rejected:
+            continue_rejecting = False
         results.append({
             "index": idx,
             "p_value": p,
-            "adjusted_p": adjusted_p,
+            "adjusted_p": cumulative_adjusted,
             "rejected": rejected,
         })
     results.sort(key=lambda x: x["index"])

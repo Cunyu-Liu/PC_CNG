@@ -14,8 +14,17 @@ namespace, so the documented module command failed from
 `chem_negative_sampling/`. The canonical import is now the packaged
 `models.pretrained_backbone`, `models*` is included in the wheel, and a
 subprocess regression test runs without adding the repository parent to
-`PYTHONPATH`. This packaging repair does not change the frozen model,
-predictions or statistical result.
+`PYTHONPATH`. The `chem` installation extra now declares the formal runner's
+direct `pyarrow` dependency. This packaging repair does not change the frozen
+model, predictions or statistical result.
+
+The first current-main GPU smoke then exposed a second non-scientific artifact
+edge case: a one-seed standardized effect was written as the non-standard JSON
+token `Infinity`. The statistic is undefined with no estimable between-seed
+variance, so the implementation now writes `null` and all new formal/smoke and
+independent-reconstruction writers reject any remaining NaN/Inf value. The
+five-seed frozen formal result has finite between-seed variance and is
+numerically unchanged.
 
 This is not an efficacy GO. All three preregistered superiority intervals cross zero.
 

@@ -35,7 +35,14 @@ def main() -> None:
         n_permutations=int(plan["n_permutations"]),
     )
     args.output.write_text(
-        json.dumps(result, indent=2, sort_keys=True, default=_json_default) + "\n"
+        json.dumps(
+            result,
+            indent=2,
+            sort_keys=True,
+            default=_json_default,
+            allow_nan=False,
+        )
+        + "\n"
     )
     print(args.output)
 

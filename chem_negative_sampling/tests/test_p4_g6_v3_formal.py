@@ -33,9 +33,11 @@ from pc_cng.p4_g6_benchmark_v3 import (  # noqa: E402
     validate_reaction_condition_records,
 )
 from pc_cng.p4_g6_inference_v3 import (  # noqa: E402
+    effect_size_by_seed,
     run_preregistered_primary_inference,
     simulate_inference_operating_characteristics,
 )
+from pc_cng.paired_cluster_inference import holm_correction  # noqa: E402
 from pc_cng.run_p4_g6_v3 import select_stratified_smoke_records  # noqa: E402
 from pc_cng.verify_p4_g6_v3 import (  # noqa: E402
     canonicalize_legacy_json_scalars,
@@ -282,3 +284,17 @@ def test_preregistered_inference_has_fixed_comparisons_and_holm():
     assert [item["comparison"] for item in result["comparisons"]] == ["pc_cng_vs_random", "pc_cng_vs_template_rule", "union_vs_pc_cng"]
     assert all("holm" in item and "noninferior" in item for item in result["comparisons"])
     assert source_macro_auprc(ch0) > source_macro_auprc(bl0)
+
+
+def test_holm_adjusted_p_values_use_ordered_cumulative_maximum():
+    corrected = holm_correction([0.04, 0.01, 0.03])
+    assert [item["adjusted_p"] for item in corrected] == pytest.approx([0.06, 0.03, 0.06])
+    assert [item["rejected"] for item in corrected] == [False, True, False]
+
+
+def test_single_seed_standardized_effect_is_json_null_not_infinity():
+    challenger, baseline = _scored(0, 0.08)
+    effect = effect_size_by_seed({0: challenger}, {0: baseline})
+    assert effect["standardized_seed_effect"] is None
+    encoded = json.dumps(effect, allow_nan=False)
+    assert "Infinity" not in encoded

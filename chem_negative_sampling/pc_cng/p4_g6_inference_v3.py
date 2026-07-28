@@ -113,7 +113,7 @@ def effect_size_by_seed(
     challenger_by_seed: Mapping[int, Sequence[Mapping[str, Any]]],
     baseline_by_seed: Mapping[int, Sequence[Mapping[str, Any]]],
     metric_fn: Callable = source_macro_auprc,
-) -> dict[str, float]:
+) -> dict[str, Any]:
     seeds = sorted(set(challenger_by_seed) & set(baseline_by_seed))
     deltas = []
     for item_seed in seeds:
@@ -121,7 +121,10 @@ def effect_size_by_seed(
         deltas.append(metric_fn(challenger_by_seed[item_seed]) - metric_fn(baseline_by_seed[item_seed]))
     values = np.asarray(deltas, dtype=float)
     std = float(values.std(ddof=1)) if len(values) > 1 else 0.0
-    standardized = float(values.mean() / std) if std > 1e-12 else (float("inf") if values.mean() > 0 else 0.0)
+    # A standardized effect is undefined when there is no estimable between-
+    # seed variance (notably a one-seed smoke).  Encode that state as JSON
+    # null instead of emitting the non-standard token ``Infinity``.
+    standardized = float(values.mean() / std) if std > 1e-12 else None
     return {"mean_seed_delta": float(values.mean()), "seed_delta_sd": std, "standardized_seed_effect": standardized, "n_seeds": float(len(values))}
 
 
