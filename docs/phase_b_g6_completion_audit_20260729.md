@@ -70,7 +70,11 @@ The corrected formal contract also distinguishes recorded seeds from
 bitwise-reproducible CUDA execution. Formal and GPU smoke runs now fail unless
 `CUBLAS_WORKSPACE_CONFIG=:4096:8` is present, enable PyTorch deterministic
 algorithms and deterministic cuDNN, disable cuDNN benchmarking, and serialize
-all four states in runtime provenance.
+all states in runtime provenance. An initial two-run smoke with only those four
+controls preserved identical metadata but differed by at most
+`4.20e-05` in predicted probabilities, so it was not reported as bitwise
+reproducible. The contract was tightened to disable TF32, flash SDP and
+memory-efficient SDP and to require math SDP before final repeat testing.
 
 This is not an efficacy GO. All three preregistered superiority intervals cross zero.
 
@@ -138,7 +142,10 @@ The legacy v2 sanity suite also contained an invalid AUPRC power generator: it s
 - Excluded for missing reaction context: 96
 - Validation records: 4,291
 - Test records: 5,898
+- T5 positives (`yield >= 50%`): 337 (5.71%)
+- T1 positives (`yield < 10%`): 4,979 (84.42%)
 - Test clusters: 48
+- Test cluster size: min 1, median 102, max 670 records
 - Endpoint-evaluable clusters: 25
 - Evaluable source-publication slices: 1
 - Seeds: 5
@@ -184,6 +191,13 @@ Secondary metrics are diagnostic and were not used to select the winner. Negativ
 - frozen analysis plan: `567a4fe8d5a99b350d29c8ceba1e2f80ab950c2bfc19085dc8dccdf1f9c97f82`
 
 The original formal writer used `default=str`, which represented NumPy booleans as strings. No numeric statistic changed. The verifier accepts only the exact legacy `"True"` and `"False"` forms, compares the complete primary object, and rejects any mutated inference value. New formal writes use native JSON scalar conversion.
+
+The reconstruction entrypoint is process-independent and starts from the
+frozen prediction JSON, but it intentionally reuses the repository's inference
+library. It validates artifact reproducibility and complete-object equality;
+it is not a fully independent reimplementation of the statistics. Standard
+library implementations and focused regression cases anchor metric and Holm
+semantics, while a third-party end-to-end reproduction remains future work.
 
 ## 7. Artifact locations
 

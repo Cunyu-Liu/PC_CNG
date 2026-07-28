@@ -122,11 +122,24 @@ def _configure_deterministic_cuda(*, required: bool) -> dict[str, Any]:
     torch.use_deterministic_algorithms(required)
     torch.backends.cudnn.deterministic = required
     torch.backends.cudnn.benchmark = False
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    torch.set_float32_matmul_precision("highest")
+    torch.backends.cuda.enable_flash_sdp(False)
+    torch.backends.cuda.enable_mem_efficient_sdp(False)
+    torch.backends.cuda.enable_math_sdp(True)
     return {
         "CUBLAS_WORKSPACE_CONFIG": observed_workspace,
         "torch_deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
         "cudnn_deterministic": bool(torch.backends.cudnn.deterministic),
         "cudnn_benchmark": bool(torch.backends.cudnn.benchmark),
+        "cuda_matmul_allow_tf32": bool(torch.backends.cuda.matmul.allow_tf32),
+        "cudnn_allow_tf32": bool(torch.backends.cudnn.allow_tf32),
+        "flash_sdp_enabled": bool(torch.backends.cuda.flash_sdp_enabled()),
+        "memory_efficient_sdp_enabled": bool(
+            torch.backends.cuda.mem_efficient_sdp_enabled()
+        ),
+        "math_sdp_enabled": bool(torch.backends.cuda.math_sdp_enabled()),
     }
 
 

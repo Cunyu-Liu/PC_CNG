@@ -73,6 +73,11 @@ DETERMINISM_CONTRACT = {
     "torch_deterministic_algorithms": True,
     "cudnn_deterministic": True,
     "cudnn_benchmark": False,
+    "cuda_matmul_allow_tf32": False,
+    "cudnn_allow_tf32": False,
+    "flash_sdp_enabled": False,
+    "memory_efficient_sdp_enabled": False,
+    "math_sdp_enabled": True,
 }
 SOURCE_ALIASES = {
     "pc_cng": "rule_pc_cng",

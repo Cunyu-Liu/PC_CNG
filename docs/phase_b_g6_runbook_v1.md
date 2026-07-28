@@ -104,8 +104,9 @@ completely hide a candidate product at the end of the sequence.
 Formal and GPU smoke runs require
 `CUBLAS_WORKSPACE_CONFIG=:4096:8`, PyTorch deterministic algorithms,
 deterministic cuDNN and disabled cuDNN benchmarking. These states are recorded
-in the result runtime and run manifest. A seed without these controls is not
-reported as bitwise-reproducible.
+in the result runtime and run manifest. TF32, flash SDP and memory-efficient
+SDP are disabled, while math SDP is required. A seed without these controls is
+not reported as bitwise-reproducible.
 
 The formal run fails closed if any tracked file differs from `HEAD` or if its
 output directory is non-empty. User-owned untracked files do not invalidate

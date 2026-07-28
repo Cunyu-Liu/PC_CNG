@@ -34,7 +34,12 @@
     "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
     "torch_deterministic_algorithms": true,
     "cudnn_deterministic": true,
-    "cudnn_benchmark": false
+    "cudnn_benchmark": false,
+    "cuda_matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false,
+    "flash_sdp_enabled": false,
+    "memory_efficient_sdp_enabled": false,
+    "math_sdp_enabled": true
   },
   "amendment_reason": "A completion audit found one template training candidate identical to its observed parent product, found that the prior custom average-precision, Spearman and NDCG implementations did not use standard tie handling, and found that the earlier 256-token setting truncated candidate products. Parent-positive collisions are label-invalid and are excluded before source selection. Cross-source duplicate candidates are retained and reported because independent methods may converge on the same structure. Primary AUPRC and secondary rank metrics now use standard sklearn/SciPy implementations with explicit tie semantics. The checkpoint-native 512-token limit is frozen and formal runs fail if any train-arm, validation or test segment would be truncated.",
   "freeze_statement": "This corrected reanalysis plan was frozen after the training-manifest integrity finding and before the corrected GPU run. The original test outcomes had already been observed. The endpoint, thresholds, comparison family, non-inferiority margin, source aliases, seed count and inferential procedure are unchanged. This run is a corrected reanalysis, not a new blind confirmation."
