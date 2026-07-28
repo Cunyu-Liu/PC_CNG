@@ -1,6 +1,6 @@
 # PC-CNG → Nature Machine Intelligence：唯一有效目标文档
 
-> **文档版本**：v2.0（Phase A 状态重冻结）
+> **文档版本**：v2.1（Phase D–G evidence amendment）
 > **创建日期**：2026-07-24
 > **审计依据**：`pccng 的分阶段提示词 2.md` §一/§二/§三
 > **核心原则**：不为了让 Gate 变绿而调指标；只接受能够经受独立审稿、复现和外部验证的证据。
@@ -10,9 +10,11 @@
 
 ## 一、North-Star Goal
 
-> **Develop a reaction-conditioned learned structured counterfactual generator that learns chemically meaningful failure directions from abundant positive reactions and scarce observed negative outcomes, generates valid and non-trivial boundary candidates with calibrated false-negative risk, and improves independent real-HTE and out-of-distribution reaction-learning tasks over strong matched negative-sampling baselines.**
+> **Determine whether chemically distinct counterfactual negative sources provide transferable complementary supervision under a fixed training budget, and test frozen single-source, uniform-mixture and adaptive policies on independently custodied real-HTE and OOD data with calibrated false-negative risk.**
 
-中文表述：构建一个以完整反应上下文为条件的学习型结构化反事实生成器。模型从大量成功反应中学习反应图语法，从少量真实失败或竞争产物中学习失败方向，在控制假阴性风险的前提下生成有效、非平凡、位于可行性边界附近的反事实候选，并在独立真实 HTE 与 OOD 任务中稳定优于严格匹配的强负采样基线。
+中文表述：严格检验结构化、规则、检索和 observed-product-derived 负样本是否在固定训练预算下提供可迁移的互补监督；在独立托管的真实 HTE/OOD 盲测中比较冻结的最佳单源、uniform mixture 和 adaptive policy，并同时审计逐候选假阴性风险。
+
+Phase D 开发结果没有支持 adaptive gate 普遍优于 uniform mixture，因此 adaptive policy 和 learned generator 均不再作为未经验证的 headline 前提。只有全新 sealed test 同时证明效用、风险控制和 learned-source 独特增量，才恢复相应主张。
 
 ---
 
@@ -20,13 +22,11 @@
 
 ### Claim 1：方法创新
 
-PC-CNG 是一个真正学习的、reaction-conditioned、reaction-center-aware structured generator，而不是规则库的包装。
+PC-CNG 提供可审计的 reaction-conditioned structured source expert、candidate-level risk control 和 matched-budget multi-source learning framework。adaptive gate 是否构成有效主算法必须由 sealed test 决定。
 
 ### Claim 2：外部效用
 
-PC-CNG 生成的 negatives 在至少两个独立数据集、两个下游 backbone 和预注册的主要任务上，显著优于：random mismatch；fingerprint retrieval；template perturbation；unconstrained structural edit；rule PC-CNG；现有 reaction-center-aware negative sampling；matched hard-negative mining。
-
-"负数据有用"已由已有研究证明，PC-CNG 的新增价值必须是：**在真实负数据稀缺时，如何生成比既有负样本更可信、更有用的合成边界样本。**
+在至少两个独立真实数据集、两个 downstream backbone 和预注册 primary endpoint 上，冻结的 multi-source 方法必须优于 validation-frozen best single source；若主张 adaptive policy，还必须优于 uniform mixture。当前 development 结果未满足后一个条件，因此没有外部效用 GO。
 
 ### Claim 3：可信性与机制
 
@@ -128,6 +128,8 @@ PC-CNG 能够显式控制 false-negative risk，并通过真实 HTE、OOD、专�
 | 日期 | Amendment | 说明 |
 | ---- | --------- | ---- |
 | 2026-07-24 | v1.0 创建 | Phase 0 证据冻结，建立唯一有效目标文档 |
+| 2026-07-28 | v2.0 | 从单一 generator 转向 source-aware framework |
+| 2026-07-29 | v2.1 | Phase D adaptive-gate NO-GO；Phase E/F/G 外部证据交接 |
 
 ## 九、2026-07-28 Amendment：从单一生成器转向 source-aware policy
 
@@ -297,7 +299,7 @@ commit `1256081` 将 reconstruction/proposal heads 分离，在 Stage 2–4 加�
 
 该结果不能支持 learned source 优于 rule、random、shuffled 或 union。只有 24 个 holdout reactions 进入 edit 指标，Stage 4 reward-hacking validation 只有 3 个可用 pair，且 expert labels=0。这些限制必须保留。
 
-下一阶段为 Phase D：在 development-only benchmark 上接入 source-aware gate，并在新冻结的 external blind test 前完成方法选择。Phase C holdout 不得再用于 Phase D 调参或 source-superiority 主张。
+本 amendment 当时指定的下一阶段为 Phase D；该阶段现已完成，结果见后文 Phase D completion amendment。Phase C holdout 仍不得用于 source-superiority 主张。
 
 ## Phase 4 completion amendment（2026-07-29）
 
@@ -359,4 +361,96 @@ EXPLORATORY_ONLY_EXIT_NOT_MET
 
 当前允许的表述是：difficulty、source、family 和 scorer 之间存在显著异质性，synthetic failure knowledge 的迁移也可能为负。当前不允许的表述是：semi-hard negatives 存在已被确认的普遍因果最优区间。
 
-下一阶段为 Phase D development：比较最佳 single source、uniform union、validation-selected global mixture、learned source gate 和 oracle。任何 gate 结构与超参数必须在新的 sealed test 之前冻结；当前 Phase 4 fixed pools 不得再用于 confirmatory headline claim。
+本 amendment 当时指定的下一阶段为 Phase D development；该阶段现已完成，结果见下一节。当前 Phase 4 fixed pools 仍不得用于 confirmatory headline claim。
+
+## Phase D completion amendment（2026-07-29）
+
+### 完成范围
+
+- commit `f779a875fb3fd82dcd66bac7a6deb4be5b6d390b` 上完成 A100 GPU development run；
+- 两个数据场景：`random`、`ni_coupling`；
+- 两个 downstream backbone：MLP、reaction-aware GNN；
+- 20 个 single/mixture/gate/null/ablation arms；
+- 88 与 118 个 six-source complete-case parents；
+- 所有非 positive-only arm 使用每 parent 一个 positive、一个 negative 的相同预算；
+- 独立 verifier 重建 cache/checkpoint hash、记录对齐、AUPRC、paired inference、null 和预算，`verified=true`、`failures=[]`。
+
+### 预注册主比较
+
+| 比较 | paired CI 全正的单元数 | 结论 |
+|---|---:|---|
+| gate − validation-frozen best single | 3/4 | 局部支持 |
+| gate − uniform union | 1/4 | 主假设不支持 |
+| gate − gate without learned source | 2/4 | 仅 Ni-coupling 支持 |
+| randomized-label null at chance | 4/4 | leakage control 通过 |
+| candidate budget exact | 4/4 | 工程 contract 通过 |
+
+在 random/MLP 中，gate 优于 uniform，但不优于 validation-frozen rule；其余三个单元中 gate 均未显著优于 uniform。Ni-coupling 的两个 backbone 显示 learned source 的 leave-one-out 增量为正，但 random 场景不支持。
+
+### Stop-rule 判定
+
+```text
+Phase D engineering = PASS
+adaptive gate headline = NO_GO_DEVELOPMENT
+learned source increment = PARTIAL_NI_ONLY_DEVELOPMENT
+confirmatory evidence = NOT TESTED
+```
+
+从本 amendment 起：
+
+1. 不再在已看过的 fixed pool 上继续调 adaptive gate；
+2. 不再把 gate 作为当前 NMI headline contribution；
+3. uniform source diversity 和 source-selection heterogeneity 只保留为新 sealed test 的 exploratory hypothesis；
+4. learned structured source 的独特增量只可表述为 Ni-coupling-specific development signal；
+5. 新盲测失败时保留失败结果，不回到同一 test 调参。
+
+详细审计：`docs/phase_d_source_policy_completion_audit_20260729.md`。
+
+## Phase E/F/G evidence amendment（2026-07-29）
+
+### Phase E：sealed external evaluation
+
+已完成 fail-closed sealed-test contract、development artifact/hash exclusion、independent label receipt schema 和 receipt validation。JACS 2025 Pd C-N HTE 与独立 JnJ source-only rows 仅完成 metadata registration；项目方未下载或查看 test labels。
+
+当前状态：
+
+```text
+ENGINEERING_READY_EXTERNAL_CUSTODIAN_PENDING
+```
+
+只有独立数据托管人完成数据隔离、label receipt 和 hash 交接后，才能运行一次正式 blind evaluation。没有独立托管时不得使用“sealed”“blind”或“confirmatory”表述。
+
+### Phase F / G7：expert pilot
+
+已生成 80 条、八个 strata 各 10 条、三名专家的双盲材料。controls 来自真实 HTE：10 条 measured yield ≥80% positive controls 和 10 条 reported zero-yield obvious-negative controls。source、FNR、模型分数和 observed label 全部隐藏；三份 reviewer form 使用独立随机顺序。
+
+为保护 blinding，unblinded sampling key 和 reviewer forms 不进入公共仓库。当前尚无任何真实专家评分：
+
+```text
+PILOT_MATERIALS_READY_EXPERT_RESPONSES_PENDING
+G7 = DEFERRED
+```
+
+不得用 LLM、规则或项目成员自动填充专家表单。只有至少三位独立专家完成评分并通过 reliability/control gate，才可升级 G7 或启动 main review。
+
+### Phase G：source complementarity
+
+source-selection entropy、family dependence 和跨场景 policy shift 显示数据集/backbone 异质性；random 与 Ni-coupling 的 Jensen-Shannon divergence 分别为 MLP 0.169、GNN 0.259。但这只是 development association，缺少 matched intervention、held-out replication 和真实 outcome。
+
+```text
+status = EXPLORATORY_SOURCE_COMPLEMENTARITY_ONLY
+mechanism_exit_met = false
+```
+
+Phase 4/Phase G 机制 Exit Criterion 仍未满足。详细交接：`docs/phase_efg_external_evidence_handover_20260729.md`。
+
+## 当前下一步与权限边界
+
+无需再次在旧 pool 上训练。下一步必须由外部事实推进：
+
+1. 独立 custodian 返回通过 schema/hash 检验的 receipt；
+2. 至少三位真实化学专家返回完整 pilot forms；
+3. 在此前已冻结的 model、source schema、endpoint 和统计计划上运行一次 blind analysis；
+4. 根据完整盲测与专家结果决定 prospective experiment 或转向 negative-results/source-diversity 论文。
+
+在这些外部输入到达前，项目的工程交付已经推进到可执行边界，但 NMI scientific evidence gate 仍未完成。
