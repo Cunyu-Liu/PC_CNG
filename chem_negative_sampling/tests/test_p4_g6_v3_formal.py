@@ -42,7 +42,11 @@ from pc_cng.p4_g6_inference_v3 import (  # noqa: E402
     simulate_inference_operating_characteristics,
 )
 from pc_cng.paired_cluster_inference import holm_correction  # noqa: E402
-from pc_cng.run_p4_g6_v3 import _formal_code_hashes, select_stratified_smoke_records  # noqa: E402
+from pc_cng.run_p4_g6_v3 import (  # noqa: E402
+    _configure_deterministic_cuda,
+    _formal_code_hashes,
+    select_stratified_smoke_records,
+)
 from pc_cng.verify_p4_g6_v3 import (  # noqa: E402
     canonicalize_legacy_json_scalars,
     verify_reconstruction,
@@ -86,6 +90,12 @@ def test_formal_manifest_code_hash_inputs_exist():
         "paired_cluster_inference",
     }
     assert all(len(value) == 64 for value in hashes.values())
+
+
+def test_formal_determinism_contract_fails_without_cublas_workspace(monkeypatch):
+    monkeypatch.delenv("CUBLAS_WORKSPACE_CONFIG", raising=False)
+    with pytest.raises(RuntimeError, match="CUBLAS_WORKSPACE_CONFIG"):
+        _configure_deterministic_cuda(required=True)
 
 
 def _record(index: int, *, split: str = "train", yield_value: float = 80.0) -> dict:

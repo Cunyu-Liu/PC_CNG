@@ -66,6 +66,12 @@ maximum complete sequence lengths are 354 (train), 337 (validation) and 382
 train arm as well as validation and test and fails closed unless all segments
 are fully visible.
 
+The corrected formal contract also distinguishes recorded seeds from
+bitwise-reproducible CUDA execution. Formal and GPU smoke runs now fail unless
+`CUBLAS_WORKSPACE_CONFIG=:4096:8` is present, enable PyTorch deterministic
+algorithms and deterministic cuDNN, disable cuDNN benchmarking, and serialize
+all four states in runtime provenance.
+
 This is not an efficacy GO. All three preregistered superiority intervals cross zero.
 
 Two completion-re-audit attempts were intentionally stopped before result
@@ -75,6 +81,10 @@ acceptance and remain preserved as failed-run evidence:
   path at finalization;
 - `1615593`: a training-manifest audit found one template candidate identical
   to its observed parent product.
+- `2521572`: the primary AUPRC implementation was found to be input-order
+  dependent when predictions were tied;
+- `aaa8746`: the 256-token context setting was found to partially or fully
+  hide candidate products.
 
 Neither attempt is a completed scientific result. The authoritative corrected
 reanalysis must originate from a later clean commit, exclude parent-positive

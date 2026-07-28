@@ -68,6 +68,12 @@ METRIC_IMPLEMENTATION_CONTRACT = {
     "T3_spearman": "scipy.stats.spearmanr with average ranks for ties",
     "T4_ndcg": "sklearn.metrics.ndcg_score with ignore_ties=false",
 }
+DETERMINISM_CONTRACT = {
+    "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+    "torch_deterministic_algorithms": True,
+    "cudnn_deterministic": True,
+    "cudnn_benchmark": False,
+}
 SOURCE_ALIASES = {
     "pc_cng": "rule_pc_cng",
     "random": "random_mismatch",
@@ -108,6 +114,7 @@ class FormalAnalysisPlan:
             "max_seq_len": self.max_seq_len,
             "candidate_integrity_contract": dict(CANDIDATE_INTEGRITY_CONTRACT),
             "metric_implementation_contract": dict(METRIC_IMPLEMENTATION_CONTRACT),
+            "determinism_contract": dict(DETERMINISM_CONTRACT),
         }
 
 
@@ -135,6 +142,8 @@ def validate_formal_analysis_plan(plan: Mapping[str, Any]) -> None:
         raise ValueError("formal analysis plan candidate integrity contract differs from the corrected contract")
     if dict(plan.get("metric_implementation_contract", {})) != METRIC_IMPLEMENTATION_CONTRACT:
         raise ValueError("formal analysis plan metric implementation contract differs from the corrected contract")
+    if dict(plan.get("determinism_contract", {})) != DETERMINISM_CONTRACT:
+        raise ValueError("formal analysis plan determinism contract differs from the corrected contract")
 
 
 def stable_int(value: str) -> int:

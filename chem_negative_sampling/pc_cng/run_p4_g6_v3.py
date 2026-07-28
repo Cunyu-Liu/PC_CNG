@@ -18,6 +18,7 @@ import torch
 from pc_cng.p4_g6_benchmark_v3 import (
     FORMAL_SCHEMA_VERSION,
     ConditionNormalizer,
+    DETERMINISM_CONTRACT,
     FORMAL_MAX_SEQ_LEN,
     FormalAnalysisPlan,
     SharedPretrainedReactionEncoder,
@@ -109,6 +110,26 @@ def _tracked_worktree_clean() -> bool:
     return unstaged == 0 and staged == 0
 
 
+def _configure_deterministic_cuda(*, required: bool) -> dict[str, Any]:
+    """Enable and report the CUDA determinism contract for formal/smoke runs."""
+    expected_workspace = str(DETERMINISM_CONTRACT["CUBLAS_WORKSPACE_CONFIG"])
+    observed_workspace = os.environ.get("CUBLAS_WORKSPACE_CONFIG", "")
+    if required and observed_workspace != expected_workspace:
+        raise RuntimeError(
+            "formal/smoke G6 v3 requires "
+            f"CUBLAS_WORKSPACE_CONFIG={expected_workspace}, got {observed_workspace!r}"
+        )
+    torch.use_deterministic_algorithms(required)
+    torch.backends.cudnn.deterministic = required
+    torch.backends.cudnn.benchmark = False
+    return {
+        "CUBLAS_WORKSPACE_CONFIG": observed_workspace,
+        "torch_deterministic_algorithms": torch.are_deterministic_algorithms_enabled(),
+        "cudnn_deterministic": bool(torch.backends.cudnn.deterministic),
+        "cudnn_benchmark": bool(torch.backends.cudnn.benchmark),
+    }
+
+
 def _json_default(value: object) -> object:
     """Preserve JSON scalar types for NumPy results in formal artifacts."""
     if isinstance(value, np.generic):
@@ -173,6 +194,9 @@ def select_stratified_smoke_records(
 def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.formal_run and args.smoke:
         raise ValueError("formal-run and smoke are mutually exclusive")
+    determinism = _configure_deterministic_cuda(
+        required=bool(args.formal_run or args.smoke)
+    )
     if args.formal_run and (not torch.cuda.is_available() or not str(args.device).startswith("cuda")):
         raise RuntimeError("formal G6 v3 runs require CUDA; CPU fallback is forbidden")
     if args.formal_run and not _tracked_worktree_clean():
@@ -339,6 +363,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 if torch.cuda.is_available() and str(args.device).startswith("cuda")
                 else None
             ),
+            "determinism": determinism,
         },
         "metrics_by_arm_seed": all_metrics,
         "calibration_by_arm_seed": calibration_by_arm_seed,

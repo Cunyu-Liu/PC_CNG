@@ -70,6 +70,7 @@ the PyTorch optimizer.  This is injected per command, never exported globally:
 ```bash
 cd /home/cunyuliu/pc_cng_research/chem_negative_sampling
 env CUDA_VISIBLE_DEVICES=<GPU> \
+    CUBLAS_WORKSPACE_CONFIG=:4096:8 \
     LD_LIBRARY_PATH=/home/cunyuliu/miniconda3/envs/pc_cng/lib \
     /home/cunyuliu/miniconda3/envs/pc_cng/bin/python -m pc_cng.run_p4_g6_v3 ...
 ```
@@ -99,6 +100,12 @@ features are cached, the runner audits every matched train arm, validation
 record and test record and fails if any reaction-context segment would be
 truncated. The 256-token setting is deprecated because it could partially or
 completely hide a candidate product at the end of the sequence.
+
+Formal and GPU smoke runs require
+`CUBLAS_WORKSPACE_CONFIG=:4096:8`, PyTorch deterministic algorithms,
+deterministic cuDNN and disabled cuDNN benchmarking. These states are recorded
+in the result runtime and run manifest. A seed without these controls is not
+reported as bitwise-reproducible.
 
 The formal run fails closed if any tracked file differs from `HEAD` or if its
 output directory is non-empty. User-owned untracked files do not invalidate
