@@ -1,6 +1,6 @@
 # PC-CNG: PhysChem-Constrained Counterfactual Negative Generator
 
-**项目状态**：Phase 4 evidence-driven method redesign（2026-07-28）；修复版 shuffled-parent 与 Union v2 已完成 8/8，最终分析已审计；第二 scorer 仅作 development-pool exploratory replication
+**项目状态**：Phase B G6 formal benchmark 已完成并独立重建（2026-07-29），当前进入 Phase C G8-C formal source-expert rebuild；Phase 4 fixed pools 仍仅作 development-only evidence
 **唯一有效目标文档**：[docs/00_当前有效文档/NMI_FINAL_GOAL.md](docs/00_当前有效文档/NMI_FINAL_GOAL.md)
 **Claim 注册表**：[docs/claim_registry.csv](docs/claim_registry.csv)
 **Phase A 状态冻结**：v2.0；H1/H2/H3 历史见 [docs/phase4_hypothesis_history_20260728.md](docs/phase4_hypothesis_history_20260728.md)
@@ -16,13 +16,15 @@ PC-CNG 已完成研究基础设施和若干探索性实验，但当前 Phase 4 f
 | G3   | REDO_PROMISING | v2 manifest 修复后有正向信号，需重建无混杂实验 |
 | G4   | SUPPORTIVE_GO | generator×scorer 交互存在 |
 | G5   | SAFETY_PARTIAL_GO | 校准改善，仅作风险控制证据 |
-| G6   | INVALID_PENDING_REANALYSIS | 任务定义/混杂/统计问题，整体重做 |
+| G6   | FORMAL_NO_GO_SINGLE_SOURCE | v3 formal benchmark 已完成并独立重建；PC-CNG 对 random/template 的 superiority CI 均跨 0，且当前 HTE 仅一个 publication source |
 | G7   | DEFERRED | 待真实专家或实验数据 |
 | G8-A | EXPLORATORY_MECHANISM | 仅探索性分析，非机制证据 |
 | G8-B | RUNNING | 跨家族迁移实验独立判定中；负迁移也必须保留 |
 | G8-C | PROTOTYPE_NO_GO | 已增加 formal fail-closed 和正确 reference snapshot；科学效用仍未证明 |
 
 Phase 4 v4.1 的旧 fixed-pool、Union 和 H3 结论均为开发/探索性证据；详见 `docs/phase4_v41_amendment_20260728.md` 和 `docs/NMI_FINAL_GOAL_v2_amendment_20260728.md`。
+
+Phase B 的权威边界见 `docs/phase_b_g6_completion_audit_20260729.md`：五任务共享完整反应上下文编码器、预算匹配、预注册比较和独立重建均已完成；正式结论是 **benchmark engineering PASS / PC-CNG superiority NO-GO**，不得将非劣效或点估计优势表述为外部效用成功。
 
 `pc_cng/source_aware_policy.py` 是 pccng3 Phase D 的 development-only softmax source-gate 原型；它尚未接入 sealed benchmark，也不构成 adaptive-policy 性能结论。
 

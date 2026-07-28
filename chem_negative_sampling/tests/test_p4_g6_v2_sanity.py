@@ -88,6 +88,50 @@ def _make_paired_toy(
     return challenger, baseline
 
 
+def _make_paired_ranking_toy(
+    n_clusters: int = 20,
+    n_per_cluster: int = 10,
+    delta: float = 0.0,
+    seed: int = 42,
+) -> tuple[list[dict], list[dict]]:
+    """Generate a paired AUPRC effect by widening class separation.
+
+    Adding the same constant to every score does not change a ranking metric.
+    This generator instead raises positive scores and lowers negative scores,
+    so ``delta`` has the intended monotone effect on AUPRC.
+    """
+    rng = random.Random(seed)
+    challenger = []
+    baseline = []
+    for c in range(n_clusters):
+        for _ in range(n_per_cluster):
+            label = 1 if rng.random() < 0.5 else 0
+            # Baseline must have overlapping class-score distributions.  The
+            # historical toy made positives [0.5, 1] and negatives [0, 0.5],
+            # leaving AUPRC already saturated at 1.0 and making power
+            # mathematically impossible regardless of challenger delta.
+            base_score = rng.random()
+            signed_delta = delta if label else -delta
+            ch_score = min(
+                1.0,
+                max(0.0, base_score + signed_delta + rng.random() * 0.1 - 0.05),
+            )
+            common = {
+                "label": label,
+                "experimental_group": f"cluster_{c}",
+                "measured_yield": 80 if label == 1 else 20,
+                "products": "CCO",
+            }
+            challenger.append({**common, "score": ch_score})
+            baseline.append({**common, "score": base_score})
+    return challenger, baseline
+
+
+def _mean_score_metric(records: list[dict]) -> float:
+    """Location metric used only to audit bootstrap interval coverage."""
+    return float(np.mean([record["score"] for record in records]))
+
+
 class TestLabelDirection:
     """Test 1: T1 (low-yield positive) produces correct AUPRC direction."""
 
@@ -159,7 +203,7 @@ class TestCICoverage:
         for sim in range(n_sims):
             ch, bl = _make_paired_toy(delta=true_delta, seed=sim)
             ci = paired_cluster_bootstrap(
-                ch, bl, auprc_metric,
+                ch, bl, _mean_score_metric,
                 n_bootstrap=500, seed=sim,
             )
             if ci["delta_ci_low"] <= true_delta <= ci["delta_ci_high"]:
@@ -210,7 +254,7 @@ class TestPower:
         n_sims = 200
         detected = 0
         for sim in range(n_sims):
-            ch, bl = _make_paired_toy(delta=0.2, seed=sim)
+            ch, bl = _make_paired_ranking_toy(delta=0.2, seed=sim)
             ci = paired_cluster_bootstrap(
                 ch, bl, auprc_metric,
                 n_bootstrap=500, seed=sim,
@@ -223,11 +267,14 @@ class TestPower:
     def test_power_increases_with_effect(self):
         """Power should increase with effect size."""
         powers = []
-        for delta in [0.05, 0.10, 0.20, 0.30]:
+        # Use an unsaturated local-effect grid.  On this sample size,
+        # delta >= 0.05 is already detected in every simulation and therefore
+        # cannot test whether power increases.
+        for delta in [0.0, 0.005, 0.01, 0.02]:
             detected = 0
             n_sims = 100
             for sim in range(n_sims):
-                ch, bl = _make_paired_toy(delta=delta, seed=sim)
+                ch, bl = _make_paired_ranking_toy(delta=delta, seed=sim)
                 ci = paired_cluster_bootstrap(
                     ch, bl, auprc_metric,
                     n_bootstrap=300, seed=sim,
@@ -263,11 +310,11 @@ class TestHolmCorrection:
         p_values = []
         # 9 null tests + 1 with strong effect
         for i in range(9):
-            ch, bl = _make_paired_toy(delta=0.0, seed=i)
+            ch, bl = _make_paired_ranking_toy(delta=0.0, seed=i)
             ci = paired_cluster_bootstrap(ch, bl, auprc_metric, n_bootstrap=300, seed=i)
             p_values.append(ci["p_value"])
         # Strong effect test
-        ch, bl = _make_paired_toy(delta=0.5, seed=99)
+        ch, bl = _make_paired_ranking_toy(delta=0.5, seed=99)
         ci = paired_cluster_bootstrap(ch, bl, auprc_metric, n_bootstrap=300, seed=99)
         p_values.append(ci["p_value"])
         holm = holm_correction(p_values, alpha=0.05)

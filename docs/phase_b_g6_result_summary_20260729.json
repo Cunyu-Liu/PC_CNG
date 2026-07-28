@@ -1,0 +1,81 @@
+{
+  "schema_version": "phase_b_g6_completion_summary_v1",
+  "date": "2026-07-29",
+  "phase": "Phase B",
+  "benchmark_status": "ENGINEERING_VERIFIED",
+  "scientific_status": "FORMAL_NO_GO_SINGLE_SOURCE",
+  "formal_run_commit": "a602a412f40bc15f51990e9cc80be8b5b93060eb",
+  "formal_schema": "g6_v3_formal_20260728",
+  "dataset": {
+    "n_input": 39546,
+    "n_included": 39450,
+    "n_excluded_missing_reaction_context": 96,
+    "n_validation": 4291,
+    "n_test": 5898,
+    "n_test_clusters": 48,
+    "n_endpoint_evaluable_clusters": 25,
+    "n_evaluable_source_publication_slices": 1,
+    "cross_publication_replication": false
+  },
+  "arm_contract": {
+    "n_matched_parents": 76,
+    "positive_per_source_arm": 76,
+    "negative_per_source_arm": 76,
+    "budget_matched": true,
+    "no_test_driven_baseline_selection": true
+  },
+  "primary_comparisons": [
+    {
+      "comparison": "pc_cng_vs_random",
+      "delta": 0.028348054997180863,
+      "ci_low": -0.01106108772730956,
+      "ci_high": 0.08280540073849736,
+      "permutation_p": 0.38476152384761525,
+      "holm_p": 0.7695230476952305,
+      "superiority": false,
+      "noninferiority_margin": 0.02,
+      "noninferior": true
+    },
+    {
+      "comparison": "pc_cng_vs_template_rule",
+      "delta": 0.021115433113453208,
+      "ci_low": -0.014082641811416483,
+      "ci_high": 0.06832028594274234,
+      "permutation_p": 0.44165583441655834,
+      "holm_p": 0.44165583441655834,
+      "superiority": false,
+      "noninferiority_margin": 0.02,
+      "noninferior": true
+    },
+    {
+      "comparison": "union_vs_pc_cng",
+      "delta": -0.023991624233663036,
+      "ci_low": -0.06768270553082201,
+      "ci_high": 0.0058407302973153465,
+      "permutation_p": 0.28657134286571345,
+      "holm_p": 0.8597140285971403,
+      "superiority": false,
+      "noninferiority_margin": 0.02,
+      "noninferior": false
+    }
+  ],
+  "operating_characteristics": {
+    "n_simulations": 80,
+    "familywise_type_i_error": 0.0,
+    "power_at_delta_0p08": 1.0,
+    "interpretation": "design check only; not efficacy evidence"
+  },
+  "artifacts": {
+    "formal_result": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/formal_result_v3.json",
+    "predictions": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/predictions_t5_v3.json",
+    "independent_inference": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/independent_primary_inference_v3_c7b0263.json",
+    "verification": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/reconstruction_verification_v3.json",
+    "simulation": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_inference_operating_characteristics_a602a41_20260728.json"
+  },
+  "sha256": {
+    "formal_result": "7e1dc807077aaab51ec078ca38360dcfe809f6724c6323c728fb340db893a1e6",
+    "predictions": "1ab507bbbbf74a2ffca5594ba661dddc2559e324a399394b37cc77ba11b7f028",
+    "independent_inference": "de581aedc6dbd6d16a4bf85bb1ac39639baf3dd49a07b4b1e028950bf41d9dc4",
+    "analysis_plan": "567a4fe8d5a99b350d29c8ceba1e2f80ab950c2bfc19085dc8dccdf1f9c97f82"
+  }
+}

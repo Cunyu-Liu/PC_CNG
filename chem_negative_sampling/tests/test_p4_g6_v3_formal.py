@@ -35,6 +35,10 @@ from pc_cng.p4_g6_inference_v3 import (  # noqa: E402
     simulate_inference_operating_characteristics,
 )
 from pc_cng.run_p4_g6_v3 import select_stratified_smoke_records  # noqa: E402
+from pc_cng.verify_p4_g6_v3 import (  # noqa: E402
+    canonicalize_legacy_json_scalars,
+    verify_reconstruction,
+)
 
 
 def _record(index: int, *, split: str = "train", yield_value: float = 80.0) -> dict:
@@ -153,6 +157,56 @@ def test_operating_characteristics_reports_familywise_type_i_error():
     )
     assert "familywise_type_i_error" in result
     assert 0.0 <= result["familywise_type_i_error"] <= 1.0
+
+
+def test_legacy_numpy_boolean_strings_are_normalized_narrowly():
+    value = {
+        "ci_all_positive": "False",
+        "ordinary_text": "False",
+        "nested": [{"ci_all_positive": "True"}, "True", 1.0],
+    }
+    assert canonicalize_legacy_json_scalars(value) == {
+        "ci_all_positive": False,
+        "ordinary_text": "False",
+        "nested": [{"ci_all_positive": True}, "True", 1.0],
+    }
+
+
+def test_complete_primary_inference_reconstruction_verifier():
+    plan = FormalAnalysisPlan().to_dict()
+    primary = {
+        "endpoint": plan["primary_endpoint"],
+        "comparisons": [
+            {
+                "comparison": name,
+                "bootstrap": {"ci_all_positive": False},
+                "superiority_confirmed": False,
+            }
+            for name in plan["primary_comparisons"]
+        ],
+        "baseline_selection": "fixed in analysis plan; no test-data best-baseline selection",
+    }
+    formal = {
+        "scientific_status": "FORMAL",
+        "analysis_plan": plan,
+        "primary_inference": {
+            **primary,
+            "comparisons": [
+                {
+                    **item,
+                    "bootstrap": {"ci_all_positive": "False"},
+                }
+                for item in primary["comparisons"]
+            ],
+        },
+    }
+    result = verify_reconstruction(formal, primary, plan)
+    assert result["verified"] is True
+    assert result["all_superiority_confirmed"] is False
+    changed = json.loads(json.dumps(primary))
+    changed["comparisons"][0]["superiority_confirmed"] = True
+    with pytest.raises(AssertionError, match="differs"):
+        verify_reconstruction(formal, changed, plan)
 
 
 def test_matched_source_arms_share_parents_and_budget(tmp_path: Path):

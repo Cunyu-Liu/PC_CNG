@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import pyarrow.parquet as pq
+import numpy as np
 import torch
 
 from pc_cng.p4_g6_benchmark_v3 import (
@@ -79,8 +80,17 @@ def _git_sha() -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, text=True).strip()
 
 
+def _json_default(value: object) -> object:
+    """Preserve JSON scalar types for NumPy results in formal artifacts."""
+    if isinstance(value, np.generic):
+        return value.item()
+    raise TypeError(f"not JSON serializable: {type(value).__name__}")
+
+
 def _write_json(path: Path, value: Any) -> None:
-    path.write_text(json.dumps(value, indent=2, sort_keys=True, default=str) + "\n")
+    path.write_text(
+        json.dumps(value, indent=2, sort_keys=True, default=_json_default) + "\n"
+    )
 
 
 def select_stratified_smoke_records(
@@ -292,4 +302,8 @@ def build_parser() -> argparse.ArgumentParser:
 if __name__ == "__main__":
     namespace = build_parser().parse_args()
     result = run(namespace)
-    print(json.dumps({"status": result["scientific_status"], "primary": result["primary_inference"]}, indent=2, default=str))
+    print(json.dumps(
+        {"status": result["scientific_status"], "primary": result["primary_inference"]},
+        indent=2,
+        default=_json_default,
+    ))
