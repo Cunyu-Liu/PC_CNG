@@ -136,7 +136,6 @@ def load_candidate_caches(
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     entries: List[Dict[str, Any]] = []
     artifacts: List[Dict[str, Any]] = []
-    seen_groups = set()
     for cache_path in cache_paths:
         resolved = cache_path.resolve()
         payload = json.loads(resolved.read_text(encoding="utf-8"))
@@ -150,10 +149,11 @@ def load_candidate_caches(
                 "n_entries": len(payload),
             }
         )
-        for item in payload:
-            group = str(item.get("group", "")).strip()
+        for row_index, item in enumerate(payload):
+            source_group = str(item.get("group", "")).strip()
+            group = f"{scenario}::{row_index}"
             candidates = item.get("candidates", {})
-            if not group or group in seen_groups:
+            if not source_group:
                 continue
             if sorted(candidates) != sorted(SOURCE_NAMES):
                 continue
@@ -161,8 +161,10 @@ def load_candidate_caches(
             _parse_reaction(reaction)
             copied = dict(item)
             copied["scenario"] = scenario
+            copied["source_group"] = source_group
+            copied["group"] = group
+            copied["policy_row_index"] = row_index
             entries.append(copied)
-            seen_groups.add(group)
     if not entries:
         raise RuntimeError("no complete six-source candidate parents found")
     return entries, artifacts
@@ -176,6 +178,7 @@ def load_policy_maps(
     for policy_path in policy_paths:
         resolved = policy_path.resolve()
         rows = _read_csv(resolved)
+        scenario = resolved.stem.split("__", 1)[0]
         artifacts.append(
             {
                 "path": str(resolved),
@@ -183,10 +186,11 @@ def load_policy_maps(
                 "n_rows": len(rows),
             }
         )
-        for row in rows:
-            group = str(row.get("group", "")).strip()
+        for row_index, row in enumerate(rows):
+            source_group = str(row.get("group", "")).strip()
+            group = f"{scenario}::{row_index}"
             source = str(row.get("selected_source", "")).strip()
-            if not group or source not in SOURCE_NAMES:
+            if not source_group or source not in SOURCE_NAMES:
                 raise ValueError(f"invalid policy-map row in {resolved}")
             if group in selected and selected[group] != source:
                 raise ValueError(f"conflicting selected source for group {group}")
