@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/PC_CNG/phase_e_label_receipt_schema_v1.json",
+  "title": "PC-CNG Phase E independent label receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "dataset_id",
+    "sealed_label_sha256",
+    "label_schema_sha256",
+    "n_rows",
+    "custodian",
+    "labels_never_exposed_to_development",
+    "created_at_utc"
+  ],
+  "properties": {
+    "dataset_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sealed_label_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "label_schema_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "n_rows": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "custodian": {
+      "type": "string",
+      "minLength": 1
+    },
+    "labels_never_exposed_to_development": {
+      "const": true
+    },
+    "created_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

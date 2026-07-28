@@ -134,6 +134,40 @@ def test_freeze_requires_independent_label_receipt(tmp_path):
         )
 
 
+def test_label_receipt_rejects_paths_or_summary_fields(tmp_path):
+    candidate, _ = _candidate(tmp_path)
+    model = tmp_path / "model.pt"
+    model.write_bytes(b"x")
+    spec = tmp_path / "spec.md"
+    spec.write_text("frozen")
+    pool = tmp_path / "pool.json"
+    pool.write_text("{}")
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(
+        json.dumps(
+            {
+                "dataset_id": "jacs2025_pdcn_external",
+                "sealed_label_sha256": "f" * 64,
+                "label_schema_sha256": "e" * 64,
+                "n_rows": 10,
+                "custodian": "independent",
+                "labels_never_exposed_to_development": True,
+                "created_at_utc": "2026-07-29T00:00:00+00:00",
+                "class_prevalence": 0.5,
+            }
+        )
+    )
+    with pytest.raises(ValueError, match="unexpected fields"):
+        freeze_candidate(
+            candidate,
+            label_receipt_path=receipt,
+            model_artifact=model,
+            analysis_spec=spec,
+            evaluation_pool_files=[pool],
+            model_git_commit="a" * 40,
+        )
+
+
 def test_frozen_contract_verifies_without_opening_labels(tmp_path):
     manifest_path, _, _ = _freeze(tmp_path)
     manifest = json.loads(manifest_path.read_text())

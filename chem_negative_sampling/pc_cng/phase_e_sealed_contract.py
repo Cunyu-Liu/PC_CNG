@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -251,12 +252,24 @@ def freeze_candidate(
     missing = sorted(required_receipt - set(receipt))
     if missing:
         raise ValueError(f"label receipt missing fields: {missing}")
+    unexpected = sorted(set(receipt) - required_receipt)
+    if unexpected:
+        raise ValueError(f"label receipt contains unexpected fields: {unexpected}")
     if receipt["dataset_id"] != candidate["dataset"]["dataset_id"]:
         raise ValueError("label receipt dataset_id does not match candidate")
     if receipt["labels_never_exposed_to_development"] is not True:
         raise ValueError("label receipt does not prove label-free development")
     if int(receipt["n_rows"]) <= 0:
         raise ValueError("label receipt n_rows must be positive")
+    for field in ("sealed_label_sha256", "label_schema_sha256"):
+        if not re.fullmatch(r"[0-9a-f]{64}", str(receipt[field])):
+            raise ValueError(f"label receipt {field} must be lowercase SHA256")
+    if not str(receipt["custodian"]).strip():
+        raise ValueError("label receipt custodian must be non-empty")
+    try:
+        datetime.fromisoformat(str(receipt["created_at_utc"]).replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("label receipt created_at_utc must be ISO-8601") from exc
 
     index = _load_forbidden_index(forbidden_index)
     reasons = _contamination_reasons(
