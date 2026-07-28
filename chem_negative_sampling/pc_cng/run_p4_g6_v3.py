@@ -140,6 +140,7 @@ def _configure_deterministic_cuda(*, required: bool) -> dict[str, Any]:
             torch.backends.cuda.mem_efficient_sdp_enabled()
         ),
         "math_sdp_enabled": bool(torch.backends.cuda.math_sdp_enabled()),
+        "float32_matmul_precision": torch.get_float32_matmul_precision(),
     }
 
 

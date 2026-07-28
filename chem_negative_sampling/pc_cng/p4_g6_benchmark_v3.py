@@ -78,6 +78,7 @@ DETERMINISM_CONTRACT = {
     "flash_sdp_enabled": False,
     "memory_efficient_sdp_enabled": False,
     "math_sdp_enabled": True,
+    "float32_matmul_precision": "highest",
 }
 SOURCE_ALIASES = {
     "pc_cng": "rule_pc_cng",

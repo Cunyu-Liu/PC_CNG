@@ -76,6 +76,14 @@ controls preserved identical metadata but differed by at most
 reproducible. The contract was tightened to disable TF32, flash SDP and
 memory-efficient SDP and to require math SDP before final repeat testing.
 
+The tightened A/B repeat still produced different prediction hashes. Record
+metadata were identical, and across 400 arm-record scores the maximum absolute
+difference was `3.92e-05` and the mean absolute difference was `7.62e-06`.
+The benchmark therefore records a strict deterministic-kernel policy and
+tolerance-level same-environment reproducibility, not bitwise reproducibility.
+Five-seed hierarchical inference remains necessary; deterministic flags are
+not used to pretend that training variability is zero.
+
 This is not an efficacy GO. All three preregistered superiority intervals cross zero.
 
 Two completion-re-audit attempts were intentionally stopped before result

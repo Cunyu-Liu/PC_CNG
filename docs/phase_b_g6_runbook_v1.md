@@ -106,7 +106,9 @@ Formal and GPU smoke runs require
 deterministic cuDNN and disabled cuDNN benchmarking. These states are recorded
 in the result runtime and run manifest. TF32, flash SDP and memory-efficient
 SDP are disabled, while math SDP is required. A seed without these controls is
-not reported as bitwise-reproducible.
+not reported as reproducible. Even with these controls, the current A100 path
+is not claimed to be bitwise deterministic; repeated GPU smokes must report a
+prediction tolerance alongside exact metadata equality.
 
 The formal run fails closed if any tracked file differs from `HEAD` or if its
 output directory is non-empty. User-owned untracked files do not invalidate
