@@ -144,7 +144,9 @@ def main() -> None:
     med = float(np.median(pts)) if pts else None
     print(f"\n[null] === NULL CONTROL SUMMARY ===")
     print(f"  median srcMacroAUPRC = {med}")
-    print(f"  expectation: ~0.5 (>=0.55 would suggest evaluation leakage)")
+    print(f"  expectation: ~ slice base rate n_pos/(n_pos+n_neg) "
+          f"(0.5 only for balanced slices); a systematic excess would "
+          f"indicate evaluation leakage")
     with open(args.base_results / "null_control_results.json", "w") as fh:
         json.dump({"arm": METHOD_NULL, "median_src_macro": med,
                    "results": all_results}, fh, indent=2)

@@ -1,0 +1,49 @@
+/home/cunyuliu/miniconda3/envs/pc_cng/lib/python3.10/site-packages/rxnmapper/batched_mapper.py:4: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+[union] torch.cuda.is_available() = True
+[union] device = NVIDIA A100-PCIE-40GB MIG 1g.5gb
+[union] G8-C model loaded
+[union] scenarios: ['scaffold', 'time']
+
+[union] === Scenario: scaffold ===
+  [union] train source mixture: {'learned_structured': 158, 'rule_pc_cng': 164, 'shuffled_parent': 178}
+  [union] trained (1000 samples, 563.2s) srcMacroAUPRC[semi_hard]=0.9365
+  [CI:semi_hard] learned_union_vs_rule_pc_cng: delta=+0.1544 CI=[+0.0779, +0.2363] p=0.0000
+  [CI:semi_hard] learned_union_vs_random_mismatch: delta=+0.0578 CI=[-0.0121, +0.1142] p=0.0800
+  [CI:semi_hard] learned_union_vs_learned_structured: delta=+0.0223 CI=[-0.0222, +0.0751] p=0.2000
+  [CI:semi_hard] learned_union_vs_shuffled_parent: delta=+0.0457 CI=[-0.0251, +0.1017] p=0.1290
+  [CI:semi_hard] learned_union_vs_diff_semihard: delta=+0.0770 CI=[+0.0201, +0.1324] p=0.0080
+
+[union] === Scenario: time ===
+  [union] train source mixture: {'learned_structured': 158, 'rule_pc_cng': 164, 'shuffled_parent': 178}
+  [union] trained (1000 samples, 459.1s) srcMacroAUPRC[semi_hard]=0.8925
+  [CI:semi_hard] learned_union_vs_rule_pc_cng: delta=+0.0999 CI=[+0.0172, +0.1677] p=0.0090
+  [CI:semi_hard] learned_union_vs_random_mismatch: delta=+0.0981 CI=[+0.0140, +0.1781] p=0.0090
+  [CI:semi_hard] learned_union_vs_learned_structured: delta=+0.0386 CI=[-0.0261, +0.0995] p=0.1130
+  [CI:semi_hard] learned_union_vs_shuffled_parent: delta=+0.0439 CI=[-0.0160, +0.1090] p=0.0760
+  [CI:semi_hard] learned_union_vs_diff_semihard: delta=+0.0587 CI=[-0.0178, +0.1503] p=0.0770
+
+[union] === Holm correction (alpha=0.05) ===
+  1/10 tests significant after Holm
+
+[union] === source-macro AUPRC[semi_hard] vs base arms ===
+  scenario            UNION  rule_pc_cng random_misma learned_stru shuffled_par diff_semihar
+  scaffold           0.9365          nan          nan          nan          nan          nan
+  time               0.8925          nan          nan          nan          nan          nan
+
+[union] union numerically beats ALL base arms in 2/2 scenarios
+[union] saved -> results/phase4_fixed_testset_v41/union_arm_results.json
+[null] torch.cuda.is_available() = True
+[null] device = NVIDIA A100-PCIE-40GB MIG 1g.5gb
+[null] scenarios: ['scaffold', 'time']
+
+[null] === Scenario: scaffold ===
+  [null] trained on PERMUTED labels (1000 samples, 367.5s) srcMacroAUPRC[semi_hard]=0.5991 pooled=0.3491
+
+[null] === Scenario: time ===
+  [null] trained on PERMUTED labels (1000 samples, 324.3s) srcMacroAUPRC[semi_hard]=0.5625 pooled=0.3571
+
+[null] === NULL CONTROL SUMMARY ===
+  median srcMacroAUPRC = 0.5807728920100815
+  expectation: ~ slice base rate n_pos/(n_pos+n_neg) (0.5 only for balanced slices); a systematic excess would indicate evaluation leakage
+[null] saved -> results/phase4_fixed_testset_v41/null_control_results.json

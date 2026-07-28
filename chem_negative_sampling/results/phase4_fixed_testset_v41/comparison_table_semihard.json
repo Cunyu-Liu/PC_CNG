@@ -1,0 +1,82 @@
+[
+  {
+    "scenario": "author_lab",
+    "rule_pc_cng": 0.6978574930691968,
+    "random_mismatch": 0.9992887624466571,
+    "learned_structured": 1.0,
+    "shuffled_parent": 0.9992887624466571,
+    "diff_easy": 0.812150605297255,
+    "diff_semihard": 0.9064273293566151,
+    "diff_hard": 0.7653120866967148
+  },
+  {
+    "scenario": "condition_space",
+    "rule_pc_cng": 0.9360014799219252,
+    "random_mismatch": 0.880768316003296,
+    "learned_structured": 0.8964940650520938,
+    "shuffled_parent": 0.8940511182632194,
+    "diff_easy": 0.902539872398133,
+    "diff_semihard": 0.9189676307368642,
+    "diff_hard": 0.8259914283754289
+  },
+  {
+    "scenario": "random",
+    "rule_pc_cng": 0.8808393995164143,
+    "random_mismatch": 0.8621025587698585,
+    "learned_structured": 0.8971002386339297,
+    "shuffled_parent": 0.8711399113228718,
+    "diff_easy": 0.919380909306954,
+    "diff_semihard": 0.9673602920126505,
+    "diff_hard": 0.8785616252638484
+  },
+  {
+    "scenario": "reaction_family",
+    "rule_pc_cng": 0.8143905264836417,
+    "random_mismatch": 0.8944766927329179,
+    "learned_structured": 0.9096342706293157,
+    "shuffled_parent": 0.8993673564588637,
+    "diff_easy": 0.8511985063806711,
+    "diff_semihard": 0.8860997177966146,
+    "diff_hard": 0.8652490055420134
+  },
+  {
+    "scenario": "scaffold",
+    "rule_pc_cng": 0.7821170556377905,
+    "random_mismatch": 0.878698484300714,
+    "learned_structured": 0.9141607093254955,
+    "shuffled_parent": 0.8907792838651793,
+    "diff_easy": 0.8353557453883049,
+    "diff_semihard": 0.859471588370867,
+    "diff_hard": 0.8781607682298871
+  },
+  {
+    "scenario": "time",
+    "rule_pc_cng": 0.7926160738053734,
+    "random_mismatch": 0.7944608819531662,
+    "learned_structured": 0.8539204214590637,
+    "shuffled_parent": 0.8486737321811897,
+    "diff_easy": 0.8287630222963691,
+    "diff_semihard": 0.8338451643104319,
+    "diff_hard": 0.8042690460780009
+  },
+  {
+    "scenario": "ni_coupling",
+    "rule_pc_cng": 0.9474857738351488,
+    "random_mismatch": 0.962182881465638,
+    "learned_structured": 0.9893225900587123,
+    "shuffled_parent": 0.9722141155088478,
+    "diff_easy": 0.9557975367129666,
+    "diff_semihard": 0.9519681437136823,
+    "diff_hard": 0.9014039079731428
+  },
+  {
+    "scenario": "uspto_patent",
+    "rule_pc_cng": 0.7740197209891528,
+    "random_mismatch": 0.7614530169042724,
+    "learned_structured": 0.8222905626260419,
+    "shuffled_parent": 0.7985380405417764,
+    "diff_easy": 0.8131032909754478,
+    "diff_semihard": 0.8579357231387394,
+    "diff_hard": 0.7971491829060252
+  }
+]

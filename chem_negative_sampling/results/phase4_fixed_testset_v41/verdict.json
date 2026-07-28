@@ -1,0 +1,128 @@
+{
+  "H1_sota": {
+    "per_scenario": {
+      "author_lab": {
+        "status": "fail",
+        "wins": 0,
+        "n": 3,
+        "learned_auprc": 1.0
+      },
+      "condition_space": {
+        "status": "fail",
+        "wins": 0,
+        "n": 3,
+        "learned_auprc": 0.8964940650520938
+      },
+      "random": {
+        "status": "fail",
+        "wins": 0,
+        "n": 3,
+        "learned_auprc": 0.8971002386339297
+      },
+      "reaction_family": {
+        "status": "fail",
+        "wins": 0,
+        "n": 3,
+        "learned_auprc": 0.9096342706293157
+      },
+      "scaffold": {
+        "status": "fail",
+        "wins": 0,
+        "n": 3,
+        "learned_auprc": 0.9141607093254955
+      },
+      "time": {
+        "status": "fail",
+        "wins": 0,
+        "n": 3,
+        "learned_auprc": 0.8539204214590637
+      },
+      "ni_coupling": {
+        "status": "partial",
+        "wins": 2,
+        "n": 3,
+        "learned_auprc": 0.9893225900587123
+      },
+      "uspto_patent": {
+        "status": "partial",
+        "wins": 1,
+        "n": 3,
+        "learned_auprc": 0.8222905626260419
+      }
+    },
+    "n_sota_scenarios": 0,
+    "n_scenarios": 8,
+    "criterion": "learned beats rule+random+shuffled on semi_hard (Holm p<0.05, delta>0) in ALL scenarios",
+    "go": false
+  },
+  "H2_hard_control": {
+    "per_scenario": {
+      "author_lab": {
+        "point": 0.9992887624466571,
+        "ci_low": 0.8641910289575241,
+        "ci_high": 1.0,
+        "n_clusters": 24
+      },
+      "condition_space": {
+        "point": 0.8940511182632194,
+        "ci_low": 0.8286023455683894,
+        "ci_high": 1.0,
+        "n_clusters": 30
+      },
+      "random": {
+        "point": 0.8711399113228718,
+        "ci_low": 0.8399283130306909,
+        "ci_high": 0.9158920227306355,
+        "n_clusters": 126
+      },
+      "reaction_family": {
+        "point": 0.8993673564588637,
+        "ci_low": 0.8572230584660898,
+        "ci_high": 0.9507362392458059,
+        "n_clusters": 47
+      },
+      "scaffold": {
+        "point": 0.8907792838651793,
+        "ci_low": 0.8454227384347719,
+        "ci_high": 0.9858373593875949,
+        "n_clusters": 38
+      },
+      "time": {
+        "point": 0.8486737321811897,
+        "ci_low": 0.7817623771374267,
+        "ci_high": 0.9187078260087709,
+        "n_clusters": 31
+      },
+      "ni_coupling": {
+        "point": 0.9722141155088478,
+        "ci_low": 0.9571411816417439,
+        "ci_high": 0.9845040243106833,
+        "n_clusters": 123
+      },
+      "uspto_patent": {
+        "point": 0.7985380405417764,
+        "ci_low": 0.7711937128435333,
+        "ci_high": 0.8287948428407915,
+        "n_clusters": 199
+      }
+    },
+    "median_auprc": 0.8924152010641994,
+    "criterion": "median shuffled_parent AUPRC on semi_hard in [0.40, 0.70]",
+    "achieved": false
+  },
+  "H3_inverted_u": {
+    "per_scenario_wins": {
+      "author_lab": 0,
+      "condition_space": 1,
+      "random": 2,
+      "reaction_family": 0,
+      "scaffold": 0,
+      "time": 0,
+      "ni_coupling": 1,
+      "uspto_patent": 1
+    },
+    "n_scenarios_both": 1,
+    "criterion": "diff_semihard beats BOTH diff_easy and diff_hard (Holm p<0.05) in a majority of scenarios",
+    "supported": false
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "arm": "learned_union",
+  "use_gnn": true,
+  "base_results": "results/phase4_fixed_testset_v41",
+  "results": {
+    "ni_coupling": {
+      "train_sec": 235.2200150489807,
+      "n_train": 1000,
+      "source_macro": 0.9922932105691399,
+      "pooled": 0.9697158734761173,
+      "per_source": {
+        "learned_structured": 0.98172483987792,
+        "random_real": 0.9946242719123721,
+        "rule_pc_cng": 0.9961241606488591,
+        "shuffled_real": 0.9966995698374082
+      },
+      "paired_ci": {
+        "learned_union_vs_rule_pc_cng": {
+          "challenger_point": 0.9922932105691399,
+          "baseline_point": 0.9474857738351488,
+          "delta_mean": 0.044807436733991124,
+          "delta_ci_low": 0.01953468384627577,
+          "delta_ci_high": 0.07078860844030765,
+          "ci_all_positive": true,
+          "p_value": 0.001,
+          "n_bootstrap": 1000,
+          "n_clusters": 123,
+          "method": "paired_cluster_bootstrap"
+        },
+        "learned_union_vs_random_mismatch": {
+          "challenger_point": 0.9922932105691399,
+          "baseline_point": 0.962182881465638,
+          "delta_mean": 0.030110329103501865,
+          "delta_ci_low": 0.01302598629052465,
+          "delta_ci_high": 0.04920784152017932,
+          "ci_all_positive": true,
+          "p_value": 0.0,
+          "n_bootstrap": 1000,
+          "n_clusters": 123,
+          "method": "paired_cluster_bootstrap"
+        },
+        "learned_union_vs_learned_structured": {
+          "challenger_point": 0.9922932105691399,
+          "baseline_point": 0.9893225900587123,
+          "delta_mean": 0.002970620510427624,
+          "delta_ci_low": -0.008156816820121815,
+          "delta_ci_high": 0.013351834139587626,
+          "ci_all_positive": false,
+          "p_value": 0.29,
+          "n_bootstrap": 1000,
+          "n_clusters": 123,
+          "method": "paired_cluster_bootstrap"
+        },
+        "learned_union_vs_shuffled_parent": {
+          "challenger_point": 0.9922932105691399,
+          "baseline_point": 0.9722141155088478,
+          "delta_mean": 0.02007909506029204,
+          "delta_ci_low": 0.00527994932811926,
+          "delta_ci_high": 0.03560552753614887,
+          "ci_all_positive": true,
+          "p_value": 0.007,
+          "n_bootstrap": 1000,
+          "n_clusters": 123,
+          "method": "paired_cluster_bootstrap"
+        },
+        "learned_union_vs_diff_semihard": {
+          "challenger_point": 0.9922932105691399,
+          "baseline_point": 0.9519681437136823,
+          "delta_mean": 0.04032506685545756,
+          "delta_ci_low": 0.02263935737826306,
+          "delta_ci_high": 0.05881997030268227,
+          "ci_all_positive": true,
+          "p_value": 0.0,
+          "n_bootstrap": 1000,
+          "n_clusters": 123,
+          "method": "paired_cluster_bootstrap"
+        }
+      }
+    },
+    "uspto_patent": {
+      "train_sec": 240.11040902137756,
+      "n_train": 1000,
+      "source_macro": 0.8408727543658063,
+      "pooled": 0.7336821254539402,
+      "per_source": {
+        "learned_structured": 0.8795219795276948,
+        "rule_pc_cng": 0.8022235292039177
+      },
+      "paired_ci": {
+        "learned_union_vs_rule_pc_cng": {
+          "challenger_point": 0.8408727543658063,
+          "baseline_point": 0.7740197209891528,
+          "delta_mean": 0.06685303337665349,
+          "delta_ci_low": 0.03679438543780389,
+          "delta_ci_high": 0.0930685530627039,
+          "ci_all_positive": true,
+          "p_value": 0.0,
+          "n_bootstrap": 1000,
+          "n_clusters": 199,
+          "method": "paired_cluster_bootstrap"
+        },
+        "learned_union_vs_random_mismatch": {
+          "challenger_point": 0.8408727543658063,
+          "baseline_point": 0.7614530169042724,
+          "delta_mean": 0.07941973746153397,
+          "delta_ci_low": 0.04251595505584671,
+          "delta_ci_high": 0.10993042555451549,
+          "ci_all_positive": true,
+          "p_value": 0.0,
+          "n_bootstrap": 1000,
+          "n_clusters": 199,
+          "method": "paired_cluster_bootstrap"
+        },
+        "learned_union_vs_learned_structured": {
+          "challenger_point": 0.8408727543658063,
+          "baseline_point": 0.8222905626260419,
+          "delta_mean": 0.018582191739764387,
+          "delta_ci_low": -0.008898607844342044,
+          "delta_ci_high": 0.04478993191148806,
+          "ci_all_positive": false,
+          "p_value": 0.103,
+          "n_bootstrap": 1000,
+          "n_clusters": 199,
+          "method": "paired_cluster_bootstrap"
+        },
+        "learned_union_vs_shuffled_parent": {
+          "challenger_point": 0.8408727543658063,
+          "baseline_point": 0.7985380405417764,
+          "delta_mean": 0.04233471382402998,
+          "delta_ci_low": 0.012399871073364044,
+          "delta_ci_high": 0.07372841473062663,
+          "ci_all_positive": true,
+          "p_value": 0.001,
+          "n_bootstrap": 1000,
+          "n_clusters": 199,
+          "method": "paired_cluster_bootstrap"
+        },
+        "learned_union_vs_diff_semihard": {
+          "challenger_point": 0.8408727543658063,
+          "baseline_point": 0.8579357231387394,
+          "delta_mean": -0.017062968772933118,
+          "delta_ci_low": -0.0421898292509445,
+          "delta_ci_high": 0.01035868396650097,
+          "ci_all_positive": false,
+          "p_value": 0.898,
+          "n_bootstrap": 1000,
+          "n_clusters": 199,
+          "method": "paired_cluster_bootstrap"
+        }
+      }
+    }
+  },
+  "holm_tests": [
+    {
+      "scenario": "ni_coupling",
+      "pair": "learned_union_vs_rule_pc_cng",
+      "p": 0.001,
+      "delta": 0.044807436733991124,
+      "adjusted_p": 0.006,
+      "significant": true
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "learned_union_vs_random_mismatch",
+      "p": 0.0,
+      "delta": 0.030110329103501865,
+      "adjusted_p": 0.0,
+      "significant": true
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "learned_union_vs_learned_structured",
+      "p": 0.29,
+      "delta": 0.002970620510427624,
+      "adjusted_p": 0.58,
+      "significant": false
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "learned_union_vs_shuffled_parent",
+      "p": 0.007,
+      "delta": 0.02007909506029204,
+      "adjusted_p": 0.028,
+      "significant": true
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "learned_union_vs_diff_semihard",
+      "p": 0.0,
+      "delta": 0.04032506685545756,
+      "adjusted_p": 0.0,
+      "significant": true
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "learned_union_vs_rule_pc_cng",
+      "p": 0.0,
+      "delta": 0.06685303337665349,
+      "adjusted_p": 0.0,
+      "significant": true
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "learned_union_vs_random_mismatch",
+      "p": 0.0,
+      "delta": 0.07941973746153397,
+      "adjusted_p": 0.0,
+      "significant": true
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "learned_union_vs_learned_structured",
+      "p": 0.103,
+      "delta": 0.018582191739764387,
+      "adjusted_p": 0.309,
+      "significant": false
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "learned_union_vs_shuffled_parent",
+      "p": 0.001,
+      "delta": 0.04233471382402998,
+      "adjusted_p": 0.005,
+      "significant": true
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "learned_union_vs_diff_semihard",
+      "p": 0.898,
+      "delta": -0.017062968772933118,
+      "adjusted_p": 0.898,
+      "significant": false
+    }
+  ],
+  "n_scenarios_union_wins_outright": 1
+}

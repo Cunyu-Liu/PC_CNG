@@ -166,3 +166,8 @@ results_p4_g1_build.log
 results/**/*.log
 !results/**/summary.json
 !results/**/metrics.json
+
+# Phase 4 v41 results (small JSON summaries + logs)
+!chem_negative_sampling/results/phase4_fixed_testset_v41/
+!chem_negative_sampling/results/phase4_fixed_testset_v41/*.json
+!chem_negative_sampling/results/phase4_v41*.log

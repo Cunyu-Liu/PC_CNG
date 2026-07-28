@@ -1,0 +1,45 @@
+/home/cunyuliu/miniconda3/envs/pc_cng/lib/python3.10/site-packages/rxnmapper/batched_mapper.py:4: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+[union] torch.cuda.is_available() = True
+[union] device = NVIDIA A100-PCIE-40GB
+[union] G8-C model loaded
+[union] scenarios: ['reaction_family']
+
+[union] === Scenario: reaction_family ===
+  [union] train source mixture: {'learned_structured': 158, 'rule_pc_cng': 164, 'shuffled_parent': 178}
+  [union] trained (1000 samples, 578.1s) srcMacroAUPRC[semi_hard]=0.9386
+  [CI:semi_hard] learned_union_vs_rule_pc_cng: delta=+0.1242 CI=[+0.0589, +0.1788] p=0.0000
+  [CI:semi_hard] learned_union_vs_random_mismatch: delta=+0.0441 CI=[+0.0023, +0.0779] p=0.0200
+  [CI:semi_hard] learned_union_vs_learned_structured: delta=+0.0289 CI=[-0.0076, +0.0612] p=0.0650
+  [CI:semi_hard] learned_union_vs_shuffled_parent: delta=+0.0392 CI=[-0.0030, +0.0736] p=0.0370
+  [CI:semi_hard] learned_union_vs_diff_semihard: delta=+0.0525 CI=[+0.0050, +0.0985] p=0.0150
+
+[union] === Holm correction (alpha=0.05) ===
+  1/5 tests significant after Holm
+
+[union] === source-macro AUPRC[semi_hard] vs base arms ===
+  scenario            UNION  rule_pc_cng random_misma learned_stru shuffled_par diff_semihar
+  reaction_family    0.9386          nan          nan          nan          nan          nan
+
+[union] union numerically beats ALL base arms in 1/1 scenarios
+[union] saved -> results/phase4_fixed_testset_v41/union_arm_results.json
+[null] torch.cuda.is_available() = True
+[null] device = NVIDIA A100-PCIE-40GB
+[null] scenarios: ['author_lab', 'condition_space', 'random', 'reaction_family']
+
+[null] === Scenario: author_lab ===
+  [null] trained on PERMUTED labels (1000 samples, 635.3s) srcMacroAUPRC[semi_hard]=0.4915 pooled=0.4453
+
+[null] === Scenario: condition_space ===
+  [null] trained on PERMUTED labels (1000 samples, 599.0s) srcMacroAUPRC[semi_hard]=0.6176 pooled=0.4138
+
+[null] === Scenario: random ===
+  [null] trained on PERMUTED labels (1000 samples, 595.4s) srcMacroAUPRC[semi_hard]=0.6405 pooled=0.3930
+
+[null] === Scenario: reaction_family ===
+  [null] trained on PERMUTED labels (1000 samples, 592.5s) srcMacroAUPRC[semi_hard]=0.6616 pooled=0.4882
+
+[null] === NULL CONTROL SUMMARY ===
+  median srcMacroAUPRC = 0.629090774663411
+  expectation: ~0.5 (>=0.55 would suggest evaluation leakage)
+[null] saved -> results/phase4_fixed_testset_v41/null_control_results.json

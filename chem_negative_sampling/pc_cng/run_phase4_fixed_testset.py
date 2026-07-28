@@ -581,7 +581,10 @@ def build_main_arm_train(
     records: List[Dict] = []
 
     if arm == METHOD_SHUFFLED_PARENT:
-        # Same-reactant shuffled-real-product negatives (Phase 3 v2 fix).
+        # Fully shuffled negatives: both reactants and products come from
+        # different reactions, destroying any reactant-product compatibility
+        # signal.  This makes shuffled_parent a TRUE null control (AUPRC ~0.5)
+        # rather than a compatibility-transfer baseline.
         parsed: List[Tuple[str, str, str, str, dict]] = []
         for _, row in train_rows.iterrows():
             rxn = row.get("reaction_smiles")
@@ -593,12 +596,19 @@ def build_main_arm_train(
             parsed.append((parts[0], parts[1], parts[2], rxn, _row_meta(row)))
         n = len(parsed)
         for i, (r, a, p, pos_rxn, meta) in enumerate(parsed):
-            p_shuf = parsed[(i + SHUFFLED_OFFSET) % n][2]
+            j = (i + SHUFFLED_OFFSET) % n
+            r_shuf = parsed[j][0]
+            a_shuf = parsed[j][1]
+            p_shuf = parsed[(j + SHUFFLED_OFFSET) % n][2]
+            if r_shuf == r and a_shuf == a:
+                j2 = (j + 1) % n
+                r_shuf = parsed[j2][0]
+                a_shuf = parsed[j2][1]
             if p_shuf == p:
-                p_shuf = parsed[(i + SHUFFLED_OFFSET + 1) % n][2]
-            if p_shuf == p:
+                p_shuf = parsed[(j + SHUFFLED_OFFSET + 1) % n][2]
+            if r_shuf == r and a_shuf == a:
                 continue
-            neg_rxn = f"{r}>{a}>{p_shuf}"
+            neg_rxn = f"{r_shuf}>{a_shuf}>{p_shuf}"
             pos_fp = reaction_fp_enhanced(pos_rxn)
             neg_fp = reaction_fp_enhanced(neg_rxn)
             if pos_fp is None or neg_fp is None:

@@ -1,0 +1,407 @@
+{
+  "tests": [
+    {
+      "scenario": "author_lab",
+      "pair": "learned_structured_vs_rule_pc_cng",
+      "p": 0.008,
+      "delta": 0.30214250693080325,
+      "ci_low": 0.02519747468233491,
+      "ci_high": 0.3640398853135274,
+      "adjusted_p": 0.2,
+      "rejected": false
+    },
+    {
+      "scenario": "author_lab",
+      "pair": "learned_structured_vs_random_mismatch",
+      "p": 0.341,
+      "delta": 0.0007112375533429027,
+      "ci_low": -0.006291583614742469,
+      "ci_high": 0.05680719952546098,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "author_lab",
+      "pair": "learned_structured_vs_shuffled_parent",
+      "p": 0.315,
+      "delta": 0.0007112375533429027,
+      "ci_low": -2.220446049250313e-16,
+      "ci_high": 0.06527901049447293,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "author_lab",
+      "pair": "diff_semihard_vs_diff_easy",
+      "p": 0.017,
+      "delta": 0.09427672405936005,
+      "ci_low": 0.012650861536361302,
+      "ci_high": 0.16283297162817534,
+      "adjusted_p": 0.40800000000000003,
+      "rejected": false
+    },
+    {
+      "scenario": "author_lab",
+      "pair": "diff_semihard_vs_diff_hard",
+      "p": 0.068,
+      "delta": 0.14111524265990028,
+      "ci_low": -0.022328498124824847,
+      "ci_high": 0.21367768611914484,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "condition_space",
+      "pair": "learned_structured_vs_rule_pc_cng",
+      "p": 0.791,
+      "delta": -0.03950741486983134,
+      "ci_low": -0.09341198592000588,
+      "ci_high": 0.13793486114471998,
+      "adjusted_p": 0.791,
+      "rejected": false
+    },
+    {
+      "scenario": "condition_space",
+      "pair": "learned_structured_vs_random_mismatch",
+      "p": 0.191,
+      "delta": 0.015725749048797866,
+      "ci_low": -0.01050745076855164,
+      "ci_high": 0.053041681523253725,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "condition_space",
+      "pair": "learned_structured_vs_shuffled_parent",
+      "p": 0.348,
+      "delta": 0.002442946788874467,
+      "ci_low": -0.020579983728089557,
+      "ci_high": 0.047871124753578354,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "condition_space",
+      "pair": "diff_semihard_vs_diff_easy",
+      "p": 0.265,
+      "delta": 0.016427758338731113,
+      "ci_low": -0.03593385256567716,
+      "ci_high": 0.07878442341239467,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "condition_space",
+      "pair": "diff_semihard_vs_diff_hard",
+      "p": 0.0,
+      "delta": 0.09297620236143522,
+      "ci_low": 0.03745527836316509,
+      "ci_high": 0.18089230931246258,
+      "adjusted_p": 0.0,
+      "rejected": true
+    },
+    {
+      "scenario": "random",
+      "pair": "learned_structured_vs_rule_pc_cng",
+      "p": 0.269,
+      "delta": 0.016260839117515413,
+      "ci_low": -0.032587430650898086,
+      "ci_high": 0.07094193009991057,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "random",
+      "pair": "learned_structured_vs_random_mismatch",
+      "p": 0.003,
+      "delta": 0.03499767986407121,
+      "ci_low": 0.008140017981406622,
+      "ci_high": 0.0628299528700309,
+      "adjusted_p": 0.09,
+      "rejected": false
+    },
+    {
+      "scenario": "random",
+      "pair": "learned_structured_vs_shuffled_parent",
+      "p": 0.029,
+      "delta": 0.025960327311057907,
+      "ci_low": -0.0002127184527400683,
+      "ci_high": 0.05310071875204836,
+      "adjusted_p": 0.667,
+      "rejected": false
+    },
+    {
+      "scenario": "random",
+      "pair": "diff_semihard_vs_diff_easy",
+      "p": 0.0,
+      "delta": 0.04797938270569646,
+      "ci_low": 0.018474485042830557,
+      "ci_high": 0.07503085848296465,
+      "adjusted_p": 0.0,
+      "rejected": true
+    },
+    {
+      "scenario": "random",
+      "pair": "diff_semihard_vs_diff_hard",
+      "p": 0.0,
+      "delta": 0.0887986667488021,
+      "ci_low": 0.05870544388585808,
+      "ci_high": 0.11531915561505424,
+      "adjusted_p": 0.0,
+      "rejected": true
+    },
+    {
+      "scenario": "reaction_family",
+      "pair": "learned_structured_vs_rule_pc_cng",
+      "p": 0.002,
+      "delta": 0.09524374414567394,
+      "ci_low": 0.024903588000896315,
+      "ci_high": 0.1626480843705418,
+      "adjusted_p": 0.064,
+      "rejected": false
+    },
+    {
+      "scenario": "reaction_family",
+      "pair": "learned_structured_vs_random_mismatch",
+      "p": 0.116,
+      "delta": 0.015157577896397822,
+      "ci_low": -0.008382923210995097,
+      "ci_high": 0.03467504073597372,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "reaction_family",
+      "pair": "learned_structured_vs_shuffled_parent",
+      "p": 0.214,
+      "delta": 0.010266914170452002,
+      "ci_low": -0.01580372203895619,
+      "ci_high": 0.03198394154224804,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "reaction_family",
+      "pair": "diff_semihard_vs_diff_easy",
+      "p": 0.08,
+      "delta": 0.03490121141594349,
+      "ci_low": -0.014381946996512185,
+      "ci_high": 0.0753248105726253,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "reaction_family",
+      "pair": "diff_semihard_vs_diff_hard",
+      "p": 0.205,
+      "delta": 0.02085071225460111,
+      "ci_low": -0.02804218066012021,
+      "ci_high": 0.07650485143554142,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "scaffold",
+      "pair": "learned_structured_vs_rule_pc_cng",
+      "p": 0.002,
+      "delta": 0.132043653687705,
+      "ci_low": 0.033932269333729725,
+      "ci_high": 0.2613944008338699,
+      "adjusted_p": 0.062,
+      "rejected": false
+    },
+    {
+      "scenario": "scaffold",
+      "pair": "learned_structured_vs_random_mismatch",
+      "p": 0.08,
+      "delta": 0.03546222502478158,
+      "ci_low": -0.010575611624224601,
+      "ci_high": 0.066124569443197,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "scaffold",
+      "pair": "learned_structured_vs_shuffled_parent",
+      "p": 0.18,
+      "delta": 0.023381425460316185,
+      "ci_low": -0.02078466720935368,
+      "ci_high": 0.052058712470868906,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "scaffold",
+      "pair": "diff_semihard_vs_diff_easy",
+      "p": 0.201,
+      "delta": 0.024115842982562086,
+      "ci_low": -0.03643156313475804,
+      "ci_high": 0.08065704215034775,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "scaffold",
+      "pair": "diff_semihard_vs_diff_hard",
+      "p": 0.632,
+      "delta": -0.018689179859020078,
+      "ci_low": -0.06670470848862164,
+      "ci_high": 0.05054775007324075,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "time",
+      "pair": "learned_structured_vs_rule_pc_cng",
+      "p": 0.065,
+      "delta": 0.061304347653690305,
+      "ci_low": -0.022610757588889308,
+      "ci_high": 0.13031899380360157,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "time",
+      "pair": "learned_structured_vs_random_mismatch",
+      "p": 0.004,
+      "delta": 0.05945953950589744,
+      "ci_low": 0.015237349977915038,
+      "ci_high": 0.10483959746217619,
+      "adjusted_p": 0.112,
+      "rejected": false
+    },
+    {
+      "scenario": "time",
+      "pair": "learned_structured_vs_shuffled_parent",
+      "p": 0.331,
+      "delta": 0.005246689277873973,
+      "ci_low": -0.02415563147963251,
+      "ci_high": 0.035706079324064444,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "time",
+      "pair": "diff_semihard_vs_diff_easy",
+      "p": 0.412,
+      "delta": 0.005082142014062763,
+      "ci_low": -0.04612438286528442,
+      "ci_high": 0.06262530569940716,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "time",
+      "pair": "diff_semihard_vs_diff_hard",
+      "p": 0.094,
+      "delta": 0.029576118232431003,
+      "ci_low": -0.013615348719194342,
+      "ci_high": 0.08545187956871825,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "learned_structured_vs_rule_pc_cng",
+      "p": 0.0,
+      "delta": 0.0418368162235635,
+      "ci_low": 0.019384548470145924,
+      "ci_high": 0.06542011235613066,
+      "adjusted_p": 0.0,
+      "rejected": true
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "learned_structured_vs_random_mismatch",
+      "p": 0.0,
+      "delta": 0.02713970859307424,
+      "ci_low": 0.011698059556890517,
+      "ci_high": 0.04503996596193238,
+      "adjusted_p": 0.0,
+      "rejected": true
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "learned_structured_vs_shuffled_parent",
+      "p": 0.005,
+      "delta": 0.017108474549864416,
+      "ci_low": 0.0035064179899476633,
+      "ci_high": 0.031408993589112866,
+      "adjusted_p": 0.13,
+      "rejected": false
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "diff_semihard_vs_diff_easy",
+      "p": 0.634,
+      "delta": -0.003829392999284309,
+      "ci_low": -0.022130255322377,
+      "ci_high": 0.01706454396462065,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "ni_coupling",
+      "pair": "diff_semihard_vs_diff_hard",
+      "p": 0.0,
+      "delta": 0.050564235740539476,
+      "ci_low": 0.02054208624082743,
+      "ci_high": 0.0836787427082939,
+      "adjusted_p": 0.0,
+      "rejected": true
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "learned_structured_vs_rule_pc_cng",
+      "p": 0.004,
+      "delta": 0.048270841636889106,
+      "ci_low": 0.011445980662013078,
+      "ci_high": 0.08229360772575445,
+      "adjusted_p": 0.108,
+      "rejected": false
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "learned_structured_vs_random_mismatch",
+      "p": 0.0,
+      "delta": 0.06083754572176958,
+      "ci_low": 0.024489456075298066,
+      "ci_high": 0.09345023575028644,
+      "adjusted_p": 0.0,
+      "rejected": true
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "learned_structured_vs_shuffled_parent",
+      "p": 0.091,
+      "delta": 0.023752522084265593,
+      "ci_low": -0.01002327411813253,
+      "ci_high": 0.057001043389918404,
+      "adjusted_p": 1.0,
+      "rejected": false
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "diff_semihard_vs_diff_easy",
+      "p": 0.003,
+      "delta": 0.04483243216329169,
+      "ci_low": 0.014166056560256823,
+      "ci_high": 0.07270180346497257,
+      "adjusted_p": 0.08700000000000001,
+      "rejected": false
+    },
+    {
+      "scenario": "uspto_patent",
+      "pair": "diff_semihard_vs_diff_hard",
+      "p": 0.001,
+      "delta": 0.06078654023271424,
+      "ci_low": 0.02228488086689351,
+      "ci_high": 0.09489208434998209,
+      "adjusted_p": 0.033,
+      "rejected": true
+    }
+  ],
+  "n_significant": 8,
+  "n_total": 40,
+  "alpha": 0.05
+}

@@ -1,0 +1,18 @@
+{
+  "arm": "null_randomized_label",
+  "median_src_macro": 0.6291287640565584,
+  "results": {
+    "ni_coupling": {
+      "source_macro": 0.725242764882525,
+      "pooled": 0.34385742738538816,
+      "train_sec": 245.84179306030273,
+      "n_train": 1000
+    },
+    "uspto_patent": {
+      "source_macro": 0.5330147632305916,
+      "pooled": 0.3638437862468759,
+      "train_sec": 238.37462401390076,
+      "n_train": 1000
+    }
+  }
+}

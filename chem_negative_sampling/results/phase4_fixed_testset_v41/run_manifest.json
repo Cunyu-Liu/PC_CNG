@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-07-28T01:54:17+0800",
+  "script_sha256": "b7d227b16339eb13115b9f4760a9d2b24e7c8434da277d98b14b853373dfbc44",
+  "frozen_difficulty": {
+    "version": "difficulty_v1_frozen_20260726",
+    "similarity_metric": "tanimoto_morgan_radius2_2048bits(neg_product, true_product)",
+    "pools": {
+      "easy": {
+        "sim_min": 0.0,
+        "sim_max": 0.4,
+        "sim_max_inclusive": false
+      },
+      "semi_hard": {
+        "sim_min": 0.4,
+        "sim_max": 0.75,
+        "sim_max_inclusive": true
+      },
+      "hard": {
+        "sim_min": 0.75,
+        "sim_max": 1.0,
+        "sim_min_inclusive": false
+      }
+    },
+    "validity": "rdkit_mol_from_smiles(neg_product) is not None",
+    "candidate_count_per_positive_per_pool_per_source": 1,
+    "primary_metric": "source_macro_auprc (equal weight per negative source; removes pool-composition home-advantage bias)",
+    "frozen_note": "Thresholds fixed before any test-set evaluation; no post-hoc binning permitted (spec Phase 4)."
+  },
+  "primary_pool": "semi_hard",
+  "use_gnn": true,
+  "max_train": 500,
+  "max_test": 200,
+  "n_bootstrap": 1000,
+  "seed": 20260726,
+  "scenarios": [
+    "author_lab",
+    "condition_space",
+    "random",
+    "reaction_family",
+    "scaffold",
+    "time",
+    "ni_coupling",
+    "uspto_patent"
+  ],
+  "cuda_available": true,
+  "device": "NVIDIA A100-PCIE-40GB MIG 1g.5gb",
+  "elapsed_sec": 14425.666267633438
+}
