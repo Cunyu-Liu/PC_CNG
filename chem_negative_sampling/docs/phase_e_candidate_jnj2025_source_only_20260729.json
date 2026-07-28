@@ -1,0 +1,24 @@
+{
+  "contract_version": "phase-e-v1",
+  "status": "CANDIDATE_METADATA_ONLY",
+  "registered_at_utc": "2026-07-28T20:19:56.373300+00:00",
+  "dataset": {
+    "dataset_id": "jnj2025_bh_hte_source_only",
+    "title": "JnJ dedicated Buchwald-Hartwig HTE production subset",
+    "source_url": "https://github.com/schwallergroup/bh-hte-ood",
+    "doi": "10.26434/chemrxiv-2025-xcr46",
+    "license": "Apache-2.0",
+    "reaction_family": "Buchwald-Hartwig C-N coupling",
+    "provider_checksums": [],
+    "upstream_datasets": [
+      "JnJ dedicated production rows only; independent custodian must exclude all merged public sources"
+    ]
+  },
+  "rationale": "Second external source/OOD candidate. The unified CSV is forbidden; only a custodian-isolated JnJ source subset may be sealed.",
+  "labels_downloaded_or_inspected_by_development_team": false,
+  "contamination_audit": {
+    "status": "PASS",
+    "reasons": [],
+    "forbidden_index_sha256": "4793f452a71f3fb3de1772a89144f982e24c6e57da15003c5b8056bbb380c42b"
+  }
+}
