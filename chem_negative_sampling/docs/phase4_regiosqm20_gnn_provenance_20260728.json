@@ -1,0 +1,52 @@
+{
+  "artifact_type": "phase4_external_replication_provenance",
+  "protocol_version": "protocol_v1_20260728",
+  "dataset": "RegioSQM20",
+  "input_csv": "/home/cunyuliu/pc_cng_research/data/processed/regiosqm20_normalized.csv",
+  "input_sha256": "32bc43589c8b77a332dd8516c68bf4e3256417c2a369bbf2770b2cc5f011208d",
+  "split_policy": "use_existing_frozen_split_only",
+  "split_counts": {"train": 1936, "val": 246, "test": 242},
+  "scenario_count": 1,
+  "scenarios": ["regiosqm20"],
+  "scorer": "GNN",
+  "gpu": "GPU 6; NVIDIA A100-PCIE-40GB MIG 1g.5gb",
+  "cuda_available": true,
+  "seed": 20260726,
+  "max_train": 500,
+  "max_test": 200,
+  "n_bootstrap": 1000,
+  "difficulty": {
+    "version": "difficulty_v1_frozen_20260726",
+    "metric": "tanimoto_morgan_radius2_2048bits(neg_product,true_product)",
+    "semi_hard_interval": "[0.40,0.75]",
+    "thresholds_frozen_before_test": true
+  },
+  "run_dir": "/mnt/cunyuliu_pc_cng_phase4_regiosqm20_20260728/gnn_retry_20260728",
+  "canonical_artifact": "phase4_v41_aggregation.json",
+  "canonical_artifact_sha256": "a64bdcf41873ddcb205f1fd788e1e85fdb736b90ad3bd524d10272e69e3990c6",
+  "run_manifest_sha256": "937dc56d69c12573781451bd91297c3d8b64d36a7580b85fb22b96489e333ac8",
+  "script_sha256": "31fc124b9fde9b7fa041d93a78f7de2ed03b6d4d59601f645ae9ee8d2cd33629",
+  "command_policy": "external-only; no test-guided split, threshold, endpoint, or source-ratio changes",
+  "results": {
+    "source_macro_auprc_semi_hard": {
+      "learned_structured": 0.9075684999560578,
+      "rule_pc_cng": 0.9182167671969537,
+      "random_mismatch": 0.8965421557692816,
+      "shuffled_parent": 0.891901208370729,
+      "diff_easy": 0.9026535076946619,
+      "diff_semihard": 0.9509857401339465,
+      "diff_hard": 0.8569111103579823
+    },
+    "verdict_boundary": {
+      "H1_learned_sota": "NO_GO_0_OF_1",
+      "H2_shuffled_parent_null": "NOT_ACHIEVED",
+      "H3_inverted_u": "SUPPORTED_1_OF_1_EXPLORATORY_ONLY",
+      "randomized_label_null": "NOT_RUN"
+    }
+  },
+  "failure_evidence": [
+    "/mnt/cunyuliu_pc_cng_phase4_regiosqm20_20260728/gnn/gnn_run.log",
+    "initial relative-input-path failure preserved; retry used absolute input path"
+  ],
+  "scientific_status": "independent_replication_exploratory_not_confirmatory"
+}

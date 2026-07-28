@@ -1,7 +1,8 @@
 # PC-CNG Phase 4 进度文档
 
-**最后更新**: 2026-07-28（Union v2 最终验收；第二 scorer exploratory replication 完成）
-**当前 Git commit**: `a56feeb` (main)
+**最后更新**: 2026-07-28（Union v2 最终验收；第二 scorer 与 RegioSQM20 外部复制完成）
+**上游交接基线**: `a56feeb` (main)
+**本次聚焦修复提交**: `21d13de2a41637d6cf2e1984f16b01dfbe15aaa7`（服务器本地，未 push）
 **交接文档**: `docs/phase4_v41_handover.md`
 **交接修订**: `docs/phase4_v41_amendment_20260728.md`
 
@@ -21,7 +22,7 @@
 | 分析框架 (analyze_phase4_v41) | ✅ 完成 | 100% |
 | SOTA 目标 | ❌ 未达成 | learned 1/8；Union v2 0/8 Holm-confirmed |
 | 第二 scorer（EnhancedMLP） | ✅ GPU 6 exploratory 8/8 完成 | H1=1/8；H3=2/8；不作 confirmatory claim |
-| RegioSQM20 外部入口 | ✅ loader/单测完成 | GPU replication 待第二 scorer 完成后运行 |
+| RegioSQM20 外部复制 | ✅ GNN + EnhancedMLP 完成 | 各 1 个外部场景；仅作 replication/exploratory，不支持普遍机制结论 |
 
 ---
 
@@ -108,6 +109,13 @@
 - H1 learned SOTA=1/8；H2 shuffled_parent median=0.8149（仍非 null）；H3=2/8（仍不支持一般 inverted-U）。
 - 本次没有 randomized-label arm，因此不作 null-control 结论；完整 provenance 位于结果目录。
 
+### ✅ RegioSQM20 外部复制（冻结 protocol）
+- 数据：`regiosqm20_normalized.csv`，既有 split 1936/246/242 train/val/test；输入 SHA-256 为 `32bc43589c8b77a332dd8516c68bf4e3256417c2a369bbf2770b2cc5f011208d`。
+- protocol：`/mnt/cunyuliu_pc_cng_phase4_regiosqm20_20260728/protocol_v1_20260728.json`；difficulty 与 primary metric 未因结果修改；每条 source 预算一致，`max_train=500`、`max_test=200`、`n_bootstrap=1000`、seed `20260726`。
+- GNN（GPU 6，1/1 场景）：learned=0.9076、rule=0.9182、random=0.8965、shuffled=0.8919、semi-hard=0.9510；H1=0/1，H2 非 null，H3=1/1（仅 exploratory）。canonical aggregation SHA-256=`a64bdcf41873ddcb205f1fd788e1e85fdb736b90ad3bd524d10272e69e3990c6`。
+- EnhancedMLP（GPU 6，1/1 场景）：learned=0.9092、rule=0.9149、random=0.9156、shuffled=0.9295、semi-hard=0.9510；H1=0/1，H2 非 null，H3=1/1（仅 exploratory）。canonical aggregation SHA-256=`667d8dd250a11fc26247ae055148ccefb0f0970c4904d11cbdf1a5be2acdd9a7`。
+- 结论边界：RegioSQM20 的两个 scorer 都没有显示 learned 优于主要单一基线；H3 在单一外部场景成立，不能升级为一般 inverted-U 机制主张；本次没有 randomized-label arm。
+
 ---
 
 ## 待办事项
@@ -119,12 +127,12 @@
 4. [x] 运行修复后的 union_v2 全部场景 (`--difficulty-match`)
 
 ### 重要
-4. [ ] 分析 SOTA 差距: 不做 test-guided 调参；转向第二数据集/第二 scorer 的冻结 replication
+4. [x] 分析 SOTA 差距: 不做 test-guided 调参；已完成第二 scorer 与 RegioSQM20 外部 replication，结果保留为受限证据
 5. [x] uspto_patent 薄弱分析: Union v2=0.8440，仍低于 diff_semihard=0.8579
 6. [x] H3 inverted-U 重新检验: 2/8 场景达标，仍不足以支持一般机制主张
 
 ### 后续
-8. [ ] Phase 4 提示词剩余项 (第二 scorer 当前为 exploratory；RegioSQM20 外部 GPU replication 待运行并需单独冻结结果边界)
+8. [x] Phase 4 提示词剩余项中的第二 scorer/第二数据集 replication；已完成，但仍需 sealed source-gate test 才能形成确认性结论
 9. [ ] Phase 5 NMI 投稿 Gate 准备
 
 ---

@@ -29,6 +29,7 @@ DEPRECATED_INVALID_EVALUATION
 - shuffled-parent：旧 one-class/feature-contract 不一致的 rescore 作废；修复版 8/8 已完成，最终主分析 alignment 128/128；它仍不是随机 null，而是 development-only compatibility-transfer 证据。formula-preserved AUPRC=0.9095，formula-changed AUPRC=0.7795。
 - Union_v2：主恢复目录 8/8 完成；frozen Morgan radius-2/2048 Tanimoto 区间为 `[0.40, 0.75]`，matched_fraction=0.866–0.976，fallback_count=12–67；5/8 点估计胜出，但 H1u_v2=0/8 Holm-confirmed SOTA，仍为 post-hoc development-only。
 - 第二 scorer：EnhancedMLP 已在 GPU 6 完成当前 fixed-pool 8/8 exploratory replication；H1=1/8、H2 shuffled median=0.8149、H3=2/8；没有 randomized-label arm，不作 null-control 结论。
+- RegioSQM20 外部 replication：GNN 与 EnhancedMLP 各完成 1 个冻结 scenario；两者 H1=0/1、H2 均非 null、H3=1/1。GNN learned/rule/random/shuffled/diff-semi=`0.9076/0.9182/0.8965/0.8919/0.9510`，MLP=`0.9092/0.9149/0.9156/0.9295/0.9510`。该结果支持有限的 external replication，但不支持 learned SOTA 或一般 inverted-U 机制主张。
 
 ## North-Star 改写
 
@@ -91,7 +92,7 @@ G6 的现有实现已通过回归/数据 schema sanity tests，但这只证明�
 
 ## 下一阶段执行顺序
 
-1. 完成 Phase A 状态同步：README、NMI goal amendment、claim registry 和结果 provenance；
+1. 完成 Phase A 状态同步：README、NMI goal amendment、claim registry 和结果 provenance；RegioSQM20 两个 scorer 的 provenance 已补齐；
 2. 仅在开发集完成 source gate 原型，不在 fixed pool 上宣称确认性 SOTA；
 3. 新建 sealed test split、冻结 gate/endpoint/统计方案后再进入 confirmatory evaluation；
 4. G7 专家 pilot 与 prospective experiment 仍是独立阻塞项。

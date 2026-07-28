@@ -1,7 +1,8 @@
 # Phase 4 v4.1 交接文档
 
 **日期**: 2026-07-28
-**仓库**: `git@github.com:Cunyu-Liu/PC_CNG.git` (branch: main, commit: `a56feeb`)
+**仓库**: `git@github.com:Cunyu-Liu/PC_CNG.git` (branch: main, handover baseline: `a56feeb`)
+**本次本地聚焦提交**: `21d13de2a41637d6cf2e1984f16b01dfbe15aaa7`（服务器本地，未 push）
 **服务器**: `cunyuliu@36.137.135.49:/home/cunyuliu/pc_cng_research`
 
 > **交接修订**：请同时阅读 `docs/phase4_v41_amendment_20260728.md`。本地审计发现旧 `rescore_shuffled_parent.py` 的训练集与评分特征不一致，且旧 `union_v2 --difficulty-match` 没有真正按 difficulty 筛选；修复版已同步到远端。当前修复版 rescore 已在独立目录完成 8/8，原结果目录和旧日志均保留。
@@ -85,7 +86,7 @@
 
 - `run_phase4_fixed_testset.py` 新增 `--external-csv --external-only`，只读取已有 normalized CSV 的 train/test split，不自行创建或调参 split。
 - RegioSQM20 已完成只读输入审计：1936/246/242 train/val/test，2424 条记录，reaction SMILES 唯一；冻结 protocol 为 `/mnt/cunyuliu_pc_cng_phase4_regiosqm20_20260728/protocol_v1_20260728.json`。
-- 外部 loader 两项单测通过；GPU 复制安排在当前第二 scorer 完成后。
+- 外部 loader 两项单测通过；RegioSQM20 的 GNN 与 EnhancedMLP GPU 复制均已完成。
 - ORD 当前只有 train split，暂不作为确认性复制数据。
 
 #### H. 第二 scorer exploratory replication
@@ -93,6 +94,14 @@
 - EnhancedMLP 已在 GPU 6 完成当前 fixed-pool 的 8/8 场景运行；统一 analyzer 权威文件为 `/mnt/cunyuliu_pc_cng_phase4_mlp_20260728/phase4_fixed_testset_v41_mlp_20260728/phase4_v41_aggregation.json`。
 - 结果：H1 learned SOTA=1/8；H2 shuffled_parent median=0.8149，仍不是 null；H3=2/8，仍不支持一般 inverted-U。
 - 本次没有 randomized-label arm，不能给出 null-control 结论；该结果只作为第二 scorer 的 development-only robustness check。
+
+#### I. RegioSQM20 外部复制
+
+- 冻结输入：`regiosqm20_normalized.csv`，train/val/test=`1936/246/242`，SHA-256=`32bc43589c8b77a332dd8516c68bf4e3256417c2a369bbf2770b2cc5f011208d`。
+- 冻结 protocol：`/mnt/cunyuliu_pc_cng_phase4_regiosqm20_20260728/protocol_v1_20260728.json`；只读取既有 split，不重新切分，不用 test 结果选参数。
+- GNN 外部结果（GPU 6，1 个 scenario）：learned `0.9076`，rule `0.9182`，random `0.8965`，shuffled `0.8919`，diff-semi `0.9510`；H1 `0/1`、H2 非 null、H3 `1/1` exploratory。canonical aggregation SHA-256=`a64bdcf41873ddcb205f1fd788e1e85fdb736b90ad3bd524d10272e69e3990c6`。
+- EnhancedMLP 外部结果（GPU 6，1 个 scenario）：learned `0.9092`，rule `0.9149`，random `0.9156`，shuffled `0.9295`，diff-semi `0.9510`；H1 `0/1`、H2 非 null、H3 `1/1` exploratory。canonical aggregation SHA-256=`667d8dd250a11fc26247ae055148ccefb0f0970c4904d11cbdf1a5be2acdd9a7`。
+- 外部复制只证明当前 frozen difficulty pool 在一个独立数据集上可复现部分 semi-hard 对比；它不证明 learned generator SOTA，也不足以恢复一般 inverted-U 机制主张。两个 scorer 均无 randomized-label arm，因此不报告外部 null-control 结论。
 
 ---
 
@@ -148,9 +157,9 @@
 
 ### 2.3 后续
 
-5. **Phase 4 提示词剩余项**: H3 最终仅 2/8 场景达标；当前分箱不再调整，第二数据集/第二 scorer 的 confirmatory replication 仍待新数据和冻结协议
+5. **Phase 4 提示词剩余项**: 第二数据集/第二 scorer 的 replication 已完成，但每个 scorer 只有 1 个 RegioSQM20 scenario，仍不是 confirmatory evidence；H3 只在该外部场景成立，不能泛化
 6. **uspto_patent 薄弱**: Union v2=0.8440，仍低于 diff_semihard=0.8579，保留为负结果
-7. **代码清理**: 服务器上有多份 .bak 文件，应清理
+7. **代码清理**: 服务器上有多份 .bak 文件，待单独确认范围后处理；本次未删除任何用户文件
 
 ---
 
