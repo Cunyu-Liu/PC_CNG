@@ -1,0 +1,36 @@
+{
+  "phase": "P4-G8C Phase C",
+  "date": "2026-07-29",
+  "implementation_commits": ["91dfdf7", "1256081"],
+  "status": "FORMAL_SOURCE_EXPERT_PARTIAL_EXPERT_LABELS_PENDING",
+  "core_validation_pass": true,
+  "expert_labels_available": 0,
+  "sealed_test_untouched": true,
+  "v1_preserved_no_go": {
+    "edit_locus_accuracy": 0.06896551724137931,
+    "edit_type_accuracy": 0.0,
+    "calibrated_fnr_ece": 0.11325876501171972
+  },
+  "v2_unseen_holdout": {
+    "edit_locus_accuracy": 0.5833333333333334,
+    "edit_type_accuracy": 1.0,
+    "joint_locus_type_accuracy": 0.5416666666666666,
+    "valid_edit_rate": 1.0,
+    "candidate_coverage": 0.984375,
+    "calibrated_fnr_ece": 0.06680739742874148,
+    "max_abs_preference_log_ratio": 0.14049386978149414,
+    "mean_action_type_entropy": 1.282714436451594,
+    "reference_frozen": true
+  },
+  "sample_sizes": {
+    "edit_scored": 24,
+    "generated_candidates": 976,
+    "candidate_reactions": 128,
+    "risk_calibration": 81,
+    "risk_evaluation": 84,
+    "reward_pairs": 3
+  },
+  "artifact": "/mnt/cunyuliu_pc_cng_phasec_20260729/g8c_formal_v2_unseen_holdout_1256081",
+  "verification": "independent_verification.json",
+  "claim_boundary": "credible source expert only; no source-superiority claim"
+}

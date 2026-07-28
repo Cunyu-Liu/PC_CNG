@@ -1,0 +1,30 @@
+{
+  "phase": "P4-G8C",
+  "version": "formal_source_expert_v1",
+  "formal_run": true,
+  "formal_partition": "v2_unseen_train_holdout",
+  "gpu": "cuda:0",
+  "n_train_reactions": 582,
+  "n_validation_reactions": 137,
+  "n_sealed_test_reactions_not_evaluated": 159,
+  "hidden_dim": 128,
+  "num_heads": 4,
+  "num_rounds": 1,
+  "stages": [
+    "real_edit_reconstruction",
+    "actual_rule_action_imitation",
+    "same_context_competing_outcomes",
+    "risk_adjusted_real_action_preference_optimization"
+  ],
+  "formal_validation_thresholds": {
+    "edit_locus_accuracy_min": 0.2,
+    "edit_type_accuracy_min": 0.5,
+    "valid_edit_rate_min": 0.95,
+    "candidate_coverage_min": 0.8,
+    "fnr_ece_max": 0.15,
+    "reward_max_abs_log_ratio_max": 5.0,
+    "reward_action_type_entropy_min": 0.5
+  },
+  "seed": 20260724,
+  "reference_hash": "966a28563393956322fc3c2ecee6c700ae62c11d78a8d5872bcf24b806f0f0aa"
+}

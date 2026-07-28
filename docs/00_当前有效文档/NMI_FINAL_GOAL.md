@@ -49,7 +49,7 @@ PC-CNG 能够显式控制 false-negative risk，并通过真实 HTE、OOD、专�
 | G7   | DEFERRED             | **DEFERRED**            | 必须获得真实专家或实验数据 |
 | G8-A | GO                   | **EXPLORATORY_MECHANISM** | 当前曲线不足以构成机制证据，仅作探索性分析 |
 | G8-B | 运行中                | **保持独立判定**         | 不应预设必须 GO；负迁移本身可能是重要科学结论 |
-| G8-C | NO_GO                | **PROTOTYPE_NO_GO**     | 当前训练阶段并未真正实现所声称的四阶段监督，仅为结构化生成器 prototype |
+| G8-C | NO_GO                | **FORMAL_SOURCE_EXPERT_PARTIAL_EXPERT_LABELS_PENDING** | Phase C v2 已完成真实监督与内部 holdout 核心验证；专家标签仍为 0，且尚无 source-superiority 证据 |
 
 ### 状态漂移修复记录
 
@@ -57,7 +57,7 @@ PC-CNG 能够显式控制 false-negative risk，并通过真实 HTE、OOD、专�
 2. **G3 artifact 漂移**：`results/p4_augmentation/go_no_go.json` 原为 v1 manifest 的 NO_GO（A6 与 A2 bit-identical），最新提交已描述 v2 为 WEAK_GO。Phase 0 已在 `results/p4_augmentation/nmi_audit_status.json` 记录审计状态，原始 v1 verdict 保留为历史记录。
 3. **G6 verdict 失效**：`results/p4_hte_external_validation/go_no_go.json` 原 WEAK_GO 因任务定义、实验混杂、delta CI 计算问题而失效。Phase 0 已在 `results/p4_hte_external_validation/nmi_audit_status.json` 标记为 INVALID_PENDING_REANALYSIS。
 4. **G8-A verdict 降级**：`results/p4_mechanism_curve/go_no_go.json` 原 GO 降级为 EXPLORATORY_MECHANISM。Phase 0 已在 `results/p4_mechanism_curve/nmi_audit_status.json` 记录。
-5. **G8-C verdict 重分类**：`results/p4_learned_proposal_full/go_no_go.json` 原 NO_GO 重分类为 PROTOTYPE_NO_GO（接口完成但训练语义需重建）。Phase 0 已在 `results/p4_learned_proposal_full/nmi_audit_status.json` 记录。
+5. **G8-C 历史 verdict 重分类**：`results/p4_learned_proposal_full/go_no_go.json` 原 NO_GO 在 Phase A 重分类为 PROTOTYPE_NO_GO；该历史状态现已由本文件末尾的 Phase C completion amendment 取代。Phase 0 审计仍保留在 `results/p4_learned_proposal_full/nmi_audit_status.json`。
 
 ---
 
@@ -257,4 +257,44 @@ Phase A 完成不等于 Phase 4 scientific exit；sealed source-gate evaluation�
 - [x] baseline 与比较顺序由冻结分析计划确定，无 test-driven selection。
 - [x] 科学负结果和单一 publication-source 限制已进入 README、claim registry 与唯一有效目标文档。
 
-下一阶段为 Phase C：把 G8-C 从 fail-closed engineering prototype 重建为有真实监督语义、可在独立 validation 上审计的 learned source expert。
+## Phase C completion amendment（2026-07-29）
+
+### 已完成的正式语义重建
+
+- `--formal-run` 强制 GPU、固定 Stage 1→2→3→4 顺序并要求 edit、rule、competing、preference 与 risk cache 全部存在。
+- 正式路径不再调用 batch-halves、随机跨反应 pair 或零 reference log-prob fallback。
+- Stage 1 使用真实 bond-form、bond-break、bond-order-change 的 locus/type/argument 联合监督。
+- Stage 2 使用实际 rule action；`NOT_APPLICABLE` 与 `NO_EDIT` 分离。
+- Stage 3 只使用同 reactants/catalysts/solvent/temperature/time 的 observed competing outcomes。
+- Stage 4 在 Stage 3 后复制并哈希冻结 reference，使用完整真实 action log-prob；reference 前后哈希一致。
+- risk head 使用 known-positive collision、observed competing product 和 held-out HTE outcome；专家表单目前没有任何真实完成行，因此 expert count 保持 0。
+- 正式评估禁用旧 tiny self-built MLP。
+
+### v1 负结果与 v2 修复
+
+commit `91dfdf7` 的首个 full formal run 保留为 `FORMAL_SOURCE_EXPERT_NO_GO`：locus=0.069、type=0。根因是 real reconstruction 与 counterfactual proposal 共享互相冲突的动作头。
+
+commit `1256081` 将 reconstruction/proposal heads 分离，在 Stage 2–4 加入固定权重 real-edit rehearsal，并让 risk 路径覆盖所有可解析产品而非只接受 formed-bond reactions。v1 source validation 被整体排除；v2 从此前未单独评估的 source-training groups 预注册新 holdout，source test 继续 sealed。
+
+### v2 one-shot 正式结果
+
+| Endpoint | v2 result | Frozen threshold | Pass |
+|---|---:|---:|---|
+| edit-locus accuracy | 0.583 (14/24) | >=0.20 | 是 |
+| edit-type accuracy | 1.000 (24/24) | >=0.50 | 是 |
+| valid edit rate | 1.000 (976/976) | >=0.95 | 是 |
+| candidate coverage | 0.984 (126/128) | >=0.80 | 是 |
+| calibrated FNR ECE | 0.0668 (n=84 eval) | <=0.15 | 是 |
+| max absolute preference log-ratio | 0.140 | <=5.0 | 是 |
+| action-type entropy | 1.283 | >=0.50 | 是 |
+| frozen reference hash | unchanged | required | 是 |
+
+独立 verifier 已重建全部 Gate、检查输入哈希、checkpoint action schema，并确认正式结果目录不存在旧 comparison/tiny-MLP artifacts。
+
+### 判定与边界
+
+`Phase C core source-expert validation = PASS`；`expert-label requirement = PENDING`；综合状态为 `FORMAL_SOURCE_EXPERT_PARTIAL_EXPERT_LABELS_PENDING`。
+
+该结果不能支持 learned source 优于 rule、random、shuffled 或 union。只有 24 个 holdout reactions 进入 edit 指标，Stage 4 reward-hacking validation 只有 3 个可用 pair，且 expert labels=0。这些限制必须保留。
+
+下一阶段为 Phase D：在 development-only benchmark 上接入 source-aware gate，并在新冻结的 external blind test 前完成方法选择。Phase C holdout 不得再用于 Phase D 调参或 source-superiority 主张。

@@ -1,0 +1,9 @@
+{
+  "phase": "P4-G8C",
+  "status": "FORMAL_SOURCE_EXPERT_NO_GO",
+  "claim_boundary": "credible source-expert validation only; no superiority claim against other negative sources",
+  "core_validation_pass": false,
+  "expert_labels_available": false,
+  "formal_validation_artifact": "formal_validation.json",
+  "sealed_test_untouched": true
+}
