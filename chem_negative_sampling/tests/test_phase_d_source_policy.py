@@ -5,6 +5,7 @@ import pytest
 import torch
 
 import pc_cng.run_phase_d_source_policy as phase_d
+from pc_cng.phase_e_sealed_contract import freeze_candidate, register_candidate
 
 
 def _fake_examples(n=6):
@@ -94,16 +95,53 @@ def test_policy_ablations_mask_frozen_feature_groups():
 def test_formal_pool_contract_is_fail_closed(tmp_path):
     with pytest.raises(RuntimeError, match="sealed_test_manifest"):
         phase_d._formal_pool_contract(tmp_path)
-    manifest = {
-        "status": "SEALED_UNUSED_FOR_METHOD_DESIGN",
-        "labels_unseen_before_model_freeze": True,
-        "model_and_analysis_frozen": True,
-    }
+
+    candidate = register_candidate(
+        dataset_id="independent_hte",
+        title="Independent HTE",
+        source_url="https://example.org/independent",
+        doi="10.0000/independent",
+        license_name="MIT",
+        reaction_family="test",
+        provider_checksums=[],
+        upstream_datasets=[],
+        rationale="formal contract test",
+    )
+    model = tmp_path / "model.pt"
+    model.write_bytes(b"model")
+    spec = tmp_path / "analysis.md"
+    spec.write_text("frozen analysis")
+    pool = tmp_path / "pool.json"
+    pool.write_text('{"labels": "sealed"}')
+    receipt = tmp_path / "label_receipt.json"
+    receipt.write_text(
+        json.dumps(
+            {
+                "dataset_id": "independent_hte",
+                "sealed_label_sha256": "a" * 64,
+                "label_schema_sha256": "b" * 64,
+                "n_rows": 10,
+                "custodian": "independent",
+                "labels_never_exposed_to_development": True,
+                "created_at_utc": "2026-07-29T00:00:00+00:00",
+            }
+        )
+    )
+    manifest = freeze_candidate(
+        candidate,
+        label_receipt_path=receipt,
+        model_artifact=model,
+        analysis_spec=spec,
+        evaluation_pool_files=[pool],
+        model_git_commit="a" * 40,
+    )
     (tmp_path / "sealed_test_manifest.json").write_text(json.dumps(manifest))
-    assert phase_d._formal_pool_contract(tmp_path) == manifest
-    manifest["labels_unseen_before_model_freeze"] = False
-    (tmp_path / "sealed_test_manifest.json").write_text(json.dumps(manifest))
-    with pytest.raises(RuntimeError, match="labels_unseen_before_model_freeze"):
+    verified_manifest = phase_d._formal_pool_contract(tmp_path)
+    assert verified_manifest["status"] == "SEALED_UNUSED_FOR_METHOD_DESIGN"
+    assert verified_manifest["pre_run_contract_verification"]["verified"] is True
+
+    model.write_bytes(b"tampered")
+    with pytest.raises(RuntimeError, match="contract verification failed"):
         phase_d._formal_pool_contract(tmp_path)
 
 

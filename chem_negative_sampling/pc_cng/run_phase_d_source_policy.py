@@ -51,6 +51,7 @@ from pc_cng.models.risk_aware_scorer import (
 )
 from pc_cng.paired_cluster_inference import paired_cluster_bootstrap
 from pc_cng.phase3_enhanced import EnhancedMLP, morgan_fingerprint, reaction_fp_enhanced
+from pc_cng.phase_e_sealed_contract import verify_sealed_manifest
 from pc_cng.run_phase3_external_validation import (
     DEFAULT_NI_CSV,
     DEFAULT_OOD_DIR,
@@ -1131,21 +1132,21 @@ def _formal_pool_contract(pool_dir: Path) -> Dict[str, Any]:
         raise RuntimeError(
             "--formal-run requires sealed_test_manifest.json in the evaluation pool"
         )
+    verification = verify_sealed_manifest(
+        manifest_path,
+        expected_pool_dir=pool_dir,
+    )
+    if not verification["verified"]:
+        raise RuntimeError(
+            "Phase-E sealed-test contract verification failed: "
+            + "; ".join(verification["failures"])
+        )
     manifest = json.loads(manifest_path.read_text())
-    required = {
-        "status": "SEALED_UNUSED_FOR_METHOD_DESIGN",
-        "labels_unseen_before_model_freeze": True,
-        "model_and_analysis_frozen": True,
-    }
-    for key, expected in required.items():
-        if manifest.get(key) != expected:
-            raise RuntimeError(
-                f"formal evaluation manifest must set {key}={expected!r}"
-            )
     if pool_dir.resolve() == DEFAULT_FIXED_POOL.resolve():
         raise RuntimeError(
             "the Phase-4 fixed pool is development-only and cannot be formal"
         )
+    manifest["pre_run_contract_verification"] = verification
     return manifest
 
 
