@@ -30,7 +30,10 @@ from pc_cng.p4_g6_benchmark_v3 import (  # noqa: E402
     validate_cluster_contract,
     validate_reaction_condition_records,
 )
-from pc_cng.p4_g6_inference_v3 import run_preregistered_primary_inference  # noqa: E402
+from pc_cng.p4_g6_inference_v3 import (  # noqa: E402
+    run_preregistered_primary_inference,
+    simulate_inference_operating_characteristics,
+)
 from pc_cng.run_p4_g6_v3 import select_stratified_smoke_records  # noqa: E402
 
 
@@ -142,6 +145,14 @@ def test_formal_cluster_contract_requires_preexisting_evaluable_groups():
     assert contract["endpoint_evaluable_cluster_count"] == 20.0
     with pytest.raises(ValueError):
         validate_cluster_contract(records[:2], formal=True)
+
+
+def test_operating_characteristics_reports_familywise_type_i_error():
+    result = simulate_inference_operating_characteristics(
+        n_simulations=3, n_bootstrap=20, n_permutations=30, seed=22
+    )
+    assert "familywise_type_i_error" in result
+    assert 0.0 <= result["familywise_type_i_error"] <= 1.0
 
 
 def test_matched_source_arms_share_parents_and_budget(tmp_path: Path):

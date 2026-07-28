@@ -229,11 +229,14 @@ def simulate_inference_operating_characteristics(
             {"pc_cng": effect_ch, "random": effect_bl, "template_rule": effect_bl, "union": effect_ch},
             n_bootstrap=n_bootstrap, n_permutations=n_permutations, seed=seed + 10000 + simulation,
         )
-        null_rejections += int(null["comparisons"][0]["superiority_confirmed"])
+        # The null operating characteristic is family-wise: any rejected Holm
+        # comparison is a false positive under the complete null, not merely
+        # the first comparison in the reporting order.
+        null_rejections += int(any(item["holm"]["rejected"] for item in null["comparisons"]))
         effect_rejections += int(effect["comparisons"][0]["superiority_confirmed"])
     return {
         "n_simulations": float(n_simulations),
-        "type_i_error": null_rejections / n_simulations,
+        "familywise_type_i_error": null_rejections / n_simulations,
         "power_at_delta_0p08": effect_rejections / n_simulations,
         "calibration_pass": float(null_rejections / n_simulations <= 0.10),
         "power_pass": float(effect_rejections / n_simulations >= 0.70),

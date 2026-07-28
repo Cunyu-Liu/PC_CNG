@@ -79,6 +79,11 @@ directory must contain `formal_result_v3.json`, `predictions_t5_v3.json`,
 Use `pc_cng.recompute_p4_g6_v3` to reconstruct the primary inference from the
 predictions and frozen analysis plan in a separate command.
 
+Before the formal run, retain the simulation artifact from
+`pc_cng.simulate_p4_g6_v3`.  It reports family-wise type-I error for the three
+Holm-corrected comparisons and power for the first frozen comparison; it is a
+design check, never a PC-CNG efficacy result.
+
 ## Stop rules
 
 Stop and preserve the output if any of the following occurs:
