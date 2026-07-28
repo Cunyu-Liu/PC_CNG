@@ -58,7 +58,10 @@ from pc_cng.paired_cluster_inference import (  # noqa: E402
     holm_correction,
     paired_cluster_bootstrap,
 )
-from pc_cng.phase3_enhanced import reaction_fp_enhanced  # noqa: E402
+from pc_cng.phase3_enhanced import (  # noqa: E402
+    morgan_fingerprint,
+    reaction_fp_enhanced,
+)
 from pc_cng.robust_negative_generator import RobustNegativeGenerator  # noqa: E402
 from pc_cng.run_phase4_fixed_testset import (  # noqa: E402
     METHOD_LEARNED,
@@ -88,6 +91,79 @@ from pc_cng.run_phase3_external_validation import (  # noqa: E402
 )
 
 METHOD_UNION = "learned_union"
+
+# These bounds are inherited from the frozen Phase 4 v4.1 difficulty
+# definition.  They are deliberately not tuned by union_v2.
+DIFFICULTY_SEMI_HARD_MIN = 0.40
+DIFFICULTY_SEMI_HARD_MAX = 0.75
+DIFFICULTY_SEMI_HARD_TARGET = 0.575
+
+
+def _tanimoto(fp_a: Optional[np.ndarray], fp_b: Optional[np.ndarray]) -> float:
+    """Return binary Tanimoto similarity without introducing a new dependency."""
+    if fp_a is None or fp_b is None:
+        return float("nan")
+    union = float(np.maximum(fp_a, fp_b).sum())
+    if union <= 0:
+        return 0.0
+    return float(np.minimum(fp_a, fp_b).sum() / union)
+
+
+def _difficulty_pool(sim: float) -> str:
+    if sim < DIFFICULTY_SEMI_HARD_MIN:
+        return "easy"
+    if sim <= DIFFICULTY_SEMI_HARD_MAX:
+        return "semi_hard"
+    return "hard"
+
+
+def _choose_difficulty_matched_candidate(
+    candidates: List[Tuple[str, str]],
+    true_product: str,
+    rng: random.Random,
+    stats: Optional[Dict[str, Any]] = None,
+) -> Optional[Tuple[str, str, float, bool]]:
+    """Choose one candidate using the frozen semi-hard definition.
+
+    The previous union_v2 implementation called each source twice and then
+    sampled uniformly.  Because ``NegativeGenerator`` caches one result per
+    reaction, those calls were usually duplicates and no difficulty matching
+    happened at all.  This helper scores the actually available candidates,
+    prefers the frozen semi-hard interval, and records an explicit fallback
+    when no source produced a candidate in that interval.
+    """
+    true_fp = morgan_fingerprint(true_product)
+    scored: List[Tuple[str, str, float]] = []
+    seen = set()
+    for neg_rxn, source in candidates:
+        neg_product = _product_of(neg_rxn)
+        key = (source, neg_product)
+        if not neg_product or neg_product == true_product or key in seen:
+            continue
+        seen.add(key)
+        sim = _tanimoto(morgan_fingerprint(neg_product), true_fp)
+        if not np.isfinite(sim):
+            continue
+        scored.append((neg_rxn, source, sim))
+
+    if not scored:
+        if stats is not None:
+            stats["no_valid_candidates"] = stats.get("no_valid_candidates", 0) + 1
+        return None
+
+    semi = [c for c in scored
+            if DIFFICULTY_SEMI_HARD_MIN <= c[2] <= DIFFICULTY_SEMI_HARD_MAX]
+    pool = semi or scored
+    # The random tie breaker is only used for exact-distance ties and is
+    # seeded by the caller; it does not change the frozen difficulty bounds.
+    chosen = min(pool, key=lambda c: (abs(c[2] - DIFFICULTY_SEMI_HARD_TARGET),
+                                      rng.random()))
+    matched = bool(semi)
+    if stats is not None:
+        stats["candidate_count"] = stats.get("candidate_count", 0) + len(scored)
+        stats["semi_hard_available"] = stats.get("semi_hard_available", 0) + int(bool(semi))
+        stats["fallback_out_of_band"] = stats.get("fallback_out_of_band", 0) + int(not matched)
+    return chosen[0], chosen[1], float(chosen[2]), matched
 BASE_ARM_FOR_POOLS = METHOD_SHUFFLED_PARENT  # any arm CSV carries the pool
 BASE_ARMS = (METHOD_RULE, METHOD_RANDOM, METHOD_LEARNED,
              METHOD_SHUFFLED_PARENT, "diff_semihard")
@@ -180,17 +256,19 @@ def build_union_v2_train(
     product_pool: List[str],
     stats: Optional[Dict[str, Any]] = None,
 ) -> Tuple[Optional[np.ndarray], np.ndarray, List[Dict]]:
-    """Difficulty-matched union v2: multi-source over-generation + random selection.
+    """Build a budget-matched union with frozen semi-hard selection.
 
-    v2 generates 2 candidates from each source (learned, rule, shuffled) and
-    randomly selects one, giving the classifier a richer, more diverse negative
-    training distribution than the plain union (which generates 1 per source).
-    The RobustNegativeGenerator already produces near-boundary (semi-hard)
-    candidates, so over-generation improves coverage of the decision space
-    without the cost of full candidate enumeration.
+    ``union_v2`` is an exploratory development arm.  It generates the
+    candidates actually available from learned, rule and shuffled-real
+    sources, computes the same product Tanimoto similarity used by the
+    frozen Phase 4 pools, and selects a candidate in ``[0.40, 0.75]`` when
+    one exists.  If no source produces an in-band candidate, it selects the
+    closest available candidate and records the out-of-band fallback.
 
-    This addresses the key H1u failure (uspto_patent) where diff_semihard
-    beat the plain union by leveraging structure-matching signals.
+    The previous implementation called cached generators twice and sampled
+    uniformly, so it neither over-generated nor difficulty-matched.  Keeping
+    the fallback explicit prevents a small dataset from being reported as a
+    fully matched arm when it is not.
     """
     rng = random.Random(seed + 41)
 
@@ -212,6 +290,7 @@ def build_union_v2_train(
     labels: List[int] = []
     records: List[Dict] = []
     src_counts: Dict[str, int] = defaultdict(int)
+    local_stats: Dict[str, Any] = stats if stats is not None else {}
 
     for i, (rxn, reactants, agents, true_prod, meta) in enumerate(parsed):
         pos_fp = reaction_fp_enhanced(rxn)
@@ -220,26 +299,34 @@ def build_union_v2_train(
 
         cands: List[Tuple[str, str]] = []
 
-        for attempt in range(2):
-            if gen_learned is not None:
-                neg = gen_learned.generate(rxn)
-                if neg:
-                    cands.append((neg, METHOD_LEARNED))
-            if gen_rule is not None:
-                neg = gen_rule.generate(rxn)
-                if neg:
-                    cands.append((neg, METHOD_RULE))
-            p_shuf = parsed[(i + SHUFFLED_OFFSET + attempt) % n][3]
+        # RobustNegativeGenerator and NegativeGenerator cache one result per
+        # reaction.  Calling them twice therefore does not create two
+        # candidates; keep one candidate per source and use two distinct
+        # shuffled products only as a genuine fallback diversity source.
+        if gen_learned is not None:
+            neg = gen_learned.generate(rxn)
+            if neg:
+                cands.append((neg, METHOD_LEARNED))
+        if gen_rule is not None:
+            neg = gen_rule.generate(rxn)
+            if neg:
+                cands.append((neg, METHOD_RULE))
+        for offset in (SHUFFLED_OFFSET, SHUFFLED_OFFSET + 1):
+            p_shuf = parsed[(i + offset) % n][3]
             if p_shuf == true_prod:
-                p_shuf = parsed[(i + SHUFFLED_OFFSET + attempt + 1) % n][3]
-            if p_shuf and p_shuf != true_prod:
+                continue
+            if p_shuf:
                 cands.append((f"{reactants}>{agents}>{p_shuf}",
                               METHOD_SHUFFLED_PARENT))
 
         if not cands:
             continue
 
-        neg_rxn, src = cands[rng.randrange(len(cands))]
+        chosen = _choose_difficulty_matched_candidate(
+            cands, true_prod, rng, stats=local_stats)
+        if chosen is None:
+            continue
+        neg_rxn, src, sim, matched = chosen
 
         neg_fp = reaction_fp_enhanced(neg_rxn)
         if neg_fp is None:
@@ -256,6 +343,9 @@ def build_union_v2_train(
                         "label": 0, "score": 0.0,
                         "method": METHOD_UNION + "_v2",
                         "is_positive": False, "union_source": src,
+                        "sim": sim,
+                        "difficulty_pool": _difficulty_pool(sim),
+                        "difficulty_match": matched,
                         **meta})
     if not fps:
         return None, np.array([]), []
@@ -419,6 +509,7 @@ def main() -> None:
             for k, v in generators_cache.items()
         }
 
+        gen_stats: Dict[str, Any] = {}
         if args.difficulty_match:
             product_pool: List[str] = []
             for _, row in train_rows.iterrows():
@@ -428,7 +519,6 @@ def main() -> None:
                     if prod:
                         product_pool.append(prod)
 
-            gen_stats: Dict[str, Any] = {}
             X_tr, y_tr, rec_tr = build_union_v2_train(
                 train_rows, generators, generators_cache, args.seed,
                 product_pool, stats=gen_stats)
@@ -458,11 +548,31 @@ def main() -> None:
             w.writerows(scored)
 
         union_sma = float(source_macro_auprc_metric(scored))
+        train_negatives = [r for r in rec_tr if not r.get("is_positive")]
+        matched_count = sum(bool(r.get("difficulty_match"))
+                            for r in train_negatives)
         sc_res: Dict[str, Any] = {
             "train_sec": train_sec, "n_train": len(X_tr),
             "source_macro": union_sma,
             "pooled": float(auprc_metric(scored)),
             "per_source": per_source_auprc(scored),
+            "generation_stats": gen_stats,
+            "train_difficulty": {
+                "definition": {
+                    "similarity_metric": "tanimoto_morgan_radius2_2048bits",
+                    "semi_hard_min": DIFFICULTY_SEMI_HARD_MIN,
+                    "semi_hard_max": DIFFICULTY_SEMI_HARD_MAX,
+                    "target": DIFFICULTY_SEMI_HARD_TARGET,
+                },
+                "n_negative": len(train_negatives),
+                "n_in_band": matched_count,
+                "matched_fraction": (
+                    matched_count / len(train_negatives)
+                    if train_negatives else None),
+                "fallback_count": sum(
+                    not bool(r.get("difficulty_match"))
+                    for r in train_negatives),
+            },
             "paired_ci": {},
         }
         print(f"  [union] trained ({len(X_tr)} samples, {train_sec:.1f}s) "
@@ -538,6 +648,13 @@ def main() -> None:
           f"{n_win}/{n_eval} scenarios")
 
     out = {"arm": arm_name, "use_gnn": args.use_gnn,
+           "difficulty_match_requested": bool(args.difficulty_match),
+           "difficulty_definition": {
+               "similarity_metric": "tanimoto_morgan_radius2_2048bits",
+               "semi_hard_min": DIFFICULTY_SEMI_HARD_MIN,
+               "semi_hard_max": DIFFICULTY_SEMI_HARD_MAX,
+               "target": DIFFICULTY_SEMI_HARD_TARGET,
+           },
            "base_results": str(args.base_results),
            "results": all_results, "holm_tests": tests,
            "n_scenarios_union_wins_outright": n_win}

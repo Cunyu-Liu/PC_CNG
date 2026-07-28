@@ -128,3 +128,49 @@ PC-CNG 能够显式控制 false-negative risk，并通过真实 HTE、OOD、专�
 | 日期 | Amendment | 说明 |
 | ---- | --------- | ---- |
 | 2026-07-24 | v1.0 创建 | Phase 0 证据冻结，建立唯一有效目标文档 |
+
+## 九、2026-07-28 Amendment：从单一生成器转向 source-aware policy
+
+### 状态边界
+
+Phase 4 fixed pools 已用于设计 Union/Union_v2 和 shuffled-parent 修复，因此从本 amendment 起统一标记为 `DEVELOPMENT_SET_USED_FOR_METHOD_DESIGN`。它们可用于调试、失败分析和探索性消融，但不能作为新 gate 的 confirmatory test。
+
+旧 G8-C tiny self-built utility gate 标记为 `DEPRECATED_INVALID_EVALUATION`；正式结果必须迁移到固定 external pools、真实 HTE、RegioSQM、第二独立 HTE 或 sealed OOD test。
+
+### 当前 Phase 4 证据边界
+
+- H1 learned-structured SOTA：开发结果不支持，不得写成主方法优势。
+- H3 semi-hard inverted-U：开发结果不支持，不得通过事后改分箱追求转正。
+- Union：旧 fixed-pool 数值领先属于 exploratory post-hoc evidence。
+- randomized-label null：可用于泄漏检查，不等于 external utility 证据。
+- shuffled-parent：旧 rescore 曾存在训练类不平衡和 train/score feature contract 问题；修复版已独立完成 8/8，最终主分析 alignment 128/128，formula-preserved AUPRC=0.9095、formula-changed AUPRC=0.7795；它不是随机 null，只支持 development-only compatibility-transfer 结论。
+- Union_v2：主恢复目录已完成 8/8；frozen semi-hard 区间为 Morgan radius-2/2048 Tanimoto `[0.40, 0.75]`，matched_fraction=0.866–0.976，fallback_count=12–67；5/8 点估计胜出但 0/8 Holm-confirmed SOTA，不能作为确认性证据。
+
+### v2.0 North-Star Goal
+
+> Develop a reaction-conditioned, source-aware counterfactual learning framework that estimates candidate-level false-negative risk and adaptively selects among structured, rule-based, retrieval-based and observed-product-derived negatives under a matched training budget; validate the policy on a sealed real-HTE/OOD test and retain negative-transfer outcomes.
+
+learned structured generator 从唯一成败点降级为 source expert；只有在新盲测中证明 gate 优于最佳单一来源和 uniform union，才恢复其 NMI 主方法地位。
+
+### 新增 claim registry 条目
+
+| Claim | Status | Boundary |
+|---|---|---|
+| C11 Phase 4 fixed-pool learned SOTA | `NO_GO_DEVELOPMENT` | 仅开发集；不得外推 |
+| C12 semi-hard inverted-U utility | `UNSUPPORTED_DEVELOPMENT` | 需新盲测 controlled replication |
+| C13 shuffled-real compatibility transfer | `PASS_DEVELOPMENT_ONLY` | 修复版 8/8、final alignment 128/128；formula-preserved=0.9095、changed=0.7795；仅支持 compatibility-transfer prior |
+| C14 union source complementarity | `EXPLORATORY_POST_HOC` | fixed pool 已参与方法设计 |
+| C15 randomized-label null control | `PASS_DEVELOPMENT_ONLY` | 仅作泄漏检查 |
+
+### 已完成的本次交接
+
+1. 修复版 shuffled-parent rescore、paired identity check 和 transfer diagnosis 已完成；
+2. 真正按 frozen semi-hard 区间筛选的 Union_v2 已完成 8/8 并记录 matched fraction/fallback；
+3. 最终 analyzer 权威输出为 `/mnt/cunyuliu_pc_cng_phase4_v2_20260728/phase4_fixed_testset_v41_rescorefix_20260728/phase4_v41_aggregation.json`。
+
+### 后续执行顺序
+
+1. 完成第二独立数据集/第二 scorer 的冻结 replication；当前 RegioSQM20 入口已建立，结果未出前不查看 test outcome；
+2. 新建 sealed test split，冻结 gate、endpoint 和统计方案；
+3. 完成 G7 专家 pilot 或 prospective experiment；
+4. 仅当外部盲测与可信性闭环通过后启动 manuscript。

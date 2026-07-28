@@ -1061,6 +1061,73 @@ def compute_verdict(all_results: Dict[str, Dict], holm_res: Dict[str, Any],
     }
 
 
+def load_external_normalized_csv(csv_path: Path, max_train: int,
+                                 max_test: int) -> Dict[str, Any]:
+    """Load an independent normalized CSV with a frozen train/test split.
+
+    This entry point is deliberately limited to an existing split column.  It
+    does not create or tune a split, and it does not inspect test labels while
+    choosing candidates.  Missing metadata are filled with stable source
+    identifiers so cluster alignment remains explicit rather than silently
+    collapsing to one default cluster.
+    """
+    import pandas as pd
+
+    df = pd.read_csv(csv_path).reset_index(drop=True)
+    required = {"reaction_smiles", "split"}
+    missing = sorted(required - set(df.columns))
+    if missing:
+        raise ValueError(f"external CSV missing required columns: {missing}")
+    split_values = df["split"].astype(str).str.lower()
+    train_rows = df.loc[split_values == "train"].copy()
+    test_rows = df.loc[split_values == "test"].copy()
+    if train_rows.empty or test_rows.empty:
+        raise ValueError(
+            f"external CSV must contain non-empty train/test splits; "
+            f"found={sorted(split_values.unique().tolist())}")
+
+    def _add_metadata(rows):
+        rows = rows.copy()
+        if "experimental_group" not in rows:
+            if "split_key" in rows:
+                rows["experimental_group"] = rows["split_key"].astype(str)
+            elif "source_id" in rows:
+                rows["experimental_group"] = rows["source_id"].astype(str)
+            else:
+                rows["experimental_group"] = "external_group"
+        if "reaction_family" not in rows:
+            if "reaction_class" in rows:
+                rows["reaction_family"] = rows["reaction_class"].astype(str)
+            else:
+                rows["reaction_family"] = "external_family"
+        if "split_key" not in rows:
+            rows["split_key"] = rows["experimental_group"].astype(str)
+        if "yield_bin" not in rows:
+            yield_col = "measured_yield" if "measured_yield" in rows else "yield"
+            if yield_col in rows:
+                y = pd.to_numeric(rows[yield_col], errors="coerce").fillna(0.0)
+                rows["yield_bin"] = pd.cut(
+                    y, bins=[-np.inf, 5.0, 20.0, 50.0, 80.0, np.inf],
+                    labels=False, right=False).fillna(0).astype(int)
+            else:
+                rows["yield_bin"] = 0
+        return rows
+
+    train_rows = _add_metadata(train_rows)
+    test_rows = _add_metadata(test_rows)
+    if max_train and len(train_rows) > max_train:
+        train_rows = train_rows.sample(n=max_train, random_state=20260725)
+    if max_test and len(test_rows) > max_test:
+        test_rows = test_rows.sample(n=max_test, random_state=20260725)
+    return {
+        "train": train_rows,
+        "test": test_rows,
+        "n_train_total": int((split_values == "train").sum()),
+        "n_test_total": int((split_values == "test").sum()),
+        "external_csv": str(csv_path),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -1085,6 +1152,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "/home/cunyuliu/pc_cng_research/data/processed/uspto_openmolecules_normalized.csv"))
     parser.add_argument("--use-gnn", action="store_true",
                         help="GAT for main arms (difficulty arms stay MLP)")
+    parser.add_argument("--external-csv", type=Path, default=None,
+                        help="Independent normalized CSV with frozen train/test splits")
+    parser.add_argument("--external-name", default="external",
+                        help="Scenario name for --external-csv output")
+    parser.add_argument("--external-only", action="store_true",
+                        help="Skip built-in HiTEA/OOD scenarios and run only --external-csv")
     parser.add_argument("--alpha", type=float, default=0.05)
     args = parser.parse_args(argv)
 
@@ -1128,7 +1201,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             device=device, seed=args.seed)
 
     # Discover splits
-    if args.splits:
+    if args.external_only:
+        split_names = []
+    elif args.splits:
         split_names = list(args.splits)
     else:
         split_names = []
@@ -1175,6 +1250,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             print(f"[phase4] ERROR loading split '{split_name}': {exc}")
             continue
         _run_and_store(split_name, split_data)
+
+    if args.external_csv is not None:
+        try:
+            external_data = load_external_normalized_csv(
+                args.external_csv, args.max_train, args.max_test)
+            _run_and_store(args.external_name, external_data)
+        except Exception as exc:
+            print(f"[phase4] ERROR on external CSV '{args.external_csv}': {exc}")
 
     if not args.no_ni and args.ni_csv.exists():
         from pc_cng.run_phase3_external_validation import load_ni_coupling

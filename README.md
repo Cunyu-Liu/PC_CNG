@@ -1,12 +1,12 @@
 # PC-CNG: PhysChem-Constrained Counterfactual Negative Generator
 
-**项目状态**：Phase 0 证据冻结完成（2026-07-24），待启动 Phase 1 评测重建
+**项目状态**：Phase 4 evidence-driven method redesign（2026-07-28）；修复版 shuffled-parent 与 Union v2 已完成 8/8，最终分析已审计；第二 scorer 仅作 development-pool exploratory replication
 **唯一有效目标文档**：[docs/00_当前有效文档/NMI_FINAL_GOAL.md](docs/00_当前有效文档/NMI_FINAL_GOAL.md)
 **Claim 注册表**：[docs/claim_registry.csv](docs/claim_registry.csv)
 
 ## 当前阶段
 
-PC-CNG 已完成研究基础设施和若干探索性实验，但距离 Nature Machine Intelligence 仍需一次核心方法重建 + 一次统计评测重建 + 一条可信外部验证证据链。
+PC-CNG 已完成研究基础设施和若干探索性实验，但当前 Phase 4 fixed pools 已用于方法设计，统一视为 development-only。距离 Nature Machine Intelligence 仍需一次核心方法重建 + 一次冻结后的外部盲测 + 一条可信外部验证证据链。
 
 当前所有 Gate 已按 NMI 审计标准重新判定（见 NMI_FINAL_GOAL.md §三）：
 
@@ -18,14 +18,18 @@ PC-CNG 已完成研究基础设施和若干探索性实验，但距离 Nature Ma
 | G6   | INVALID_PENDING_REANALYSIS | 任务定义/混杂/统计问题，整体重做 |
 | G7   | DEFERRED | 待真实专家或实验数据 |
 | G8-A | EXPLORATORY_MECHANISM | 仅探索性分析，非机制证据 |
-| G8-B | RUNNING | 跨家族迁移实验运行中 |
-| G8-C | PROTOTYPE_NO_GO | 接口完成但训练语义需重建 |
+| G8-B | RUNNING | 跨家族迁移实验独立判定中；负迁移也必须保留 |
+| G8-C | PROTOTYPE_NO_GO | 已增加 formal fail-closed 和正确 reference snapshot；科学效用仍未证明 |
+
+Phase 4 v4.1 的旧 fixed-pool、Union 和 H3 结论均为开发/探索性证据；详见 `docs/phase4_v41_amendment_20260728.md` 和 `docs/NMI_FINAL_GOAL_v2_amendment_20260728.md`。
+
+`pc_cng/source_aware_policy.py` 是 pccng3 Phase D 的 development-only softmax source-gate 原型；它尚未接入 sealed benchmark，也不构成 adaptive-policy 性能结论。
 
 ## 项目简介
 
 PC-CNG 是面向化学反应预测的物理化学约束反事实负反应生成器。核心思想是通过少量真实负样本校准失败方向，生成 boundary negatives 用于下游反应预测/重排序模型训练。
 
-**North-Star Goal**：构建以完整反应上下文为条件的学习型结构化反事实生成器，在独立真实 HTE 与 OOD 任务中稳定优于严格匹配的强负采样基线。
+**North-Star Goal v2.0**：构建以完整反应上下文为条件、感知负样本来源差异的反事实学习框架，在严格匹配训练预算下估计逐候选假阴性风险，并自适应选择结构化、规则、检索和 observed-product-derived 负样本；最终在封存的真实 HTE/OOD 测试上验证。
 
 ## 快速开始
 

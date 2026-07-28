@@ -78,6 +78,32 @@ def _load_arm(records_dir: Path, scenario: str, arm: str
     return recs if recs and len(recs) >= 10 else None
 
 
+def _record_signature(record: Dict[str, Any]) -> tuple:
+    """Identity fields that must match for a paired comparison.
+
+    A paired bootstrap requires the same held-out records, not merely the
+    same row count and cluster labels.  Scores are intentionally excluded so
+    challenger/baseline predictions can differ.
+    """
+    return (
+        str(record.get("reaction_smiles", "")),
+        int(record.get("label", 0)),
+        bool(record.get("is_positive", False)),
+        str(record.get("source", "?")),
+        str(record.get("experimental_group", "default")),
+    )
+
+
+def _alignment_error(challenger: List[Dict], baseline: List[Dict]) -> Optional[str]:
+    if len(challenger) != len(baseline):
+        return f"record_count_mismatch:{len(challenger)}!={len(baseline)}"
+    for idx, (ch, bl) in enumerate(zip(challenger, baseline)):
+        ch_sig, bl_sig = _record_signature(ch), _record_signature(bl)
+        if ch_sig != bl_sig:
+            return f"record_identity_mismatch_at:{idx}:{ch_sig!r}!={bl_sig!r}"
+    return None
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-results", type=Path, required=True)
@@ -116,13 +142,31 @@ def main() -> None:
         print(row)
 
     # ----- paired CIs per hypothesis family
+    alignment_audit: List[Dict[str, Any]] = []
+
     def _run_pairs(pairs, family):
         tests: List[Dict[str, Any]] = []
         for sc in scenarios:
             for chal, base in pairs:
                 rc, rb = rec_cache.get(sc, {}).get(chal), \
                     rec_cache.get(sc, {}).get(base)
-                if rc is None or rb is None or len(rc) != len(rb):
+                if rc is None or rb is None:
+                    continue
+                alignment_error = _alignment_error(rc, rb)
+                alignment_audit.append({
+                    "family": family,
+                    "scenario": sc,
+                    "pair": f"{chal}_vs_{base}",
+                    "ok": alignment_error is None,
+                    "error": alignment_error,
+                })
+                if alignment_error is not None:
+                    tests.append({
+                        "family": family,
+                        "scenario": sc,
+                        "pair": f"{chal}_vs_{base}",
+                        "error": f"paired_alignment_failed:{alignment_error}",
+                    })
                     continue
                 try:
                     ci = paired_cluster_bootstrap(
@@ -254,6 +298,7 @@ def main() -> None:
               f"{float(np.median(shuf_pts)):.4f} (compatibility transfer)")
 
     out = {"matrix": matrix, "tests": all_tests,
+           "alignment_audit": alignment_audit,
            "holm_by_family": holm_by_family, "verdict": verdict}
     with open(args.base_results / "phase4_v41_aggregation.json", "w") as fh:
         json.dump(out, fh, indent=2, default=str)

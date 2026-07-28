@@ -296,6 +296,21 @@ class TestFourStageTraining:
         assert len(log) == 1
         assert log[0]["stage"] == 1
 
+    def test_formal_run_fails_closed_without_real_pairs(self, tiny_reactions, device):
+        """Formal mode must never silently re-create pseudo supervision."""
+        model = StructuredProposalModel(hidden_dim=32, num_heads=2,
+                                        num_layers=1, dropout=0.1)
+        with pytest.raises(RuntimeError, match="requires non-empty real supervision cache"):
+            train_stage(
+                model, stage=3,
+                train_reactions=tiny_reactions,
+                val_reactions=tiny_reactions[:2],
+                rule_generator=ReactionBoundaryGenerator(),
+                epochs=1, batch_size=4, lr=1e-3,
+                device=device, seed=42,
+                formal_run=True,
+            )
+
     def test_stage2_imitation(self, tiny_reactions, caches, device):
         model = StructuredProposalModel(hidden_dim=32, num_heads=2,
                                         num_layers=1, dropout=0.1)

@@ -9,6 +9,7 @@ preserving reactant-product compatibility and yielding AUPRC 0.80-0.99.
 """
 import argparse
 import csv
+import hashlib
 import os
 import sys
 from pathlib import Path
@@ -51,6 +52,18 @@ from pc_cng.run_phase4_fixed_testset import (  # noqa: E402
     train_classifier,
 )
 from pc_cng.paired_cluster_inference import auprc_metric  # noqa: E402
+
+
+def stable_scenario_seed(base_seed: int, scenario: str) -> int:
+    """Derive a reproducible per-scenario seed across Python processes.
+
+    ``hash(scenario)`` is intentionally randomized by Python, so using it in
+    a rescore command made two otherwise identical runs produce different
+    shuffled pairs.  A digest keeps the handover command reproducible.
+    """
+    digest = hashlib.sha256(scenario.encode("utf-8")).digest()
+    offset = int.from_bytes(digest[:4], "big") % 1000
+    return int(base_seed) + offset
 
 
 def _scenario_data(args, scenario: str):
@@ -133,15 +146,41 @@ def _build_fixed_shuffled_parent_train(train_rows, seed: int):
         except Exception:
             continue
 
-        feats = _featurize_reaction(pos_rxn, neg_rxn)
-        if feats is None:
+        # Use the same reaction representation as score_records() and the
+        # main Phase 4 arm builder.  A previous version trained on an
+        # absolute positive-vs-negative difference vector but scored raw
+        # reaction fingerprints, silently making the rescore train/test
+        # feature semantics inconsistent.
+        from pc_cng.phase3_enhanced import reaction_fp_enhanced
+        pos_feats = reaction_fp_enhanced(pos_rxn)
+        neg_feats = reaction_fp_enhanced(neg_rxn)
+        if pos_feats is None or neg_feats is None:
             continue
 
-        X_list.append(feats)
-        y_list.append(0)
+        # The rescore must mirror build_main_arm_train: every shuffled
+        # negative is paired with its real positive.  Training on negatives
+        # alone creates a one-class classifier and is not a valid control.
+        X_list.extend([pos_feats, neg_feats])
+        y_list.extend([1, 0])
 
         records.append({
+            "reaction_smiles": pos_rxn,
+            "negative_smiles": pos_rxn,
+            "label": 1,
+            "score": 0.0,
+            "method": METHOD_SHUFFLED_PARENT,
+            "is_positive": True,
+            "split_key": meta.get("split_key", ""),
+            "reaction_family": meta.get("reaction_family", ""),
+            "experimental_group": meta.get("experimental_group", ""),
+        })
+        records.append({
             "reaction_smiles": neg_rxn,
+            "negative_smiles": p_shuf,
+            "label": 0,
+            "score": 0.0,
+            "method": METHOD_SHUFFLED_PARENT,
+            "is_positive": False,
             "positive_rxn": pos_rxn,
             "negative_product": p_shuf,
             "negative_source": METHOD_SHUFFLED_PARENT,
@@ -218,7 +257,7 @@ def main():
 
         # Build FIXED shuffled_parent training data (both reactants + products shuffled)
         result = _build_fixed_shuffled_parent_train(
-            train_rows, seed=args.seed + hash(scenario) % 1000)
+            train_rows, seed=stable_scenario_seed(args.seed, scenario))
         if result is None or result[0] is None:
             print(f"  [skip] no training data for {scenario}")
             continue

@@ -1831,7 +1831,8 @@ def train_stage(model: StructuredProposalModel, stage: int,
                 rule_proposals_cache: Optional[Dict[str, List[Dict[str, Any]]]] = None,
                 competing_pairs_cache: Optional[List[Dict[str, Any]]] = None,
                 preference_pairs_cache: Optional[List[Dict[str, Any]]] = None,
-                ref_model: Optional[StructuredProposalModel] = None) -> List[dict]:
+                ref_model: Optional[StructuredProposalModel] = None,
+                formal_run: bool = False) -> List[dict]:
     """Run a single training stage.  Returns the per-epoch log entries.
 
     Stages 1-4 now use REAL supervision:
@@ -1839,9 +1840,25 @@ def train_stage(model: StructuredProposalModel, stage: int,
         * Stage 2: real rule-generator proposals (imitation).
         * Stage 3: real HTE competing-outcome pairs (contrastive).
         * Stage 4: real DPO preference pairs with a frozen reference model.
-    When a cache is ``None`` the stage falls back to
-    ``extract_real_edit_targets`` so the function remains usable standalone.
+    In exploratory/standalone mode, missing caches retain the historical
+    fallback behaviour.  A formal run is fail-closed: the required real
+    supervision and reference policy must be present, and a failed batch
+    collation cannot silently turn into pseudo-supervision.
     """
+    if formal_run:
+        required = {
+            1: edit_targets_cache,
+            2: edit_targets_cache,
+            3: competing_pairs_cache,
+            4: preference_pairs_cache,
+        }
+        if required.get(stage) is None or not required[stage]:
+            raise RuntimeError(
+                f"formal G8-C stage {stage} requires non-empty real supervision cache")
+        if stage == 4 and ref_model is None:
+            raise RuntimeError(
+                "formal G8-C Stage 4 requires a frozen post-Stage-3 reference model")
+
     set_seed(seed)
     model.to(device)
     if ref_model is not None:
@@ -1879,6 +1896,12 @@ def train_stage(model: StructuredProposalModel, stage: int,
                 out = model(batch)
                 pairs = [_resolve_targets(r, edit_targets_cache)
                          for r in success_rxns]
+                if formal_run:
+                    missing = [r for r in success_rxns
+                               if edit_targets_cache is None or r not in edit_targets_cache]
+                    if missing:
+                        raise RuntimeError(
+                            f"formal G8-C Stage 1 missing edit targets for {len(missing)} reactions")
                 loci = torch.tensor([p[0] for p in pairs],
                                     device=device, dtype=torch.long)
                 loci = loci.clamp(min=0, max=out.locus_logits.shape[-1] - 1)  # phase2-clamp-loci
@@ -1896,6 +1919,12 @@ def train_stage(model: StructuredProposalModel, stage: int,
                 pairs = [_resolve_targets(
                     r, edit_targets_cache, rule_proposals_cache,
                     prefer_rule=True) for r in success_rxns]
+                if formal_run:
+                    missing = [r for r in success_rxns
+                               if rule_proposals_cache is None or r not in rule_proposals_cache]
+                    if missing:
+                        raise RuntimeError(
+                            f"formal G8-C Stage 2 missing rule proposals for {len(missing)} reactions")
                 loci = torch.tensor([p[0] for p in pairs],
                                     device=device, dtype=torch.long)
                 loci = loci.clamp(min=0, max=out.locus_logits.shape[-1] - 1)  # phase2-clamp-loci
@@ -1919,6 +1948,9 @@ def train_stage(model: StructuredProposalModel, stage: int,
                     comp_batch, comp_success = _collate_reactions(
                         comp_rxns, device, map_unmapped=map_unmapped)
                     if pref_batch is None or comp_batch is None:
+                        if formal_run:
+                            raise RuntimeError(
+                                "formal G8-C Stage 3 could not collate a real competing-outcome pair")
                         batch, success_rxns = _collate_reactions(
                             batch_rxns, device, map_unmapped=map_unmapped)
                         if batch is None:
@@ -1967,6 +1999,9 @@ def train_stage(model: StructuredProposalModel, stage: int,
                     disp_batch, disp_success = _collate_reactions(
                         disp_rxns, device, map_unmapped=map_unmapped)
                     if pref_batch is None or disp_batch is None:
+                        if formal_run:
+                            raise RuntimeError(
+                                "formal G8-C Stage 4 could not collate a real preference pair")
                         batch, success_rxns = _collate_reactions(
                             batch_rxns, device, map_unmapped=map_unmapped)
                         if batch is None:
@@ -2218,7 +2253,15 @@ def main() -> None:
     parser.add_argument("--map-unmapped", action="store_true",
                         help="Use RXNMapper for unmapped reactions")
     parser.add_argument("--n-bootstrap", type=int, default=N_BOOTSTRAP)
+    parser.add_argument(
+        "--formal-run", action="store_true",
+        help="Fail closed unless all real G8-C supervision caches and the "
+             "post-Stage-3 reference policy are available; disables pseudo-label fallbacks",
+    )
     args = parser.parse_args()
+
+    if args.formal_run and args.smoke:
+        raise ValueError("--formal-run cannot be combined with --smoke")
 
     t0 = time.time()
     output_dir = args.output_dir
@@ -2254,7 +2297,21 @@ def main() -> None:
               f"rule_proposals={len(g8c_data['rule_proposals'])} "
               f"competing_pairs={len(g8c_data['competing_pairs'])} "
               f"preference_pairs={len(g8c_data['preference_pairs'])}")
+        if args.formal_run:
+            required_keys = (
+                "edit_targets", "rule_proposals",
+                "competing_pairs", "preference_pairs",
+            )
+            missing = [k for k in required_keys
+                       if k not in g8c_data or not g8c_data[k]]
+            if missing:
+                raise RuntimeError(
+                    "formal G8-C run requires non-empty caches: "
+                    + ", ".join(missing))
     except Exception as exc:
+        if args.formal_run:
+            raise RuntimeError(
+                f"formal G8-C data loading failed; refusing pseudo-supervision: {exc}") from exc
         print(f"[{PHASE}] WARNING: g8c data loading failed: {exc}; "
               "falling back to per-batch target extraction")
         g8c_data = None
@@ -2268,20 +2325,18 @@ def main() -> None:
     stages = [1, 2, 3, 4] if args.stage <= 0 else [args.stage]
     n_rounds = 1 if args.smoke else args.num_rounds
     log: List[dict] = []
-    # Build a frozen reference model for Stage-4 DPO (a copy of the
-    # model after Stage 3).  We snapshot it once per round before the
-    # DPO stage runs, so it reflects the pre-DPO policy.
+    # Build the frozen reference model for Stage-4 DPO only after Stage 3
+    # has completed in the current round.  Snapshotting before the stage
+    # loop would incorrectly use the pre-reconstruction policy.
     ref_model = None
     for rnd in range(n_rounds):
-        # Snapshot the current model as the reference for the upcoming
-        # DPO stage (if any).  Re-snapshotted each round.
-        if 4 in stages and ref_model is None:
-            import copy
-            ref_model = copy.deepcopy(model)
-            ref_model.eval()
-            for p in ref_model.parameters():
-                p.requires_grad_(False)
         for st in stages:
+            if st == 4:
+                import copy
+                ref_model = copy.deepcopy(model)
+                ref_model.eval()
+                for p in ref_model.parameters():
+                    p.requires_grad_(False)
             log = train_stage(
                 model, st, train_rxns, val_rxns, rule_generator,
                 epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
@@ -2291,7 +2346,8 @@ def main() -> None:
                 rule_proposals_cache=g8c_data['rule_proposals'] if g8c_data else None,
                 competing_pairs_cache=g8c_data['competing_pairs'] if g8c_data else None,
                 preference_pairs_cache=g8c_data['preference_pairs'] if g8c_data else None,
-                ref_model=ref_model if st == 4 else None)
+                ref_model=ref_model if st == 4 else None,
+                formal_run=args.formal_run)
 
     # Comparison arms
     eval_rxns = test_rxns[: min(len(test_rxns), 50 if not args.smoke else 8)]
