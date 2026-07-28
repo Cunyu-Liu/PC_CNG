@@ -141,5 +141,6 @@
 
 - **GitHub**: `git@github.com:Cunyu-Liu/PC_CNG.git`
 - **分支**: `main`
-- **最新 commit**: `a56feeb` — feat(phase4-v41): fixed shuffled_parent control + union_v2 arm + analysis framework
+- **最新本地 commit**: `ac1d483` — docs(phase4): record RegioSQM20 external replication
+- **上游交接 commit**: `a56feeb` — feat(phase4-v41): fixed shuffled_parent control + union_v2 arm + analysis framework
 - **服务器路径**: `cunyuliu@36.137.135.49:/home/cunyuliu/pc_cng_research`

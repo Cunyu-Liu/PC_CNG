@@ -170,7 +170,7 @@
 | `pc_cng/run_phase4_fixed_testset.py` | Phase 4 主评估: 8 臂 × 8 场景 × 3 难度池 | 已修改(shuffled_parent fix) |
 | `pc_cng/run_phase4_union_arm.py` | Union/Union_v2 训练+评估 | 已实现 `--difficulty-match` |
 | `pc_cng/analyze_phase4_v41.py` | 汇总分析: H1/H1u/H1u_v2/H2/H3 + Holm | 已实现 |
-| `pc_cng/rescore_shuffled_parent.py` | 独立重评分 shuffled_parent | 已实现,运行中 |
+| `pc_cng/rescore_shuffled_parent.py` | 独立重评分 shuffled_parent | 已实现，8/8 完成 |
 | `pc_cng/run_phase4_null_control.py` | 随机标签 null 控制 | 已完成 5 场景 |
 | `pc_cng/paired_cluster_inference.py` | Paired bootstrap CI + Holm 校正 | 稳定 |
 | `pc_cng/run_phase3_external_validation.py` | 数据加载 + GNN 模型 | 稳定 |
