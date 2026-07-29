@@ -626,10 +626,20 @@ def _expert_risk_examples(paths: Tuple[str, ...]) -> List[Dict[str, Any]]:
             continue
         frame = pd.read_csv(path)
         for _, row in frame.iterrows():
+            sample_id = row.get("sample_id")
+            reviewer_id = row.get("reviewer_id")
             timestamp = row.get("review_timestamp")
             feasibility = row.get("feasibility")
             verdict = row.get("overall_verdict")
-            if pd.isna(timestamp) or (pd.isna(feasibility) and pd.isna(verdict)):
+            reaction = row.get("candidate_reaction")
+            provenance = (sample_id, reviewer_id, timestamp, reaction)
+            if (
+                any(
+                    pd.isna(value) or not str(value).strip()
+                    for value in provenance
+                )
+                or (pd.isna(feasibility) and pd.isna(verdict))
+            ):
                 continue
             numeric = None
             if not pd.isna(feasibility):
@@ -647,16 +657,13 @@ def _expert_risk_examples(paths: Tuple[str, ...]) -> List[Dict[str, Any]]:
                     label = 0
                 else:
                     continue
-            reaction = str(row.get("candidate_reaction", ""))
-            if not reaction:
-                continue
             examples.append({
-                "reaction_smiles": reaction,
+                "reaction_smiles": str(reaction).strip(),
                 "risk_label": label,
                 "risk_source": "expert_label",
                 "split": "train",
-                "record_id": str(row.get("sample_id", "")),
-                "experimental_group": str(row.get("reviewer_id", "expert")),
+                "record_id": str(sample_id).strip(),
+                "experimental_group": str(reviewer_id).strip(),
             })
     return examples
 

@@ -32,6 +32,7 @@ from pc_cng.g8c_data_preparation import (  # noqa: E402
     assign_formal_pair_partition,
     build_competing_outcome_pairs,
     build_preference_pairs,
+    _expert_risk_examples,
     extract_real_edit_targets,
     extract_rule_proposals,
     load_g8c_training_data,
@@ -260,7 +261,63 @@ class TestBuildPreferencePairs:
 
 
 # ---------------------------------------------------------------------------
-# 5. Stage 1-4 training smoke test
+# 5. expert-label provenance
+# ---------------------------------------------------------------------------
+
+class TestExpertRiskIngestion:
+    @staticmethod
+    def _write_form(tmp_path, rows):
+        path = tmp_path / "expert_form.csv"
+        pd.DataFrame(rows).to_csv(path, index=False)
+        return path
+
+    @staticmethod
+    def _completed_row(**overrides):
+        row = {
+            "sample_id": "E001",
+            "reviewer_id": "reviewer_A",
+            "review_timestamp": "2026-07-29T09:30:00Z",
+            "candidate_reaction": SAMPLE_RXN,
+            "feasibility": 5,
+            "overall_verdict": "",
+        }
+        row.update(overrides)
+        return row
+
+    def test_rejects_incomplete_or_unattributed_expert_rows(self, tmp_path):
+        rows = [
+            self._completed_row(sample_id=""),
+            self._completed_row(reviewer_id=""),
+            self._completed_row(review_timestamp=""),
+            self._completed_row(candidate_reaction=""),
+            self._completed_row(feasibility="", overall_verdict=""),
+        ]
+        path = self._write_form(tmp_path, rows)
+        assert _expert_risk_examples((str(path),)) == []
+
+    def test_accepts_only_completed_attributed_expert_rows(self, tmp_path):
+        path = self._write_form(
+            tmp_path,
+            [
+                self._completed_row(),
+                self._completed_row(
+                    sample_id="E002",
+                    reviewer_id="reviewer_B",
+                    overall_verdict="reject",
+                    feasibility="",
+                ),
+            ],
+        )
+        examples = _expert_risk_examples((str(path),))
+        assert [(row["record_id"], row["risk_label"])
+                for row in examples] == [("E001", 1), ("E002", 0)]
+        assert {row["experimental_group"] for row in examples} == {
+            "reviewer_A", "reviewer_B"
+        }
+
+
+# ---------------------------------------------------------------------------
+# 6. Stage 1-4 training smoke test
 # ---------------------------------------------------------------------------
 
 class TestFourStageTraining:
