@@ -1,0 +1,32 @@
+{
+  "calibration_pass": 1.0,
+  "familywise_type_i_error": 0.0125,
+  "familywise_type_i_error_ci95": [
+    0.0022099755204522745,
+    0.06746270077668665
+  ],
+  "interpretation": "post-implementation design check only; not PC-CNG efficacy evidence",
+  "n_simulations": 80.0,
+  "null_design": "exchangeable non-identical paired predictions with shared signal and symmetric arm noise",
+  "power_at_delta_0p08": 1.0,
+  "power_by_delta": {
+    "0.02": 0.45,
+    "0.04": 0.925,
+    "0.08": 1.0
+  },
+  "power_ci95_by_delta": {
+    "0.02": [
+      0.34577689184711224,
+      0.5588049211064404
+    ],
+    "0.04": [
+      0.8458798391878072,
+      0.9651747507069949
+    ],
+    "0.08": [
+      0.9541818704644728,
+      0.9999999999999999
+    ]
+  },
+  "power_pass": 1.0
+}

@@ -239,7 +239,8 @@ def simulate_inference_operating_characteristics(
 ) -> dict[str, Any]:
     """Estimate type-I error and power on paired cluster toy data.
 
-    This is a pre-run statistical calibration check, not evidence about PC-CNG.
+    This is a post-implementation statistical design check, not evidence about
+    PC-CNG efficacy and not a substitute for prospective power planning.
     """
     effect_deltas = (0.02, 0.04, 0.08)
     null_rejections = 0

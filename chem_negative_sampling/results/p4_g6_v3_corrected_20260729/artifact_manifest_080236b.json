@@ -1,0 +1,74 @@
+{
+  "schema_version": "phase_b_g6_corrected_artifact_manifest_v1",
+  "producer_commit": "080236bd11893e7fccf0a7f3a173250c11a404ff",
+  "scientific_status": "CORRECTED_REANALYSIS_TEST_OUTCOMES_PREVIOUSLY_OBSERVED",
+  "confirmatory_blind_test": false,
+  "canonical_remote_directory": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729",
+  "artifacts": [
+    {
+      "name": "formal_result_v3.json",
+      "sha256": "e7274a4653deefc8f413d73cbb67a233f790c01dbf8dc472469eaf9e5f9100fa",
+      "tracked_copy": true
+    },
+    {
+      "name": "predictions_t5_v3.json",
+      "sha256": "ad9eb4a85813896944bc6e27616302131d3da72744bba85e38d144fc53448cff",
+      "size_bytes": 168271691,
+      "tracked_copy": false,
+      "reason": "large generated prediction artifact retained on /mnt"
+    },
+    {
+      "name": "run_manifest_v3.json",
+      "sha256": "426160f530930a84d0ddacd8b3ed18d4d1209d18175a000b27ee12acbefe25aa",
+      "tracked_copy": true
+    },
+    {
+      "name": "excluded_reaction_context_records_v3.json",
+      "sha256": "6b2a6e8509e53bf421d383a3ce73500656718c539dfe30b7ac9d8a37b5f3ba5e",
+      "tracked_copy": true
+    },
+    {
+      "name": "independent_primary_inference_v3_080236b.json",
+      "sha256": "7a67aef34af3c39b6b9b8e1b643fcd04c6838b3baf82eb9ad93d0c0816776cbd",
+      "tracked_copy": true
+    },
+    {
+      "name": "reconstruction_verification_v3_080236b.json",
+      "sha256": "bea634f3ea2452f7a871f53a49e0a6023f7daf992536ca6033e58b8983f37885",
+      "tracked_copy": true
+    },
+    {
+      "name": "g6_v3_inference_operating_characteristics_080236b_20260729.json",
+      "canonical_remote_path": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_inference_operating_characteristics_080236b_20260729.json",
+      "sha256": "f121405c4a8b17ec9ca2071cb427b5016dfecb37f0b1ed616b1da90b037853a7",
+      "tracked_copy": true
+    },
+    {
+      "name": "pip_freeze_080236b.txt",
+      "sha256": "e4f5f843a9c8ce183844ce06e19012f892de0fbb671bb6f4484802feca3f26e7",
+      "tracked_copy": true
+    },
+    {
+      "name": "conda_explicit_080236b.txt",
+      "sha256": "cfaa25e5f3ab26e6b0eb73975d6b49703796fefaba243c36572e36c8d6309416",
+      "tracked_copy": true
+    },
+    {
+      "name": "environment_provenance_080236b.txt",
+      "sha256": "fb0f2828d9c268afb43913ea07bb7fa4d1fd317ec038b1aa29c1a5d07a986dda",
+      "tracked_copy": true
+    },
+    {
+      "name": "phase_b_g6_analysis_plan_v2_corrected.json",
+      "canonical_remote_path": "/home/cunyuliu/pc_cng_research/docs/phase_b_g6_analysis_plan_v2_corrected.json",
+      "sha256": "e91f56e5a6431606e45d0b2154fe01e19ab3d78fbc1219bba7f8dd6cfd7950b9",
+      "tracked_copy": true
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "scope": "complete primary_inference object",
+    "independent_process": true,
+    "independent_implementation": false
+  }
+}

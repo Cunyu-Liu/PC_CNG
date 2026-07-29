@@ -1,0 +1,488 @@
+{
+  "n_excluded": 96,
+  "n_included": 39450,
+  "n_input": 39546,
+  "reason": "records without complete reactants/products cannot be represented by the formal reaction-conditioned encoder",
+  "records": [
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031719",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031720",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031721",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031722",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031723",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031724",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031725",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031726",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031727",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031728",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031729",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031730",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031731",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031732",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031733",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031734",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031735",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031736",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031737",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031738",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031739",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031740",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031741",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031742",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031743",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031744",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031745",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031746",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031747",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031748",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031749",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031750",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031751",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031752",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031753",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031754",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031755",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031756",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031757",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031758",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031759",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031760",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031761",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031762",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031763",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031764",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031765",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031766",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031767",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031768",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031769",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031770",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031771",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031772",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031773",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031774",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031775",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031776",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031777",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031778",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031779",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031780",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031781",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031782",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031783",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031784",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031785",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031786",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031787",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031788",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031789",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031790",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031791",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031792",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031793",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031794",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031795",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031796",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031797",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031798",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031799",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031800",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031801",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031802",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031803",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031804",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031805",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031806",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031807",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031808",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031809",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031810",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031811",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031812",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031813",
+      "split": "train"
+    },
+    {
+      "reason": "missing_reactants",
+      "record_id": "RKB-04031814",
+      "split": "train"
+    }
+  ]
+}

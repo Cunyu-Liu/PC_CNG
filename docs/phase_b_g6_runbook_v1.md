@@ -7,11 +7,15 @@ artifacts remain auditable but are not eligible for headline claims: they used
 product-only proxies, approximate ordinal/ranking tasks, a non-paired delta
 interval and confounded source arms.
 
-The v3 benchmark is eligible for formal analysis only with the frozen plan in
-`docs/phase_b_g6_analysis_plan_v1.json`, CUDA, the frozen Chemformer
+The authoritative corrected benchmark uses
+`docs/phase_b_g6_analysis_plan_v2_corrected.json`, CUDA, the frozen Chemformer
 checkpoint, five seeds, 2,000 paired-cluster bootstrap draws and 10,000
-paired-cluster permutations.  A `--smoke` output is integration evidence only
-and carries `SMOKE_NOT_SCIENTIFIC` status.
+paired-cluster permutations. The v2 amendment was frozen after integrity and
+metric-semantic defects were found, but the test outcomes had already been
+observed. Its required scientific status is therefore
+`CORRECTED_REANALYSIS_TEST_OUTCOMES_PREVIOUSLY_OBSERVED`, never blind or
+confirmatory. A `--smoke` output is integration evidence only and carries
+`SMOKE_NOT_SCIENTIFIC` status.
 
 ## Frozen primary comparison
 
@@ -29,6 +33,11 @@ Primary comparisons, in their fixed Holm-corrected order:
 
 Each source arm uses the same training parents, one positive and one negative
 per parent, the same frozen reaction encoder and the same optimizer schedule.
+Candidates identical to their own parent positive are label-invalid and are
+excluded before source selection; any parent lacking a non-colliding
+candidate in one source is excluded from every source arm. Cross-source
+duplicates are retained and explicitly reported because independent methods
+may converge on the same candidate.
 The runner refuses test-driven baseline selection.  `pc_cng` must never be
 described as a learned generator in a v3 result because the frozen manifest
 maps it to `rule_pc_cng`.

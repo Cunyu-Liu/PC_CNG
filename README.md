@@ -20,7 +20,7 @@ Phase E 已建立 fail-closed sealed-test 与独立 label-custody contract，并
 | G3   | REDO_PROMISING | v2 manifest 修复后有正向信号，需重建无混杂实验 |
 | G4   | SUPPORTIVE_GO | generator×scorer 交互存在 |
 | G5   | SAFETY_PARTIAL_GO | 校准改善，仅作风险控制证据 |
-| G6   | FORMAL_NO_GO_SINGLE_SOURCE | v3 formal benchmark 已完成并独立重建；PC-CNG 对 random/template 的 superiority CI 均跨 0，且当前 HTE 仅一个 publication source |
+| G6   | CORRECTED_REANALYSIS_NO_GO_SINGLE_SOURCE | v3 corrected GPU benchmark 已完成；三个 superiority CI 均跨 0，PC-CNG 对 random/template 的点估计均为负，且当前 HTE 仅一个 publication source；测试结果此前已被查看，不能称 blind confirmatory |
 | G7   | DEFERRED | 待真实专家或实验数据 |
 | G8-A | EXPLORATORY_ONLY_EXIT_NOT_MET | continuous spline 有 reaction-group bootstrap CI，但 inverted-U 未跨 dataset/scorer 复现，且匹配审计不完整 |
 | G8-B | NO_GO_NEGATIVE_TRANSFER | full run 7 directions × 6 methods × 10 seeds，0/7 方向存在 CI 全正的方法 |
@@ -28,7 +28,7 @@ Phase E 已建立 fail-closed sealed-test 与独立 label-custody contract，并
 
 Phase 4 v4.1 的 fixed-pool、Union/Union_v2 和 H3 结论均为开发/探索性证据。权威交接见 `docs/phase4_v41_handover.md`：GNN 与 EnhancedMLP 的 H3 都仅 2/8；continuous spline 的 15/18 单元可估计，但没有 feature 跨 dataset/scorer 复现严格 inverted-U；family/source/edit-count/scorer-margin 未完成严格匹配。阶段结论是 **development analysis complete / causal mechanism Exit Criterion not met**。
 
-Phase B 的权威边界见 `docs/phase_b_g6_completion_audit_20260729.md`：五任务共享完整反应上下文编码器、预算匹配、预注册比较和独立重建均已完成；正式结论是 **benchmark engineering PASS / PC-CNG superiority NO-GO**，不得将非劣效或点估计优势表述为外部效用成功。
+Phase B 的权威边界见 `docs/phase_b_g6_completion_audit_20260729.md`：五任务共享完整反应上下文编码器、75 个无 parent-positive collision 的共同 parent、预算匹配、冻结比较和标准化 paired inference 已完成。权威 artifact 来自 clean commit `080236b`，使用 GPU 6 和 checkpoint-native 512-token 输入，所有 train/validation/test 片段均零截断。正式结论是 **corrected benchmark engineering PASS / PC-CNG superiority NO-GO**；PC-CNG − random 为 -0.00208（95% CI [-0.01858, 0.01439]），PC-CNG − template/rule 为 -0.00676（[-0.02557, 0.00379]）。测试结果此前已在开发与纠错中查看，因此该结果是 corrected reanalysis，不是 blind confirmatory evidence。
 
 Phase C 的权威边界见 `docs/phase_c_g8c_completion_audit_20260729.md`：正式模式已 fail-closed，四阶段使用真实 edit/rule/same-context/preference 监督，Stage 4 reference 在 Stage 3 后冻结；v1 的动作头覆盖失败保留为 NO_GO，v2 在未单独评估的 group-hash holdout 上达到 locus 0.583、type 1.000、validity 1.000、coverage 0.984、FNR ECE 0.0668。该证据只支持“可信 source expert 的内部 validation”，不支持 learned source 优于 rule/random/union；真实专家标签仍为 0。
 

@@ -1,11 +1,13 @@
 {
-  "schema_version": "phase_b_g6_completion_summary_v1",
+  "schema_version": "phase_b_g6_corrected_completion_summary_v2",
   "date": "2026-07-29",
   "phase": "Phase B",
-  "benchmark_status": "ENGINEERING_VERIFIED",
-  "scientific_status": "FORMAL_NO_GO_SINGLE_SOURCE",
-  "formal_run_commit": "a602a412f40bc15f51990e9cc80be8b5b93060eb",
-  "formal_schema": "g6_v3_formal_20260728",
+  "benchmark_status": "CORRECTED_ENGINEERING_VERIFIED",
+  "scientific_status": "CORRECTED_REANALYSIS_NO_GO_SINGLE_SOURCE",
+  "confirmatory_blind_test": false,
+  "test_outcomes_previously_observed": true,
+  "formal_run_commit": "080236bd11893e7fccf0a7f3a173250c11a404ff",
+  "formal_schema": "g6_v3_corrected_reanalysis_20260729",
   "dataset": {
     "n_input": 39546,
     "n_included": 39450,
@@ -18,64 +20,136 @@
     "cross_publication_replication": false
   },
   "arm_contract": {
-    "n_matched_parents": 76,
-    "positive_per_source_arm": 76,
-    "negative_per_source_arm": 76,
+    "n_matched_parents": 75,
+    "positive_per_source_arm": 75,
+    "negative_per_source_arm": 75,
     "budget_matched": true,
+    "parent_positive_collisions_excluded": true,
+    "parent_positive_collisions_skipped_by_source": {
+      "pc_cng": 0,
+      "random": 0,
+      "template_rule": 1
+    },
+    "cross_source_duplicate_parents_retained_and_reported": 1,
     "no_test_driven_baseline_selection": true
+  },
+  "context_contract": {
+    "max_seq_len": 512,
+    "checkpoint_native_limit_used": true,
+    "all_train_validation_test_segments_fully_visible": true,
+    "truncated_records": 0
   },
   "primary_comparisons": [
     {
       "comparison": "pc_cng_vs_random",
-      "delta": 0.028348054997180863,
-      "ci_low": -0.01106108772730956,
-      "ci_high": 0.08280540073849736,
-      "permutation_p": 0.38476152384761525,
-      "holm_p": 0.7695230476952305,
+      "delta": -0.002078078451460727,
+      "ci_low": -0.018576850139797117,
+      "ci_high": 0.01439045758148999,
+      "permutation_p": 0.7590240975902409,
+      "holm_p": 1.0,
+      "standardized_seed_effect": -0.15709808884286297,
       "superiority": false,
       "noninferiority_margin": 0.02,
       "noninferior": true
     },
     {
       "comparison": "pc_cng_vs_template_rule",
-      "delta": 0.021115433113453208,
-      "ci_low": -0.014082641811416483,
-      "ci_high": 0.06832028594274234,
-      "permutation_p": 0.44165583441655834,
-      "holm_p": 0.44165583441655834,
-      "superiority": false,
-      "noninferiority_margin": 0.02,
-      "noninferior": true
-    },
-    {
-      "comparison": "union_vs_pc_cng",
-      "delta": -0.023991624233663036,
-      "ci_low": -0.06768270553082201,
-      "ci_high": 0.0058407302973153465,
-      "permutation_p": 0.28657134286571345,
-      "holm_p": 0.8597140285971403,
+      "delta": -0.006758653141021309,
+      "ci_low": -0.025567493677020124,
+      "ci_high": 0.003792644140539124,
+      "permutation_p": 0.21447855214478553,
+      "holm_p": 0.6434356564343566,
+      "standardized_seed_effect": -0.6793990450990275,
       "superiority": false,
       "noninferiority_margin": 0.02,
       "noninferior": false
+    },
+    {
+      "comparison": "union_vs_pc_cng",
+      "delta": -0.0015242368918604865,
+      "ci_low": -0.015474082542112017,
+      "ci_high": 0.00824948779042641,
+      "permutation_p": 0.7726227377262274,
+      "holm_p": 1.0,
+      "standardized_seed_effect": -0.18926341016782092,
+      "superiority": false,
+      "noninferiority_margin": 0.02,
+      "noninferior": true
     }
   ],
   "operating_characteristics": {
+    "status": "PASS_POST_IMPLEMENTATION_DESIGN_CHECK",
     "n_simulations": 80,
-    "familywise_type_i_error": 0.0,
-    "power_at_delta_0p08": 1.0,
-    "interpretation": "design check only; not efficacy evidence"
+    "familywise_type_i_error": 0.0125,
+    "familywise_type_i_error_ci95": [
+      0.0022099755204522745,
+      0.06746270077668665
+    ],
+    "power_by_delta": {
+      "0.02": 0.45,
+      "0.04": 0.925,
+      "0.08": 1.0
+    },
+    "power_ci95_by_delta": {
+      "0.02": [
+        0.34577689184711224,
+        0.5588049211064404
+      ],
+      "0.04": [
+        0.8458798391878072,
+        0.9651747507069949
+      ],
+      "0.08": [
+        0.9541818704644728,
+        0.9999999999999999
+      ]
+    },
+    "interpretation": "post-implementation design check only; not PC-CNG efficacy evidence"
+  },
+  "independent_reconstruction": {
+    "status": "PASS_COMPLETE_PRIMARY_OBJECT_EQUAL",
+    "scope": "complete primary_inference object using a separate process and the shared frozen inference library",
+    "independent_implementation": false
+  },
+  "runtime": {
+    "device": "NVIDIA A100-PCIE-40GB MIG 1g.5gb",
+    "cuda_visible_devices": "6",
+    "deterministic_kernel_policy": true,
+    "bitwise_reproducibility_claim": false,
+    "same_environment_max_absolute_score_difference_in_repeat_smoke": 3.921985626220703e-05
   },
   "artifacts": {
-    "formal_result": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/formal_result_v3.json",
-    "predictions": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/predictions_t5_v3.json",
-    "independent_inference": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/independent_primary_inference_v3_c7b0263.json",
-    "verification": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/reconstruction_verification_v3.json",
-    "simulation": "/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_inference_operating_characteristics_a602a41_20260728.json"
+    "formal_result": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/formal_result_v3.json",
+    "predictions": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/predictions_t5_v3.json",
+    "run_manifest": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/run_manifest_v3.json",
+    "independent_inference": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/independent_primary_inference_v3_080236b.json",
+    "verification": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/reconstruction_verification_v3_080236b.json",
+    "simulation": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_inference_operating_characteristics_080236b_20260729.json",
+    "pip_freeze": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/pip_freeze_080236b.txt",
+    "conda_explicit": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/conda_explicit_080236b.txt",
+    "environment_provenance": "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/environment_provenance_080236b.txt",
+    "tracked_artifact_manifest": "results/p4_g6_v3_corrected_20260729/artifact_manifest_080236b.json"
   },
   "sha256": {
-    "formal_result": "7e1dc807077aaab51ec078ca38360dcfe809f6724c6323c728fb340db893a1e6",
-    "predictions": "1ab507bbbbf74a2ffca5594ba661dddc2559e324a399394b37cc77ba11b7f028",
-    "independent_inference": "de581aedc6dbd6d16a4bf85bb1ac39639baf3dd49a07b4b1e028950bf41d9dc4",
-    "analysis_plan": "567a4fe8d5a99b350d29c8ceba1e2f80ab950c2bfc19085dc8dccdf1f9c97f82"
-  }
+    "formal_result": "e7274a4653deefc8f413d73cbb67a233f790c01dbf8dc472469eaf9e5f9100fa",
+    "predictions": "ad9eb4a85813896944bc6e27616302131d3da72744bba85e38d144fc53448cff",
+    "run_manifest": "426160f530930a84d0ddacd8b3ed18d4d1209d18175a000b27ee12acbefe25aa",
+    "analysis_plan": "e91f56e5a6431606e45d0b2154fe01e19ab3d78fbc1219bba7f8dd6cfd7950b9",
+    "independent_inference": "7a67aef34af3c39b6b9b8e1b643fcd04c6838b3baf82eb9ad93d0c0816776cbd",
+    "verification": "bea634f3ea2452f7a871f53a49e0a6023f7daf992536ca6033e58b8983f37885",
+    "simulation": "f121405c4a8b17ec9ca2071cb427b5016dfecb37f0b1ed616b1da90b037853a7",
+    "pip_freeze": "e4f5f843a9c8ce183844ce06e19012f892de0fbb671bb6f4484802feca3f26e7",
+    "conda_explicit": "cfaa25e5f3ab26e6b0eb73975d6b49703796fefaba243c36572e36c8d6309416",
+    "environment_provenance": "fb0f2828d9c268afb43913ea07bb7fa4d1fd317ec038b1aa29c1a5d07a986dda",
+    "tracked_artifact_manifest": "1cd70cb0897268a4cbd2402dad99f666a01ba3d39364894fbe51e4175669e80d"
+  },
+  "limitations": [
+    "The test outcomes were inspected before this corrected rerun; this is not blind confirmatory evidence.",
+    "Only one source_publication slice is evaluable, so source-macro AUPRC does not establish cross-publication replication.",
+    "The frozen 0.02 noninferiority margin lacks an independent domain rationale and is not a headline claim.",
+    "The checkpoint corpus version, license, pretraining split manifest and reaction-level overlap audit remain incomplete.",
+    "The available HTE data have reagent_fraction=0.0, so reagent effects are not validated.",
+    "Separate-process reconstruction reuses the shared inference library and is artifact verification, not an independent statistical reimplementation.",
+    "CUDA repeat smoke supports only tolerance-level, not bitwise, reproducibility."
+  ]
 }

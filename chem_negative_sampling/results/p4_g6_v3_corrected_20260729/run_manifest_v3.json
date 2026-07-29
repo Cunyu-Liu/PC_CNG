@@ -1,0 +1,61 @@
+{
+  "code_hashes": {
+    "benchmark": "2f1d9942713d2edd85f470874769cf46cdc69f48b590f839147365f55c872709",
+    "inference": "e29770f7bd28a44e591fcf89953dc16eb82e7a0e9800bb10eb48161cde3b46d0",
+    "paired_cluster_inference": "24f61f0d61b1e0feb4e72d04f1e86dd18c849e63dadd8d826738bf3804b605fe",
+    "runner": "7396d28c2f6bcd4062799bde53e8a8753380ba8b399477edb1e3ccb73f13930c"
+  },
+  "command_contract": {
+    "device": "cuda:0",
+    "formal_run": true,
+    "max_seq_len": 512,
+    "n_bootstrap": 2000,
+    "n_permutations": 10000,
+    "n_seeds": 5,
+    "smoke": false
+  },
+  "exact_argv": [
+    "/home/cunyuliu/miniconda3/envs/pc_cng/bin/python",
+    "-m",
+    "pc_cng.run_p4_g6_v3",
+    "--formal-run",
+    "--device",
+    "cuda:0",
+    "--output-dir",
+    "/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729"
+  ],
+  "git_commit": "080236bd11893e7fccf0a7f3a173250c11a404ff",
+  "input_hashes": {
+    "analysis_plan": "e91f56e5a6431606e45d0b2154fe01e19ab3d78fbc1219bba7f8dd6cfd7950b9",
+    "hte_parquet": "2ae6aad8d7f63d685c3a7c8ab9f6450366e2d2c0d2acedbba298ed648c5efa43",
+    "manifest": "8aa04ef108d94f7bbdc3ef7702f5d8aa5070535a4491e931a76fabe72ed8f281"
+  },
+  "output_hashes": {
+    "excluded_reaction_context_records_v3": "6b2a6e8509e53bf421d383a3ce73500656718c539dfe30b7ac9d8a37b5f3ba5e",
+    "formal_result_v3": "e7274a4653deefc8f413d73cbb67a233f790c01dbf8dc472469eaf9e5f9100fa",
+    "predictions_t5_v3": "ad9eb4a85813896944bc6e27616302131d3da72744bba85e38d144fc53448cff"
+  },
+  "runtime": {
+    "cuda_device_name": "NVIDIA A100-PCIE-40GB MIG 1g.5gb",
+    "cuda_visible_devices": "6",
+    "determinism": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "cuda_matmul_allow_tf32": false,
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "flash_sdp_enabled": false,
+      "float32_matmul_precision": "highest",
+      "math_sdp_enabled": true,
+      "memory_efficient_sdp_enabled": false,
+      "torch_deterministic_algorithms": true
+    },
+    "ld_library_path": "/home/cunyuliu/miniconda3/envs/pc_cng/lib",
+    "python_executable": "/home/cunyuliu/miniconda3/envs/pc_cng/bin/python",
+    "python_version": "3.10.20 | packaged by conda-forge | (main, Jun 11 2026, 03:31:56) [GCC 14.3.0]",
+    "torch_cuda_version": "12.4",
+    "torch_version": "2.6.0+cu124"
+  },
+  "schema_version": "g6_v3_corrected_reanalysis_20260729",
+  "tracked_worktree_clean": true
+}

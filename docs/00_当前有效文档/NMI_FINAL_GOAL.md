@@ -45,7 +45,7 @@ PC-CNG 能够显式控制 false-negative risk，并通过真实 HTE、OOD、专�
 | G3   | NO_GO（v1 manifest，A6=A2 重复） | **REDO / PROMISING** | v2 manifest 修复后有正向信号，但训练输入、预算匹配和统计单位不足以支持 Strong GO |
 | G4   | GO                   | **SUPPORTIVE GO**       | 能说明 generator×scorer 存在交互，但不能证明 PC-CNG 普遍优于简单负样本 |
 | G5   | PARTIAL_GO           | **SAFETY PARTIAL_GO**   | 证明 calibration/abstention 改善，不等于生成器有效性提升 |
-| G6   | WEAK_GO              | **FORMAL_NO_GO_SINGLE_SOURCE** | v3 已完成任务/统计重建与独立重建；PC-CNG 对 random/template 的 superiority CI 均跨 0，且当前仅一个 HTE publication source |
+| G6   | WEAK_GO              | **CORRECTED_REANALYSIS_NO_GO_SINGLE_SOURCE** | v3 corrected GPU benchmark 的三个 superiority CI 均跨 0，PC-CNG 对 random/template 点估计均为负；当前仅一个 HTE publication source，且测试结果此前已查看，不能称 blind confirmatory |
 | G7   | DEFERRED             | **DEFERRED**            | 必须获得真实专家或实验数据 |
 | G8-A | GO                   | **EXPLORATORY_MECHANISM** | 当前曲线不足以构成机制证据，仅作探索性分析 |
 | G8-B | 运行中                | **保持独立判定**         | 不应预设必须 GO；负迁移本身可能是重要科学结论 |
@@ -216,39 +216,48 @@ Phase A 完成不等于 Phase 4 scientific exit；sealed source-gate evaluation�
 
 ---
 
-## 十一、2026-07-29 Amendment：Phase B G6 formal benchmark 完成
+## 十一、2026-07-29 Amendment：Phase B G6 corrected benchmark 完成
 
 ### 完成范围
 
 - T1 主阈值冻结为 `<10% yield`。
 - T2 使用 cumulative-link ordinal head；T3 使用完整 reaction-conditioned regression；T4 使用 pairwise ranking loss；T5 显式编码 catalyst、solvent、reagent、temperature 和 time。
 - T1–T5 共享冻结的 GPU Chemformer reaction encoder；product-only Morgan 不进入正式主模型。
-- `pc_cng`、`random`、`template_rule`、`union` 均使用 76 个相同 parent、76 positive + 76 negative 的匹配预算。
+- `pc_cng`、`random`、`template_rule`、`union` 均使用 75 个相同 parent、75 positive + 75 negative 的匹配预算。
+- 一条 template candidate 与 parent positive 完全相同，按冻结的 v2 integrity amendment 排除；该 parent 同步从所有 source arm 排除。
+- 使用 checkpoint-native 512-token 上下文，所有 train arm、validation 和 test 均无 reactant、condition 或 candidate-product 截断。
 - primary endpoint 冻结为 real-HTE condition-feasibility source-macro AUPRC；当前只有一个 evaluable publication source，因此不得声称 cross-publication replication。
-- 完成 paired cluster bootstrap、seed×cluster hierarchical aggregation、paired permutation、Holm、多重比较 effect size、预注册 non-inferiority margin，以及 type-I/power operating-characteristic simulation。
+- 完成 paired cluster bootstrap、seed×cluster hierarchical aggregation、paired permutation、Holm、多重比较 effect size、原计划冻结的 non-inferiority margin，以及 type-I/power operating-characteristic simulation。
+- post-implementation design check 在 80 次 exchangeable paired-null 模拟中的 Holm-family FWER 为 0.0125（Wilson 95% CI 0.0022–0.0675）；合成 delta 0.02/0.04/0.08 的功效为 0.45/0.925/1.0。该模拟只审计统计实现，不是 PC-CNG efficacy evidence。
 - 独立脚本从 prediction artifact 完整重建 primary inference object；历史正式 JSON 中 NumPy boolean 被 `default=str` 写为字符串的问题仅在验证器中作窄范围兼容，新写入器已改为原生 JSON scalar。
 
 ### 正式主结果
 
-| 预注册比较 | AUPRC delta | 95% paired CI | Holm p | Superiority | Non-inferiority (margin 0.02) |
+| 冻结比较（test outcome 此前已查看） | AUPRC delta | 95% paired CI | Holm p | Superiority | Non-inferiority (margin 0.02) |
 |---|---:|---:|---:|---|---|
-| PC-CNG − random | +0.02835 | [-0.01106, 0.08281] | 0.7695 | 否 | 是 |
-| PC-CNG − template/rule | +0.02112 | [-0.01408, 0.06832] | 0.4417 | 否 | 是 |
-| union − PC-CNG | -0.02399 | [-0.06768, 0.00584] | 0.8597 | 否 | 否 |
+| PC-CNG − random | -0.00208 | [-0.01858, 0.01439] | 1.0000 | 否 | 是 |
+| PC-CNG − template/rule | -0.00676 | [-0.02557, 0.00379] | 0.6434 | 否 | 否 |
+| union − PC-CNG | -0.00152 | [-0.01547, 0.00825] | 1.0000 | 否 | 是 |
 
 ### 判定
 
-`Phase B benchmark engineering = PASS`；`PC-CNG superiority claim = NO-GO`。
+`Phase B corrected benchmark engineering = PASS`；`PC-CNG superiority claim = NO-GO`。
 
-非劣效不等于优越性。当前结果不能支持 PC-CNG negatives 优于匹配随机或 template negatives，也不能支持 union 优于 PC-CNG。次要 endpoint 仅作诊断；其中 T3 Spearman 为负，进一步阻止任何广义效用表述。
+非劣效不等于优越性。当前结果不能支持 PC-CNG negatives 优于匹配随机或 template negatives，也不能支持 union 优于 PC-CNG；PC-CNG 对 random/template 的 corrected 点估计均为负。0.02 margin 缺少独立领域依据，因此即使数值上满足也不作为 headline claim。次要 endpoint 仅作诊断；其中各 arm 的 T3 Spearman 均为负，进一步阻止任何广义效用表述。
+
+该 test outcome 在此前开发与错误审计中已经被查看。权威状态固定为
+`CORRECTED_REANALYSIS_TEST_OUTCOMES_PREVIOUSLY_OBSERVED`，
+`confirmatory_blind_test=false`；不得使用 sealed、blind 或 confirmatory
+描述这次运行。
 
 ### Artifact contract
 
-- Formal result：`/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/formal_result_v3.json`
-- Prediction artifact：`/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/predictions_t5_v3.json`
-- Independent inference：`/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/independent_primary_inference_v3_c7b0263.json`
-- Reconstruction verification：`/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_formal_a602a41_20260728/reconstruction_verification_v3.json`
-- Operating characteristics：`/mnt/cunyuliu_pc_cng_phaseb_v3_20260728/g6_v3_inference_operating_characteristics_a602a41_20260728.json`
+- Formal result：`/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/formal_result_v3.json`
+- Prediction artifact：`/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/predictions_t5_v3.json`
+- Independent inference：`/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/independent_primary_inference_v3_080236b.json`
+- Reconstruction verification：`/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/reconstruction_verification_v3_080236b.json`
+- Operating characteristics：`/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_inference_operating_characteristics_080236b_20260729.json`
+- Environment locks：`/mnt/cunyuliu_pc_cng_phaseb_v4_20260729/g6_v3_corrected_080236b_20260729/{pip_freeze,conda_explicit,environment_provenance}_080236b.txt`
 - Detailed audit：`docs/phase_b_g6_completion_audit_20260729.md`
 
 ### Phase B Exit Criterion

@@ -1,0 +1,130 @@
+{
+  "baseline_selection": "fixed in analysis plan; no test-data best-baseline selection",
+  "comparisons": [
+    {
+      "baseline": "random",
+      "bootstrap": {
+        "baseline_point": 0.0914958421863261,
+        "challenger_point": 0.08941776373486537,
+        "ci_all_positive": false,
+        "delta_ci_high": 0.01439045758148999,
+        "delta_ci_low": -0.018576850139797117,
+        "delta_mean": -0.002078078451460727,
+        "method": "hierarchical_bootstrap",
+        "n_bootstrap": 2000,
+        "n_seeds": 5,
+        "p_value": 0.4465
+      },
+      "challenger": "pc_cng",
+      "comparison": "pc_cng_vs_random",
+      "effect_size": {
+        "mean_seed_delta": -0.0020780784514607283,
+        "n_seeds": 5.0,
+        "seed_delta_sd": 0.013227904086976652,
+        "standardized_seed_effect": -0.15709808884286297
+      },
+      "endpoint": "T5_condition_feasibility_source_macro_auprc",
+      "holm": {
+        "adjusted_p": 1.0,
+        "index": 0,
+        "p_value": 0.7590240975902409,
+        "rejected": false
+      },
+      "noninferior": true,
+      "noninferiority_margin": 0.02,
+      "permutation": {
+        "cluster_key": "experimental_group",
+        "method": "paired_cluster_label_swap_permutation",
+        "n_permutations": 10000,
+        "n_seeds": 5,
+        "observed_statistic": -0.0020780784514607283,
+        "p_value": 0.7590240975902409
+      },
+      "superiority_confirmed": false
+    },
+    {
+      "baseline": "template_rule",
+      "bootstrap": {
+        "baseline_point": 0.09617641687588668,
+        "challenger_point": 0.08941776373486537,
+        "ci_all_positive": false,
+        "delta_ci_high": 0.003792644140539124,
+        "delta_ci_low": -0.025567493677020124,
+        "delta_mean": -0.006758653141021309,
+        "method": "hierarchical_bootstrap",
+        "n_bootstrap": 2000,
+        "n_seeds": 5,
+        "p_value": 0.8145
+      },
+      "challenger": "pc_cng",
+      "comparison": "pc_cng_vs_template_rule",
+      "effect_size": {
+        "mean_seed_delta": -0.006758653141021302,
+        "n_seeds": 5.0,
+        "seed_delta_sd": 0.009947987401183613,
+        "standardized_seed_effect": -0.6793990450990275
+      },
+      "endpoint": "T5_condition_feasibility_source_macro_auprc",
+      "holm": {
+        "adjusted_p": 0.6434356564343566,
+        "index": 1,
+        "p_value": 0.21447855214478553,
+        "rejected": false
+      },
+      "noninferior": false,
+      "noninferiority_margin": 0.02,
+      "permutation": {
+        "cluster_key": "experimental_group",
+        "method": "paired_cluster_label_swap_permutation",
+        "n_permutations": 10000,
+        "n_seeds": 5,
+        "observed_statistic": -0.006758653141021302,
+        "p_value": 0.21447855214478553
+      },
+      "superiority_confirmed": false
+    },
+    {
+      "baseline": "pc_cng",
+      "bootstrap": {
+        "baseline_point": 0.08941776373486537,
+        "challenger_point": 0.08789352684300489,
+        "ci_all_positive": false,
+        "delta_ci_high": 0.00824948779042641,
+        "delta_ci_low": -0.015474082542112017,
+        "delta_mean": -0.0015242368918604865,
+        "method": "hierarchical_bootstrap",
+        "n_bootstrap": 2000,
+        "n_seeds": 5,
+        "p_value": 0.759
+      },
+      "challenger": "union",
+      "comparison": "union_vs_pc_cng",
+      "effect_size": {
+        "mean_seed_delta": -0.0015242368918604796,
+        "n_seeds": 5.0,
+        "seed_delta_sd": 0.008053521230062009,
+        "standardized_seed_effect": -0.18926341016782092
+      },
+      "endpoint": "T5_condition_feasibility_source_macro_auprc",
+      "holm": {
+        "adjusted_p": 1.0,
+        "index": 2,
+        "p_value": 0.7726227377262274,
+        "rejected": false
+      },
+      "noninferior": true,
+      "noninferiority_margin": 0.02,
+      "permutation": {
+        "cluster_key": "experimental_group",
+        "method": "paired_cluster_label_swap_permutation",
+        "n_permutations": 10000,
+        "n_seeds": 5,
+        "observed_statistic": -0.0015242368918604796,
+        "p_value": 0.7726227377262274
+      },
+      "superiority_confirmed": false
+    }
+  ],
+  "endpoint": "T5_condition_feasibility_source_macro_auprc",
+  "multiple_comparison_method": "Holm across the three preregistered primary comparisons"
+}

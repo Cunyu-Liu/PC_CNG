@@ -1,0 +1,26 @@
+{
+  "all_superiority_confirmed": false,
+  "artifact_hashes": {
+    "analysis_plan": "e91f56e5a6431606e45d0b2154fe01e19ab3d78fbc1219bba7f8dd6cfd7950b9",
+    "formal_result": "e7274a4653deefc8f413d73cbb67a233f790c01dbf8dc472469eaf9e5f9100fa",
+    "independent_inference": "7a67aef34af3c39b6b9b8e1b643fcd04c6838b3baf82eb9ad93d0c0816776cbd"
+  },
+  "baseline_selection": "fixed in analysis plan; no test-data best-baseline selection",
+  "comparison_order": [
+    "pc_cng_vs_random",
+    "pc_cng_vs_template_rule",
+    "union_vs_pc_cng"
+  ],
+  "legacy_normalization": {
+    "accepted_fields": [
+      "ci_all_positive"
+    ],
+    "accepted_values": [
+      "True",
+      "False"
+    ],
+    "reason": "a602a41 formal writer serialized NumPy bool scalars via default=str"
+  },
+  "verification_scope": "complete primary_inference object",
+  "verified": true
+}
